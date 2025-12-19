@@ -1,3 +1,35 @@
 <resources>
     <string name="app_name">Lift</string>
+    <string name="screen_add_title">New Exercise</string>
+    <string name="btn_save">Save Exercise</string>
+    <string name="label_name">Exercise Name</string>
+    <string name="label_body_part">Body Part</string>
+    <string name="label_category">Category</string>
+    <string name="error_empty_name">Name cannot be empty</string>
+
+    <string name="part_chest">Chest</string>
+    <string name="part_back">Back</string>
+    <string name="part_legs">Legs</string>
+    <string name="part_shoulders">Shoulders</string>
+    <string name="part_arms">Arms</string>
+    <string name="part_core">Core</string>
+    <string name="part_cardio">Cardio</string>
+    <string name="part_other">Other</string>
+
+    <string name="cat_barbell">Barbell</string>
+    <string name="cat_dumbbell">Dumbbell</string>
+    <string name="cat_machine">Machine</string>
+    <string name="cat_weighted_bw">Weighted Bodyweight</string>
+    <string name="cat_assisted_bw">Assisted Bodyweight</string>
+    <string name="cat_reps_only">Reps Only</string>
+    <string name="cat_duration">Duration / Time</string>
+    <string name="cat_cardio">Cardio</string>
+    <string name="empty_exercises_text">You don\'t have any exercises yet. Tap the + button to get started!</string>
+    <string name="add_excercise">Add excercise</string>
+    <string name="excercises">Exercises</string>
+    <string name="type_reps_weight">Weight &amp; Reps</string>
+    <string name="type_reps_only">Reps Only</string>
+    <string name="type_time">Time / Duration</string>
+    <string name="type_distance">Distance &amp; Time</string>
+    <string name="label_measure_type">Measure Type</string>
 </resources>

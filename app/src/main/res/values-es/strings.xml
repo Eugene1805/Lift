@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lift</string>
+
+    <string name="screen_add_title">Nuevo Ejercicio</string>
+    <string name="btn_save">Guardar Ejercicio</string>
+    <string name="label_name">Nombre del ejercicio</string>
+    <string name="label_body_part">Parte del Cuerpo</string>
+    <string name="label_category">Categoría</string>
+    <string name="error_empty_name">El nombre es obligatorio</string>
+
+    <string name="part_chest">Pecho</string>
+    <string name="part_back">Espalda</string>
+    <string name="part_legs">Pierna</string>
+    <string name="part_shoulders">Hombros</string>
+    <string name="part_arms">Brazos</string>
+    <string name="part_core">Core / Abdomen</string>
+    <string name="part_cardio">Cardio</string>
+    <string name="part_other">Otro</string>
+
+    <string name="cat_barbell">Barra</string>
+    <string name="cat_dumbbell">Mancuernas</string>
+    <string name="cat_machine">Máquina</string>
+    <string name="cat_weighted_bw">Peso Corporal + Lastre</string>
+    <string name="cat_assisted_bw">Peso Corporal Asistido</string>
+    <string name="cat_reps_only">Solo Repeticiones</string>
+    <string name="cat_duration">Duración / Tiempo</string>
+    <string name="cat_cardio">Cardio</string>
+    <string name="empty_exercises_text">Aún no tienes ejercicios. ¡Toca el botón + para empezar!</string>
+    <string name="add_excercise">Agregar ejercicio</string>
+    <string name="excercises">Ejercicios</string>
+    <string name="type_reps_weight">Peso y Repeticiones</string>
+    <string name="type_reps_only">Solo Repeticiones</string>
+    <string name="type_time">Tiempo / Duración</string>
+    <string name="type_distance">Distancia y Tiempo</string>
+    <string name="label_measure_type">Tipo de Registro</string>
+</resources>

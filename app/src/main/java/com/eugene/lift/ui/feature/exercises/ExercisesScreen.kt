@@ -11,13 +11,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -37,20 +37,44 @@ import com.eugene.lift.R
 import com.eugene.lift.data.local.entity.ExerciseEntity
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.ExerciseCategory
-import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.ui.theme.LiftTheme
-import java.util.UUID
-
-
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.text.input.ImeAction
 @Composable
 fun ExercisesRoute(
     onAddClick: () -> Unit,
     viewModel: ExercisesViewModel = hiltViewModel()
 ) {
-    val exercisesState by viewModel.exercises.collectAsStateWithLifecycle()
+    val exercises by viewModel.exercises.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
+
+    val selectedBodyParts by viewModel.selectedBodyParts.collectAsStateWithLifecycle()
+    val selectedCategories by viewModel.selectedCategories.collectAsStateWithLifecycle()
+
 
     ExercisesScreen(
-        exercises = exercisesState,
+        exercises = exercises,
+        searchQuery = searchQuery,
+        sortOrder = sortOrder,
+        selectedBodyParts = selectedBodyParts,
+        selectedCategories = selectedCategories,
+        onSearchQueryChange = viewModel::onSearchQueryChange,
+        onSortToggle = viewModel::toggleSortOrder,
+        onBodyPartToggle = viewModel::toggleBodyPartFilter,
+        onCategoryToggle = viewModel::toggleCategoryFilter,
+        onClearFilters = viewModel::clearFilters,
         onAddClick = onAddClick
     )
 }
@@ -59,18 +83,76 @@ fun ExercisesRoute(
 @Composable
 fun ExercisesScreen(
     exercises: List<ExerciseEntity>,
+    searchQuery: String,
+    sortOrder: SortOrder,
+    selectedBodyParts: Set<BodyPart>,
+    selectedCategories: Set<ExerciseCategory>,
+    onSearchQueryChange: (String) -> Unit,
+    onSortToggle: () -> Unit,
+    onBodyPartToggle: (BodyPart) -> Unit,
+    onCategoryToggle: (ExerciseCategory) -> Unit,
+    onClearFilters: () -> Unit,
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    var showSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+    val focusManager = LocalFocusManager.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.excercises)) },
-                scrollBehavior = scrollBehavior
-            )
+
+            Column {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.exercises)) },
+                    scrollBehavior = scrollBehavior
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = onSearchQueryChange,
+                        placeholder = { Text(stringResource(R.string.hint_search)) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.extraLarge,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
+                    )
+
+
+                    val hasFilters = selectedBodyParts.isNotEmpty() || selectedCategories.isNotEmpty()
+                    FilledTonalIconButton(
+                        onClick = { showSheet = true },
+                        colors = if (hasFilters) IconButtonDefaults.filledTonalIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ) else IconButtonDefaults.filledTonalIconButtonColors()
+                    ) {
+                        Icon(Icons.Default.FilterList, contentDescription = stringResource(R.string.sort))
+                    }
+
+                    IconButton(onClick = onSortToggle) {
+                        val rotation = if (sortOrder == SortOrder.NAME_ASC) 0f else 180f
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Sort,
+                            contentDescription = stringResource(R.string.sort),
+                            modifier = Modifier.rotate(rotation)
+                        )
+                    }
+                }
+            }
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -78,7 +160,7 @@ fun ExercisesScreen(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.add_excercise))
+                Icon(Icons.Default.Add, contentDescription = null)
             }
         }
     ) { innerPadding ->
@@ -86,6 +168,22 @@ fun ExercisesScreen(
             exercises = exercises,
             modifier = Modifier.padding(innerPadding)
         )
+
+        if (showSheet) {
+            ModalBottomSheet(
+                onDismissRequest = {showSheet = false },
+                sheetState = sheetState
+            ) {
+                FilterBottomSheetContent(
+                    selectedBodyParts = selectedBodyParts,
+                    selectedCategories = selectedCategories,
+                    onBodyPartToggle = onBodyPartToggle,
+                    onCategoryToggle = onCategoryToggle,
+                    onClearFilters = onClearFilters,
+                    onApply = { showSheet = false}
+                )
+            }
+        }
     }
 }
 
@@ -154,15 +252,8 @@ fun ExerciseItemCard(exercise: ExerciseEntity, modifier: Modifier = Modifier) {
 @Composable
 fun ExercisesScreenPreview() {
     LiftTheme {
-        val dummyData = listOf(
-            ExerciseEntity(UUID.randomUUID().toString(), "Press de Banca", BodyPart.CHEST, ExerciseCategory.CARDIO, MeasureType.REPS_AND_WEIGHT),
-            ExerciseEntity(UUID.randomUUID().toString(), "Press de Banca", BodyPart.CHEST, ExerciseCategory.CARDIO, MeasureType.REPS_AND_WEIGHT),
-            ExerciseEntity(UUID.randomUUID().toString(), "Press de Banca", BodyPart.CHEST, ExerciseCategory.CARDIO, MeasureType.REPS_AND_WEIGHT)
-        )
 
-        ExercisesScreen(
-            exercises = dummyData,
-            onAddClick = {}
-        )
+
+
     }
 }

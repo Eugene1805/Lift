@@ -25,11 +25,20 @@
     <string name="cat_duration">Duration / Time</string>
     <string name="cat_cardio">Cardio</string>
     <string name="empty_exercises_text">You don\'t have any exercises yet. Tap the + button to get started!</string>
-    <string name="add_excercise">Add excercise</string>
-    <string name="excercises">Exercises</string>
+    <string name="add_exercise">Add exercise</string>
+    <string name="exercises">Exercises</string>
     <string name="type_reps_weight">Weight &amp; Reps</string>
     <string name="type_reps_only">Reps Only</string>
     <string name="type_time">Time / Duration</string>
     <string name="type_distance">Distance &amp; Time</string>
     <string name="label_measure_type">Measure Type</string>
+    <string name="hint_search">Search Exercise…</string>
+    <string name="action_sort_asc">Sort: A-Z</string>
+    <string name="action_sort_desc">Sort: Z-A</string>
+    <string name="title_filters">Filters</string>
+    <string name="subtitle_body_part">Muscle group</string>
+    <string name="subtitle_category">Category</string>
+    <string name="btn_clear_filters">Clean Filters</string>
+    <string name="btn_apply">Apply</string>
+    <string name="sort">Sort</string>
 </resources>

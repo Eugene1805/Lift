@@ -27,11 +27,21 @@
     <string name="cat_duration">Duración / Tiempo</string>
     <string name="cat_cardio">Cardio</string>
     <string name="empty_exercises_text">Aún no tienes ejercicios. ¡Toca el botón + para empezar!</string>
-    <string name="add_excercise">Agregar ejercicio</string>
-    <string name="excercises">Ejercicios</string>
+    <string name="add_exercise">Agregar ejercicio</string>
+    <string name="exercises">Ejercicios</string>
     <string name="type_reps_weight">Peso y Repeticiones</string>
     <string name="type_reps_only">Solo Repeticiones</string>
     <string name="type_time">Tiempo / Duración</string>
     <string name="type_distance">Distancia y Tiempo</string>
     <string name="label_measure_type">Tipo de Registro</string>
+
+    <string name="hint_search">Buscar ejercicio…</string>
+    <string name="action_sort_asc">Orden: A-Z</string>
+    <string name="action_sort_desc">Orden: Z-A</string>
+    <string name="title_filters">Filtros</string>
+    <string name="subtitle_body_part">Grupo Muscular</string>
+    <string name="subtitle_category">Categoría</string>
+    <string name="btn_clear_filters">Limpiar Filtros</string>
+    <string name="btn_apply">Aplicar</string>
+    <string name="sort">Ordenar</string>
 </resources>

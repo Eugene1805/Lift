@@ -4,16 +4,40 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.eugene.lift.ui.feature.exercises.AddExerciseRoute
 import com.eugene.lift.ui.feature.exercises.ExercisesRoute
+import com.eugene.lift.ui.feature.history.HistoryRoute
+import com.eugene.lift.ui.feature.profile.ProfileRoute
+import com.eugene.lift.ui.feature.settings.SettingsRoute
+import com.eugene.lift.ui.feature.workout.WorkoutRoute
 import com.eugene.lift.ui.navigation.ExerciseAddRoute
 import com.eugene.lift.ui.navigation.ExerciseListRoute
 import com.eugene.lift.ui.theme.LiftTheme
@@ -30,34 +54,102 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LiftAppNavigation()
+                    MainAppShell()
                 }
             }
         }
     }
 }
 
+data class BottomNavItem<T : Any>(
+    @get:StringRes val labelRes: Int,
+    val icon: ImageVector,
+    val route: T
+)
+
 @Composable
-fun LiftAppNavigation() {
+fun MainAppShell() {
     val navController = rememberNavController()
 
-    NavHost(
-        navController = navController,
-        startDestination = ExerciseListRoute
-    ) {
-        composable<ExerciseListRoute> {
-            ExercisesRoute(
-                onAddClick = {
-                    navController.navigate(ExerciseAddRoute)
+    val bottomNavItems = listOf(
+        BottomNavItem(R.string.nav_profile, Icons.Default.Person, com.eugene.lift.ui.navigation.ProfileRoute),
+        BottomNavItem(R.string.nav_history, Icons.Default.History, com.eugene.lift.ui.navigation.HistoryRoute),
+        BottomNavItem(R.string.nav_workout, Icons.Default.Add, com.eugene.lift.ui.navigation.WorkoutRoute),
+        BottomNavItem(R.string.nav_exercises, Icons.Default.FitnessCenter, ExerciseListRoute),
+        BottomNavItem(R.string.nav_settings, Icons.Default.Settings, com.eugene.lift.ui.navigation.SettingsRoute)
+    )
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+
+    val showBottomBar = bottomNavItems.any { item ->
+        currentDestination?.hierarchy?.any { it.hasRoute(item.route::class) } == true
+    }
+
+    Scaffold(
+        bottomBar = {
+            if (showBottomBar) {
+                NavigationBar {
+                    bottomNavItems.forEach { item ->
+                        val isSelected = currentDestination?.hierarchy?.any {
+                            it.hasRoute(item.route::class)
+                        } == true
+
+                        val label = stringResource(item.labelRes)
+
+                        NavigationBarItem(
+                            icon = { Icon(item.icon, contentDescription = label) },
+                            label = { Text(label) },
+                            selected = isSelected,
+                            onClick = {
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        )
+                    }
                 }
-            )
+            }
         }
-        composable<ExerciseAddRoute> {
-            AddExerciseRoute(
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
-            )
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = ExerciseListRoute,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+
+            composable<com.eugene.lift.ui.navigation.ProfileRoute> {
+                ProfileRoute()
+            }
+
+            composable<com.eugene.lift.ui.navigation.HistoryRoute> {
+                HistoryRoute()
+            }
+
+            composable<com.eugene.lift.ui.navigation.WorkoutRoute> {
+                WorkoutRoute()
+            }
+
+            composable<ExerciseListRoute> {
+                ExercisesRoute(
+                    onAddClick = { navController.navigate(ExerciseAddRoute) }
+                )
+            }
+
+            composable<com.eugene.lift.ui.navigation.SettingsRoute> {
+                SettingsRoute()
+            }
+
+            composable<ExerciseAddRoute> {
+                AddExerciseRoute(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
     }
 }

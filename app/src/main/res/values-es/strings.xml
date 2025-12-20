@@ -44,4 +44,15 @@
     <string name="btn_clear_filters">Limpiar Filtros</string>
     <string name="btn_apply">Aplicar</string>
     <string name="sort">Ordenar</string>
+
+    <string name="nav_profile">Perfil</string>
+    <string name="nav_history">Historial</string>
+    <string name="nav_workout">Entrenar</string>
+    <string name="nav_exercises">Ejercicios</string>
+    <string name="nav_settings">Ajustes</string>
+
+    <string name="title_profile">Perfil de Usuario</string>
+    <string name="title_history">Historial de Entrenamientos</string>
+    <string name="title_workout">Entrenamiento Actual</string>
+    <string name="title_settings">Configuración</string>
 </resources>

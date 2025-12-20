@@ -232,7 +232,7 @@ fun ExerciseItemCard(exercise: ExerciseEntity, modifier: Modifier = Modifier) {
             },
             supportingContent = {
                 Text(
-                    text = "${exercise.bodyPart} • ${exercise.category}",
+                    text = "${stringResource(exercise.bodyPart.labelRes)} • ${stringResource(exercise.category.labelRes)}",
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },

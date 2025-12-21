@@ -45,7 +45,9 @@ class ExercisesViewModel @Inject constructor(
         }
 
         if (bodyParts.isNotEmpty()) {
-            result = result.filter { it.bodyPart in bodyParts }
+            result = result.filter { exercise ->
+                exercise.bodyParts.intersect(bodyParts).isNotEmpty()
+            }
         }
 
         if (categories.isNotEmpty()) {

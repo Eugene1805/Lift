@@ -51,6 +51,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.input.ImeAction
+import com.eugene.lift.domain.model.MeasureType
+
 @Composable
 fun ExercisesRoute(
     onAddClick: () -> Unit,
@@ -99,15 +101,21 @@ fun ExercisesScreen(
     var showSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     val focusManager = LocalFocusManager.current
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        contentWindowInsets = WindowInsets(0,0,0,0),
         topBar = {
-
-            Column {
+            Column{
                 TopAppBar(
-                    title = { Text(stringResource(R.string.exercises)) },
+                    title = {
+                        Text(
+                            stringResource(R.string.exercises),
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    },
+                    windowInsets = WindowInsets(0, 0, 0, 0),
                     scrollBehavior = scrollBehavior
                 )
 
@@ -163,7 +171,8 @@ fun ExercisesScreen(
                 Icon(Icons.Default.Add, contentDescription = null)
             }
         }
-    ) { innerPadding ->
+    )
+    { innerPadding ->
         ExercisesContent(
             exercises = exercises,
             modifier = Modifier.padding(innerPadding)
@@ -222,6 +231,7 @@ fun ExercisesContent(
 
 @Composable
 fun ExerciseItemCard(exercise: ExerciseEntity, modifier: Modifier = Modifier) {
+
     ElevatedCard(modifier = modifier.fillMaxWidth()) {
         ListItem(
             headlineContent = {
@@ -231,10 +241,7 @@ fun ExerciseItemCard(exercise: ExerciseEntity, modifier: Modifier = Modifier) {
                 )
             },
             supportingContent = {
-                Text(
-                    text = "${stringResource(exercise.bodyPart.labelRes)} • ${stringResource(exercise.category.labelRes)}",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                ExerciseSupportingContent(exercise)
             },
             leadingContent = {
                 Icon(
@@ -247,13 +254,64 @@ fun ExerciseItemCard(exercise: ExerciseEntity, modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+private fun ExerciseSupportingContent(exercise: ExerciseEntity) {
+    val bodyPartStrings = exercise.bodyParts.map { part ->
+        stringResource(part.labelRes)
+    }
+    val bodyPartsString = bodyPartStrings.joinToString(", ")
+
+    Text(
+        text = "$bodyPartsString • ${stringResource(exercise.category.labelRes)}",
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}
 
 @Preview(showBackground = true)
 @Composable
 fun ExercisesScreenPreview() {
     LiftTheme {
-
-
-
+        ExercisesScreen(
+            exercises = listOf(
+                ExerciseEntity(
+                    id = "1",
+                    name = "Push Up",
+                    bodyParts = listOf(BodyPart.CHEST, BodyPart.CHEST, BodyPart.SHOULDERS),
+                    category = ExerciseCategory.ASSISTED_BODYWEIGHT,
+                    measureType = MeasureType.REPS_AND_WEIGHT
+                ),
+                ExerciseEntity(
+                    id = "2",
+                    name = "Squat",
+                    bodyParts = listOf(BodyPart.CARDIO, BodyPart.CARDIO, BodyPart.CHEST),
+                    category = ExerciseCategory.BARBELL,
+                    measureType = MeasureType.REPS_AND_WEIGHT
+                ),
+                ExerciseEntity(
+                    id = "9",
+                    name = "Plank",
+                    bodyParts = listOf(BodyPart.CORE, BodyPart.SHOULDERS),
+                    category = ExerciseCategory.CARDIO,
+                    measureType = MeasureType.REPS_AND_WEIGHT
+                ),
+                ExerciseEntity(
+                    id = "4",
+                    name = "Pull Up",
+                    bodyParts = listOf(BodyPart.BACK, BodyPart.BACK),
+                    category = ExerciseCategory.CARDIO,
+                    measureType = MeasureType.REPS_AND_WEIGHT
+                )
+            ),
+            searchQuery = "",
+            sortOrder = SortOrder.NAME_ASC,
+            selectedBodyParts = emptySet(),
+            selectedCategories = emptySet(),
+            onSearchQueryChange = {},
+            onSortToggle = {},
+            onBodyPartToggle = {},
+            onCategoryToggle = {},
+            onClearFilters = {},
+            onAddClick = {}
+        )
     }
 }

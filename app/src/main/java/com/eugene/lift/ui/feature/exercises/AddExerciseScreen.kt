@@ -1,7 +1,11 @@
 package com.eugene.lift.ui.feature.exercises
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -11,12 +15,15 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -36,15 +43,15 @@ fun AddExerciseRoute(
     viewModel: AddExerciseViewModel = hiltViewModel()
 ) {
     val name by viewModel.name.collectAsStateWithLifecycle()
-    val bodyPart by viewModel.selectedBodyPart.collectAsStateWithLifecycle()
+    val selectedBodyParts by viewModel.selectedBodyParts.collectAsStateWithLifecycle()
     val category by viewModel.selectedCategory.collectAsStateWithLifecycle()
     val measureType by viewModel.selectedMeasureType.collectAsStateWithLifecycle()
     AddExerciseScreen(
         name = name,
-        bodyPart = bodyPart,
+        selectedBodyParts = selectedBodyParts,
         category = category,
         onNameChange = viewModel::onNameChange,
-        onBodyPartChange = viewModel::onBodyPartChange,
+        onBodyPartToggle = viewModel::toggleBodyPart,
         onCategoryChange = viewModel::onCategoryChange,
         measureType = measureType,
         onMeasureTypeChange = viewModel::onMeasureTypeChange,
@@ -53,14 +60,14 @@ fun AddExerciseRoute(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AddExerciseScreen(
     name: String,
-    bodyPart: BodyPart,
+    selectedBodyParts: Set<BodyPart>,
     category: ExerciseCategory,
     onNameChange: (String) -> Unit,
-    onBodyPartChange: (BodyPart) -> Unit,
+    onBodyPartToggle: (BodyPart) -> Unit,
     onCategoryChange: (ExerciseCategory) -> Unit,
     measureType: MeasureType,
     onMeasureTypeChange: (MeasureType) -> Unit,
@@ -68,14 +75,22 @@ fun AddExerciseScreen(
     onBackClick: () -> Unit
 ) {
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.screen_add_title)) },
+                title = {
+                    Text(
+                        text = stringResource(R.string.screen_add_title),
+                        style = MaterialTheme.typography.titleLarge // Texto un poco más compacto que Headline
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
-                }
+                },
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
             )
         }
     ) { innerPadding ->
@@ -85,24 +100,48 @@ fun AddExerciseScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
+
             OutlinedTextField(
                 value = name,
                 onValueChange = onNameChange,
                 label = { Text(stringResource(R.string.label_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                isError = name.isBlank()
+                isError = name.isBlank(),
+                // AQUÍ ESTÁ EL CAMBIO VISUAL:
+                supportingText = {
+                    Text(
+                        text = "${name.length} / $MAX_EXERCISE_NAME_LENGTH",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.End
+                    )
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            AppDropdown(
-                label = stringResource(R.string.label_body_part),
-                options = BodyPart.entries,
-                selectedOption = bodyPart,
-                onOptionSelected = onBodyPartChange,
-                labelProvider = { part -> stringResource(part.labelRes) }
+            Text(
+                text = stringResource(R.string.label_body_part),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
             )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                BodyPart.entries.forEach { part ->
+                    FilterChip(
+                        selected = part in selectedBodyParts,
+                        onClick = { onBodyPartToggle(part) },
+                        label = { Text(stringResource(part.labelRes)) },
+                        leadingIcon = if (part in selectedBodyParts) {
+                            { Icon(Icons.Default.Check, null) }
+                        } else null
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

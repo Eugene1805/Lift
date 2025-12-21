@@ -4,11 +4,15 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.eugene.lift.data.local.dao.ExerciseDao
+import com.eugene.lift.data.local.entity.ExerciseBodyPartCrossRef
 import com.eugene.lift.data.local.entity.ExerciseEntity
 
 @Database(
-    entities = [ExerciseEntity::class],
-    version = 1,
+    entities = [
+        ExerciseEntity::class,
+        ExerciseBodyPartCrossRef::class
+    ],
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

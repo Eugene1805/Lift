@@ -1,8 +1,10 @@
 package com.eugene.lift.data.repository
 
 import com.eugene.lift.data.local.dao.ExerciseDao
-import com.eugene.lift.data.local.entity.ExerciseEntity
-import com.eugene.lift.domain.model.BodyPart
+import com.eugene.lift.data.mapper.toCrossRefs
+import com.eugene.lift.data.mapper.toDomain
+import com.eugene.lift.data.mapper.toEntity
+import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.repository.ExerciseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -12,24 +14,28 @@ class ExerciseRepositoryImpl @Inject constructor(
     private val dao: ExerciseDao
 ) : ExerciseRepository {
 
-    override fun getExercises(): Flow<List<ExerciseEntity>> {
-        return dao.getAllExercisesRaw().map { results ->
-            results.map { row ->
-                // Reconstruimos la lista desde el string que nos dio GROUP_CONCAT
-                val parts = if (row.bodyParts.isBlank()) emptyList()
-                else row.bodyParts.split(",").map { BodyPart.valueOf(it) }
-
-                row.exercise.copy(bodyParts = parts) // Asumiendo que el data class tiene el campo
-            }
+    override fun getExercises(): Flow<List<Exercise>> {
+        return dao.getAllExercises().map { list ->
+            list.map { it.toDomain() }
         }
     }
-    override suspend fun getExercise(id: String): ExerciseEntity? = dao.getExerciseById(id)
 
-    override suspend fun saveExercise(exercise: ExerciseEntity) {
-        // Separamos la entidad de sus partes para guardarlas
-        val entityClean = exercise.copy(bodyParts = emptyList()) // OJO: La Entity DB no debe tener lista
-        dao.saveExerciseWithParts(entityClean, exercise.bodyParts)
+    override fun getExerciseById(id: String): Flow<Exercise?> {
+        return dao.getExerciseById(id).map { it?.toDomain() }
     }
 
-    override suspend fun deleteExercise(exercise: ExerciseEntity) = dao.deleteExercise(exercise)
+    override suspend fun saveExercise(exercise: Exercise) {
+        dao.saveExerciseComplete(
+            exercise = exercise.toEntity(),
+            refs = exercise.toCrossRefs()
+        )
+    }
+
+    override suspend fun deleteExercise(exerciseId: String) {
+        dao.deleteExerciseComplete(exerciseId)
+    }
+
+    override suspend fun getCount(): Int {
+        return dao.getExerciseCount()
+    }
 }

@@ -55,4 +55,11 @@
     <string name="title_history">Historial de Entrenamientos</string>
     <string name="title_workout">Entrenamiento Actual</string>
     <string name="title_settings">Configuración</string>
+
+    <string name="seed_bench_press">Press de Banca (Barra)</string>
+    <string name="seed_bench_desc">1. Túmbate en el banco con los ojos bajo la barra.\n2. Agarra la barra con una anchura superior a los hombros.\n3. Baja la barra hasta la mitad del pecho.\n4. Empuja explosivamente hacia arriba.</string>
+    <string name="seed_squat">Sentadilla Trasera</string>
+    <string name="seed_squat_desc">1. Coloca la barra sobre los trapecios.\n2. Pies a la anchura de los hombros.\n3. Baja cadera y rodillas manteniendo la espalda recta.\n4. Rompe el paralelo y sube.</string>
+    <string name="seed_pullup">Dominadas</string>
+    <string name="seed_pullup_desc">1. Cuélgate de la barra con agarre prono.\n2. Sube hasta que la barbilla pase la barra.\n3. Baja controladamente.</string>
 </resources>

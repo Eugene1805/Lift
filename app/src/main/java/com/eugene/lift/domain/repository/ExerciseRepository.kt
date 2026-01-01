@@ -1,11 +1,13 @@
 package com.eugene.lift.domain.repository
 
-import com.eugene.lift.data.local.entity.ExerciseEntity
+import com.eugene.lift.domain.model.Exercise
 import kotlinx.coroutines.flow.Flow
 
 interface ExerciseRepository {
-    fun getExercises(): Flow<List<ExerciseEntity>>
-    suspend fun getExercise(id: String): ExerciseEntity?
-    suspend fun saveExercise(exercise: ExerciseEntity)
-    suspend fun deleteExercise(exercise: ExerciseEntity)
+    fun getExercises(): Flow<List<Exercise>>
+    fun getExerciseById(id: String): Flow<Exercise?>
+    suspend fun saveExercise(exercise: Exercise)
+    suspend fun deleteExercise(exerciseId: String)
+    suspend fun getCount(): Int
+
 }

@@ -24,7 +24,7 @@ class Converters {
     fun toCategory(value: String): ExerciseCategory = try {
         ExerciseCategory.valueOf(value)
     } catch (e: IllegalArgumentException) {
-        ExerciseCategory.BARBELL
+        ExerciseCategory.REPS_ONLY
     }
 
     @TypeConverter

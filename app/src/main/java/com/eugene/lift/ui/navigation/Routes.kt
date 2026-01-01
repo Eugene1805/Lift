@@ -7,6 +7,5 @@ import kotlinx.serialization.Serializable
 @Serializable object WorkoutRoute
 @Serializable object ExerciseListRoute
 @Serializable object SettingsRoute
-
-
 @Serializable object ExerciseAddRoute
+@Serializable data class ExerciseDetailRoute(val exerciseId: String)

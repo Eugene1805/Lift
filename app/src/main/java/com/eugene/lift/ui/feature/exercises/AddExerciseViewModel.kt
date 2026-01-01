@@ -2,30 +2,31 @@ package com.eugene.lift.ui.feature.exercises
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eugene.lift.data.local.entity.ExerciseEntity
 import com.eugene.lift.domain.model.BodyPart
+import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
-import com.eugene.lift.domain.repository.ExerciseRepository
+import com.eugene.lift.domain.usecase.SaveExerciseUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 const val MAX_EXERCISE_NAME_LENGTH = 50
 @HiltViewModel
 class AddExerciseViewModel @Inject constructor(
-    private val repository: ExerciseRepository
+    private val saveExerciseUseCase: SaveExerciseUseCase
 ) : ViewModel() {
 
     private val _name = MutableStateFlow("")
     val name = _name.asStateFlow()
 
-    private val _selectedBodyParts = MutableStateFlow<Set<BodyPart>>(setOf(BodyPart.CHEST))
+    private val _selectedBodyParts = MutableStateFlow(setOf(BodyPart.OTHER))
     val selectedBodyParts = _selectedBodyParts.asStateFlow()
 
-    private val _selectedCategory = MutableStateFlow(ExerciseCategory.BARBELL)
+    private val _selectedCategory = MutableStateFlow(ExerciseCategory.MACHINE)
     val selectedCategory = _selectedCategory.asStateFlow()
 
     private val _selectedMeasureType = MutableStateFlow(MeasureType.REPS_AND_WEIGHT)
@@ -53,15 +54,22 @@ class AddExerciseViewModel @Inject constructor(
         if (_name.value.isBlank()) return
 
         viewModelScope.launch {
-            repository.saveExercise(
-                ExerciseEntity(
-                    name = _name.value,
-                    bodyParts = _selectedBodyParts.value.toList(),
-                    category = _selectedCategory.value,
-                    measureType = _selectedMeasureType.value
+            try {
+                saveExerciseUseCase(
+                    Exercise(
+                        id = UUID.randomUUID().toString(),
+                        name = _name.value,
+                        bodyParts = _selectedBodyParts.value.toList(),
+                        category = _selectedCategory.value,
+                        measureType = _selectedMeasureType.value,
+                        instructions = "",
+                        imagePath = null
+                    )
                 )
-            )
-            onSuccess()
+                onSuccess()
+            } catch (e: Exception) {
+                // TODO : Handle validation error (e.g., show Snackbar)
+            }
         }
     }
 }

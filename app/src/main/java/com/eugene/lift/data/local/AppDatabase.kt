@@ -12,7 +12,7 @@ import com.eugene.lift.data.local.entity.ExerciseEntity
         ExerciseEntity::class,
         ExerciseBodyPartCrossRef::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

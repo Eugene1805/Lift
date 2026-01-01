@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.hilt.common)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
@@ -77,5 +78,7 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose) // Para usar hiltViewModel() en Compose
 
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.coil.compose)
 
+    implementation(libs.androidx.work.runtime.ktx)
 }

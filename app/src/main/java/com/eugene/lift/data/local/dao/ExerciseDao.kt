@@ -15,52 +15,65 @@ import kotlinx.coroutines.flow.Flow
 
 data class ExerciseResult(
     @Embedded val exercise: ExerciseEntity,
-    val bodyParts: String // SQLite devolverá "CHEST,ARMS" usando GROUP_CONCAT
+    val bodyParts: String
 )
 @Dao
 interface ExerciseDao {
+
+    // --- READ OPERATIONS (Return DTOs) ---
 
     @Query("""
         SELECT e.*, GROUP_CONCAT(cref.bodyPart) as bodyParts
         FROM exercises e
         LEFT JOIN exercise_body_part_cross_ref cref ON e.id = cref.exerciseId
         GROUP BY e.id
+        ORDER BY e.name ASC
     """)
-    fun getAllExercisesRaw(): Flow<List<ExerciseResult>>
-    // INSERTAR: Requiere Transacción porque tocamos 2 tablas
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertExerciseBase(exercise: ExerciseEntity)
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCrossRefs(refs: List<ExerciseBodyPartCrossRef>)
-    @Query("DELETE FROM exercise_body_part_cross_ref WHERE exerciseId = :exerciseId")
-    suspend fun deleteOldCrossRefs(exerciseId: String)
-    // Esta es la función pública que llamará el Repo
-    @Transaction
-    suspend fun saveExerciseWithParts(exercise: ExerciseEntity, parts: List<BodyPart>) {
-        // 1. Guardamos la info base
-        insertExerciseBase(exercise)
+    fun getAllExercises(): Flow<List<ExerciseResult>>
 
-        // 2. Borramos relaciones viejas (por si es una edición)
-        deleteOldCrossRefs(exercise.id)
+    @Query("""
+        SELECT e.*, GROUP_CONCAT(cref.bodyPart) as bodyParts
+        FROM exercises e
+        LEFT JOIN exercise_body_part_cross_ref cref ON e.id = cref.exerciseId
+        WHERE e.id = :exerciseId
+        GROUP BY e.id
+    """)
+    fun getExerciseById(exerciseId: String): Flow<ExerciseResult?>
 
-        // 3. Insertamos las nuevas relaciones
-        val refs = parts.map { part ->
-            ExerciseBodyPartCrossRef(exerciseId = exercise.id, bodyPart = part)
-        }
-        insertCrossRefs(refs)
-    }
-    @Query("SELECT * FROM exercises ORDER BY name ASC")
-    fun getAllExercises(): Flow<List<ExerciseEntity>>
+    @Query("SELECT COUNT(*) FROM exercises")
+    suspend fun getExerciseCount(): Int
 
-    @Query("SELECT * FROM exercises WHERE id = :id")
-    suspend fun getExerciseById(id: String): ExerciseEntity?
+    // --- WRITE OPERATIONS (Work with Entities) ---
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExercise(exercise: ExerciseEntity)
 
-    @Update
-    suspend fun updateExercise(exercise: ExerciseEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCrossRefs(refs: List<ExerciseBodyPartCrossRef>)
 
-    @Delete
-    suspend fun deleteExercise(exercise: ExerciseEntity)
+    @Query("DELETE FROM exercise_body_part_cross_ref WHERE exerciseId = :exerciseId")
+    suspend fun deleteCrossRefs(exerciseId: String)
+
+    @Query("DELETE FROM exercises WHERE id = :exerciseId")
+    suspend fun deleteExerciseBase(exerciseId: String)
+
+    // Transactional Save: Clean Architecture means the Repo calls this,
+    // or we expose this atomic operation.
+    @Transaction
+    suspend fun saveExerciseComplete(
+        exercise: ExerciseEntity,
+        refs: List<ExerciseBodyPartCrossRef>
+    ) {
+        insertExercise(exercise)
+        deleteCrossRefs(exercise.id)
+        if (refs.isNotEmpty()) {
+            insertCrossRefs(refs)
+        }
+    }
+
+    @Transaction
+    suspend fun deleteExerciseComplete(exerciseId: String) {
+        deleteCrossRefs(exerciseId)
+        deleteExerciseBase(exerciseId)
+    }
 }

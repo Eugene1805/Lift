@@ -51,4 +51,11 @@
     <string name="title_history">Workout History</string>
     <string name="title_workout">Current Workout</string>
     <string name="title_settings">Settings</string>
+
+    <string name="seed_bench_press">Bench Press (Barbell)</string>
+    <string name="seed_bench_desc">1. Lie on the bench with your eyes under the bar.\n2. Grip the bar slightly wider than shoulder-width.\n3. Lower the bar to mid-chest.\n4. Press up explosively.</string>
+    <string name="seed_squat">Back Squat</string>
+    <string name="seed_squat_desc">1. Place the bar on your upper back (traps).\n2. Feet shoulder-width apart.\n3. Lower hips and knees keeping back straight.\n4. Break parallel and stand back up.</string>
+    <string name="seed_pullup">Pull-ups</string>
+    <string name="seed_pullup_desc">1. Hang from the bar with an overhand grip.\n2. Pull up until your chin clears the bar.\n3. Lower down under control.</string>
 </resources>

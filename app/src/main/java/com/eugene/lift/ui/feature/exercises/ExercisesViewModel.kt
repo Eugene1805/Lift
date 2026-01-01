@@ -4,18 +4,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.ExerciseCategory
-import com.eugene.lift.domain.repository.ExerciseRepository
+import com.eugene.lift.domain.usecase.ExerciseFilter
+import com.eugene.lift.domain.usecase.GetExercisesUseCase
+import com.eugene.lift.domain.usecase.SortOrder
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
-enum class SortOrder { NAME_ASC, NAME_DESC }
 @HiltViewModel
 class ExercisesViewModel @Inject constructor(
-    repository: ExerciseRepository
+    getExercisesUseCase: GetExercisesUseCase
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -30,35 +33,18 @@ class ExercisesViewModel @Inject constructor(
     private val _sortOrder = MutableStateFlow(SortOrder.NAME_ASC)
     val sortOrder = _sortOrder
 
-    val exercises = combine(
-        repository.getExercises(),
+    private val filterFlow = combine(
         _searchQuery,
         _selectedBodyParts,
         _selectedCategories,
         _sortOrder
-    ) { list, query, bodyParts, categories, sort ->
+    ) { query, parts, categories, sort ->
+        ExerciseFilter(query, parts, categories, sort)
+    }
 
-        var result = list
-
-        if (query.isNotBlank()) {
-            result = result.filter { it.name.contains(query, ignoreCase = true) }
-        }
-
-        if (bodyParts.isNotEmpty()) {
-            result = result.filter { exercise ->
-                exercise.bodyParts.intersect(bodyParts).isNotEmpty()
-            }
-        }
-
-        if (categories.isNotEmpty()) {
-            result = result.filter { it.category in categories }
-        }
-
-        when (sort) {
-            SortOrder.NAME_ASC -> result.sortedBy { it.name }
-            SortOrder.NAME_DESC -> result.sortedByDescending { it.name }
-        }
-
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val exercises = filterFlow.flatMapLatest { filter ->
+        getExercisesUseCase(filter)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),

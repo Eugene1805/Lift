@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -32,22 +33,40 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import com.eugene.lift.data.local.AppDatabase
+import com.eugene.lift.data.local.ExerciseSeeder
 import com.eugene.lift.ui.feature.exercises.AddExerciseRoute
 import com.eugene.lift.ui.feature.exercises.ExercisesRoute
+import com.eugene.lift.ui.feature.exercises.detail.ExerciseDetailScreen
 import com.eugene.lift.ui.feature.history.HistoryRoute
 import com.eugene.lift.ui.feature.profile.ProfileRoute
 import com.eugene.lift.ui.feature.settings.SettingsRoute
 import com.eugene.lift.ui.feature.workout.WorkoutRoute
 import com.eugene.lift.ui.navigation.ExerciseAddRoute
+import com.eugene.lift.ui.navigation.ExerciseDetailRoute
 import com.eugene.lift.ui.navigation.ExerciseListRoute
 import com.eugene.lift.ui.theme.LiftTheme
+import com.eugene.lift.worker.SeedDatabaseWorker
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val seedRequest = OneTimeWorkRequest.Builder(SeedDatabaseWorker::class.java)
+            .build()
+        WorkManager.getInstance(this).enqueueUniqueWork(
+            "seed_db_work",
+            ExistingWorkPolicy.KEEP,
+            seedRequest
+        )
         setContent {
             LiftTheme {
                 Surface(
@@ -135,12 +154,6 @@ fun MainAppShell() {
                 WorkoutRoute()
             }
 
-            composable<ExerciseListRoute> {
-                ExercisesRoute(
-                    onAddClick = { navController.navigate(ExerciseAddRoute) }
-                )
-            }
-
             composable<com.eugene.lift.ui.navigation.SettingsRoute> {
                 SettingsRoute()
             }
@@ -148,6 +161,22 @@ fun MainAppShell() {
             composable<ExerciseAddRoute> {
                 AddExerciseRoute(
                     onNavigateBack = { navController.popBackStack() }
+                )
+            }
+            composable<ExerciseListRoute> {
+                ExercisesRoute(
+                    onAddClick = { navController.navigate(ExerciseAddRoute) },
+                    // Pasamos el evento de clic en un item
+                    onExerciseClick = { exerciseId ->
+                        navController.navigate(ExerciseDetailRoute(exerciseId))
+                    }
+                )
+            }
+            composable<ExerciseDetailRoute> {
+                // No necesitamos pasar argumentos manuales, Hilt + SavedStateHandle lo hace solo
+                ExerciseDetailScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onEditClick = { /* TODO: Navegar a editar */ }
                 )
             }
         }

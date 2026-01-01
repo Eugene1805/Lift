@@ -1,5 +1,6 @@
 package com.eugene.lift.ui.feature.exercises
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,7 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -29,16 +29,14 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eugene.lift.R
-import com.eugene.lift.data.local.entity.ExerciseEntity
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.ExerciseCategory
-import com.eugene.lift.ui.theme.LiftTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
@@ -49,13 +47,20 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
-import com.eugene.lift.domain.model.MeasureType
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.eugene.lift.domain.model.Exercise
+import com.eugene.lift.domain.usecase.SortOrder
 
 @Composable
 fun ExercisesRoute(
     onAddClick: () -> Unit,
+    onExerciseClick: (String) -> Unit,
     viewModel: ExercisesViewModel = hiltViewModel()
 ) {
     val exercises by viewModel.exercises.collectAsStateWithLifecycle()
@@ -77,14 +82,15 @@ fun ExercisesRoute(
         onBodyPartToggle = viewModel::toggleBodyPartFilter,
         onCategoryToggle = viewModel::toggleCategoryFilter,
         onClearFilters = viewModel::clearFilters,
-        onAddClick = onAddClick
+        onAddClick = onAddClick,
+        onExerciseClick = onExerciseClick
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExercisesScreen(
-    exercises: List<ExerciseEntity>,
+    exercises: List<Exercise>,
     searchQuery: String,
     sortOrder: SortOrder,
     selectedBodyParts: Set<BodyPart>,
@@ -95,6 +101,7 @@ fun ExercisesScreen(
     onCategoryToggle: (ExerciseCategory) -> Unit,
     onClearFilters: () -> Unit,
     onAddClick: () -> Unit,
+    onExerciseClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -175,7 +182,8 @@ fun ExercisesScreen(
     { innerPadding ->
         ExercisesContent(
             exercises = exercises,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            onExerciseClick = onExerciseClick,
         )
 
         if (showSheet) {
@@ -198,7 +206,8 @@ fun ExercisesScreen(
 
 @Composable
 fun ExercisesContent(
-    exercises: List<ExerciseEntity>,
+    exercises: List<Exercise>,
+    onExerciseClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (exercises.isEmpty()) {
@@ -223,16 +232,18 @@ fun ExercisesContent(
                 items = exercises,
                 key = { it.id }
             ) { exercise ->
-                ExerciseItemCard(exercise = exercise)
+                ExerciseItemCard(
+                    exercise = exercise, onClick = { onExerciseClick(exercise.id)}
+                )
             }
         }
     }
 }
 
 @Composable
-fun ExerciseItemCard(exercise: ExerciseEntity, modifier: Modifier = Modifier) {
+fun ExerciseItemCard(exercise: Exercise, onClick: () -> Unit, modifier: Modifier = Modifier) {
 
-    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+    ElevatedCard(onClick = onClick,modifier = modifier.fillMaxWidth()) {
         ListItem(
             headlineContent = {
                 Text(
@@ -244,18 +255,37 @@ fun ExerciseItemCard(exercise: ExerciseEntity, modifier: Modifier = Modifier) {
                 ExerciseSupportingContent(exercise)
             },
             leadingContent = {
-                Icon(
-                    imageVector = Icons.Default.FitnessCenter,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                // IMAGEN MINIATURA
+                if (exercise.imagePath != null) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(exercise.imagePath)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                } else {
+                    // Icono por defecto si no hay imagen
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(exercise.name.take(1), style = MaterialTheme.typography.titleMedium)
+                    }
+                }
             }
         )
     }
 }
 
 @Composable
-private fun ExerciseSupportingContent(exercise: ExerciseEntity) {
+private fun ExerciseSupportingContent(exercise: Exercise) {
     val bodyPartStrings = exercise.bodyParts.map { part ->
         stringResource(part.labelRes)
     }
@@ -266,7 +296,7 @@ private fun ExerciseSupportingContent(exercise: ExerciseEntity) {
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 }
-
+/*
 @Preview(showBackground = true)
 @Composable
 fun ExercisesScreenPreview() {
@@ -314,4 +344,4 @@ fun ExercisesScreenPreview() {
             onAddClick = {}
         )
     }
-}
+}*/

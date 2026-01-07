@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.StringRes
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -21,11 +22,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -36,8 +37,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
-import com.eugene.lift.data.local.AppDatabase
-import com.eugene.lift.data.local.ExerciseSeeder
+import com.eugene.lift.domain.model.AppTheme
+import com.eugene.lift.domain.model.UserSettings
+import com.eugene.lift.domain.repository.SettingsRepository
 import com.eugene.lift.ui.feature.exercises.AddExerciseRoute
 import com.eugene.lift.ui.feature.exercises.ExercisesRoute
 import com.eugene.lift.ui.feature.exercises.detail.ExerciseDetailScreen
@@ -51,12 +53,12 @@ import com.eugene.lift.ui.navigation.ExerciseListRoute
 import com.eugene.lift.ui.theme.LiftTheme
 import com.eugene.lift.worker.SeedDatabaseWorker
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var settingsRepository: SettingsRepository
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -68,7 +70,15 @@ class MainActivity : ComponentActivity() {
             seedRequest
         )
         setContent {
-            LiftTheme {
+            val settingsState by settingsRepository.getSettings()
+                .collectAsState(initial = UserSettings())
+
+            val useDarkTheme = when (settingsState.theme) {
+                AppTheme.LIGHT -> false
+                AppTheme.DARK -> true
+                AppTheme.SYSTEM -> isSystemInDarkTheme()
+            }
+            LiftTheme (darkTheme = useDarkTheme){
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -166,14 +176,12 @@ fun MainAppShell() {
             composable<ExerciseListRoute> {
                 ExercisesRoute(
                     onAddClick = { navController.navigate(ExerciseAddRoute) },
-                    // Pasamos el evento de clic en un item
                     onExerciseClick = { exerciseId ->
                         navController.navigate(ExerciseDetailRoute(exerciseId))
                     }
                 )
             }
             composable<ExerciseDetailRoute> {
-                // No necesitamos pasar argumentos manuales, Hilt + SavedStateHandle lo hace solo
                 ExerciseDetailScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onEditClick = { /* TODO: Navegar a editar */ }

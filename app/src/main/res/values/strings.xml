@@ -58,4 +58,13 @@
     <string name="seed_squat_desc">1. Place the bar on your upper back (traps).\n2. Feet shoulder-width apart.\n3. Lower hips and knees keeping back straight.\n4. Break parallel and stand back up.</string>
     <string name="seed_pullup">Pull-ups</string>
     <string name="seed_pullup_desc">1. Hang from the bar with an overhand grip.\n2. Pull up until your chin clears the bar.\n3. Lower down under control.</string>
+
+    <string name="section_appearance">Appearance</string>
+    <string name="section_units">Units</string>
+    <string name="section_about">About</string>
+    <string name="label_theme">Theme</string>
+    <string name="label_language">Language</string>
+    <string name="label_weight">Weight Unit</string>
+    <string name="label_distance">Distance Unit</string>
+    <string name="btn_contact_us">Contact Us</string>
 </resources>

@@ -22,11 +22,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -39,17 +41,21 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.eugene.lift.domain.model.AppTheme
 import com.eugene.lift.domain.model.UserSettings
-import com.eugene.lift.domain.repository.SettingsRepository
+import com.eugene.lift.domain.usecase.GetSettingsUseCase
 import com.eugene.lift.ui.feature.exercises.AddExerciseRoute
 import com.eugene.lift.ui.feature.exercises.ExercisesRoute
-import com.eugene.lift.ui.feature.exercises.detail.ExerciseDetailScreen
+import com.eugene.lift.ui.feature.exercises.detail.ExerciseDetailRoute
 import com.eugene.lift.ui.feature.history.HistoryRoute
 import com.eugene.lift.ui.feature.profile.ProfileRoute
 import com.eugene.lift.ui.feature.settings.SettingsRoute
 import com.eugene.lift.ui.feature.workout.WorkoutRoute
+import com.eugene.lift.ui.feature.workout.edit.EditTemplateScreen
+import com.eugene.lift.ui.feature.workout.edit.EditTemplateViewModel
 import com.eugene.lift.ui.navigation.ExerciseAddRoute
 import com.eugene.lift.ui.navigation.ExerciseDetailRoute
 import com.eugene.lift.ui.navigation.ExerciseListRoute
+import com.eugene.lift.ui.navigation.ExercisePickerRoute
+import com.eugene.lift.ui.navigation.TemplateEditRoute
 import com.eugene.lift.ui.theme.LiftTheme
 import com.eugene.lift.worker.SeedDatabaseWorker
 import dagger.hilt.android.AndroidEntryPoint
@@ -58,7 +64,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject
-    lateinit var settingsRepository: SettingsRepository
+    lateinit var getSettingsUseCase: GetSettingsUseCase
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -70,7 +76,7 @@ class MainActivity : ComponentActivity() {
             seedRequest
         )
         setContent {
-            val settingsState by settingsRepository.getSettings()
+            val settingsState by getSettingsUseCase()
                 .collectAsState(initial = UserSettings())
 
             val useDarkTheme = when (settingsState.theme) {
@@ -161,9 +167,57 @@ fun MainAppShell() {
             }
 
             composable<com.eugene.lift.ui.navigation.WorkoutRoute> {
-                WorkoutRoute()
+                WorkoutRoute(
+                    onNavigateToEdit = { templateId ->
+                        // Si templateId es null, navegamos sin argumento (crear)
+                        // Si tiene valor, lo pasamos. La data class maneja el nullable.
+                        navController.navigate(TemplateEditRoute(templateId))
+                    }
+                )
+            }
+            composable<TemplateEditRoute> { backStackEntry ->
+                // Obtenemos el ViewModel asociado a este BackStackEntry (Scoped)
+                val viewModel: EditTemplateViewModel = hiltViewModel()
+
+                // INTERCEPTOR DE RESULTADOS:
+                // Observamos si la pantalla de selección nos devolvió un ID
+                val savedStateHandle = backStackEntry.savedStateHandle
+                val selectedExerciseId = savedStateHandle.get<String>("selected_exercise_id")
+
+                // Si hay un ID, se lo pasamos al ViewModel y limpiamos el estado para no re-procesarlo
+                LaunchedEffect(selectedExerciseId) {
+                    selectedExerciseId?.let { id ->
+                        viewModel.onExerciseSelected(id)
+                        savedStateHandle.remove<String>("selected_exercise_id")
+                    }
+                }
+
+                EditTemplateScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onAddExerciseClick = {
+                        navController.navigate(ExercisePickerRoute)
+                    }
+                    // El ViewModel se inyecta internamente con hiltViewModel()
+                )
             }
 
+            // 3. SELECTOR DE EJERCICIOS (Reutilizando ExercisesRoute)
+            composable<ExercisePickerRoute> {
+                ExercisesRoute(
+                    isSelectionMode = true, // Activamos modo selección (Oculta FAB)
+                    onAddClick = { /* No hace nada o navega a crear si quisieras permitirlo */ },
+                    onExerciseClick = { exerciseId ->
+                        // AL HACER CLICK:
+                        // 1. Guardamos el ID en el SavedStateHandle de la pantalla ANTERIOR (el Editor)
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("selected_exercise_id", exerciseId)
+
+                        // 2. Cerramos el selector
+                        navController.popBackStack()
+                    }
+                )
+            }
             composable<com.eugene.lift.ui.navigation.SettingsRoute> {
                 SettingsRoute()
             }
@@ -175,16 +229,18 @@ fun MainAppShell() {
             }
             composable<ExerciseListRoute> {
                 ExercisesRoute(
-                    onAddClick = { navController.navigate(ExerciseAddRoute) },
+                    onAddClick = { navController.navigate(ExerciseAddRoute()) },
                     onExerciseClick = { exerciseId ->
                         navController.navigate(ExerciseDetailRoute(exerciseId))
                     }
                 )
             }
             composable<ExerciseDetailRoute> {
-                ExerciseDetailScreen(
+                ExerciseDetailRoute(
                     onNavigateBack = { navController.popBackStack() },
-                    onEditClick = { /* TODO: Navegar a editar */ }
+                    onEditClick = { exerciseId ->
+                        navController.navigate(ExerciseAddRoute(exerciseId = exerciseId))
+                    }
                 )
             }
         }

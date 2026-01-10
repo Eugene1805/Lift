@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Lift</string>
     <string name="screen_add_title">New Exercise</string>
+    <string name="screen_edit_title">Edit Exercise</string>
     <string name="btn_save">Save Exercise</string>
     <string name="label_name">Exercise Name</string>
     <string name="label_body_part">Body Part</string>
@@ -67,4 +68,40 @@
     <string name="label_weight">Weight Unit</string>
     <string name="label_distance">Distance Unit</string>
     <string name="btn_contact_us">Contact Us</string>
+    <string name="exercise_detail_back">Atrás</string>
+    <string name="exercise_detail_edit">Editar</string>
+    <string name="exercise_detail_no_image">Sin Imagen</string>
+    <string name="exercise_detail_details">Detalles</string>
+    <string name="exercise_detail_instructions">Instrucciones</string>
+    <string name="exercise_detail_no_instructions">Sin instrucciones disponibles.</string>
+    <string name="action_back">Back</string>
+    <string name="action_save">Save</string>
+    <string name="text_field_character_counter">%1$d / %2$d</string>
+
+    <string name="setting_version">Version 1.0.0</string>
+    <string name="setting_contact_email">eugeniosalvadorgonzalez@gmail.com</string>
+    <string name="setting_email_subject">Lift App Support</string>
+    <string name="setting_email_chooser_title">Send Email</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System</string>
+    <string name="unit_kg">kg</string>
+    <string name="unit_lbs">lbs</string>
+    <string name="unit_km">km</string>
+    <string name="unit_miles">miles</string>
+    <string name="tab_my_routines">My Routines</string>
+    <string name="tab_archived">Archived</string>
+    <string name="empty_routines">No routines here</string>
+    <string name="exercise_count">Exercises: %d</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_archive">Archive</string>
+    <string name="action_unarchive">Unarchive</string>
+    <string name="action_delete">Delete</string>
+    <string name="title_edit_routine">Edit Routine</string>
+    <string name="btn_add_exercise">Add Exercise</string>
+    <string name="label_routine_name">Routine Name</string>
+    <string name="label_sets">Sets</string>
+    <string name="label_reps">Reps</string>
 </resources>

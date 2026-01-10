@@ -40,15 +40,31 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.eugene.lift.R
+import com.eugene.lift.domain.model.Exercise
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun ExerciseDetailScreen(
+fun ExerciseDetailRoute(
     onNavigateBack: () -> Unit,
     onEditClick: (String) -> Unit,
     viewModel: ExerciseDetailViewModel = hiltViewModel()
 ) {
     val exercise by viewModel.exercise.collectAsStateWithLifecycle()
+
+    ExerciseDetailScreen(
+        exercise = exercise,
+        onNavigateBack = onNavigateBack,
+        onEditClick = { exercise?.let { onEditClick(it.id) } }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun ExerciseDetailScreen(
+    exercise: Exercise?,
+    onNavigateBack: () -> Unit,
+    onEditClick: (String) -> Unit
+) {
 
     Scaffold(
         topBar = {
@@ -56,12 +72,12 @@ fun ExerciseDetailScreen(
                 title = { Text(exercise?.name ?: "") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.exercise_detail_back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { exercise?.id?.let(onEditClick) }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Editar")
+                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.exercise_detail_edit))
                     }
                 },
                 windowInsets = WindowInsets(0,0,0,0)
@@ -75,11 +91,11 @@ fun ExerciseDetailScreen(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // 1. IMAGEN / VIDEO GRANDE
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(16f / 9f) // Formato video
+                    .aspectRatio(16f / 9f)
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
@@ -94,18 +110,18 @@ fun ExerciseDetailScreen(
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    Text("Sin Imagen", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.exercise_detail_no_image), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
             Column(modifier = Modifier.padding(16.dp)) {
 
                 // 2. CHIPS DE INFO (Categoría y Músculos)
-                Text("Detalles", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.exercise_detail_details), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
 
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    // Chip de Categoría
+
                     SuggestionChip(
                         onClick = {},
                         label = { Text(stringResource(state.category.labelRes)) },
@@ -124,12 +140,12 @@ fun ExerciseDetailScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 3. INSTRUCCIONES
-                Text("Instrucciones", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
+                Text(stringResource(R.string.exercise_detail_instructions), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = state.instructions.ifBlank { "Sin instrucciones disponibles." },
+                    text = state.instructions.ifBlank { stringResource(R.string.exercise_detail_no_instructions) },
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )

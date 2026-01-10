@@ -61,6 +61,7 @@ import com.eugene.lift.domain.usecase.SortOrder
 fun ExercisesRoute(
     onAddClick: () -> Unit,
     onExerciseClick: (String) -> Unit,
+    isSelectionMode: Boolean = false,
     viewModel: ExercisesViewModel = hiltViewModel()
 ) {
     val exercises by viewModel.exercises.collectAsStateWithLifecycle()
@@ -83,7 +84,8 @@ fun ExercisesRoute(
         onCategoryToggle = viewModel::toggleCategoryFilter,
         onClearFilters = viewModel::clearFilters,
         onAddClick = onAddClick,
-        onExerciseClick = onExerciseClick
+        onExerciseClick = onExerciseClick,
+        isSelectionMode = isSelectionMode
     )
 }
 
@@ -102,6 +104,7 @@ fun ExercisesScreen(
     onClearFilters: () -> Unit,
     onAddClick: () -> Unit,
     onExerciseClick: (String) -> Unit,
+    isSelectionMode: Boolean = false,
     modifier: Modifier = Modifier
 ) {
 
@@ -170,12 +173,14 @@ fun ExercisesScreen(
             }
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddClick,
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ) {
-                Icon(Icons.Default.Add, contentDescription = null)
+            if (!isSelectionMode) {
+                FloatingActionButton(
+                    onClick = onAddClick,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                }
             }
         }
     )

@@ -1,16 +1,13 @@
 package com.eugene.lift.data.local.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import androidx.room.Update
 import com.eugene.lift.data.local.entity.ExerciseBodyPartCrossRef
 import com.eugene.lift.data.local.entity.ExerciseEntity
-import com.eugene.lift.domain.model.BodyPart
 import kotlinx.coroutines.flow.Flow
 
 data class ExerciseResult(

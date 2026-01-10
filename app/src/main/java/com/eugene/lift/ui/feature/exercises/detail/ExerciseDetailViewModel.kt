@@ -3,7 +3,6 @@ package com.eugene.lift.ui.feature.exercises.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eugene.lift.domain.repository.ExerciseRepository
 import com.eugene.lift.domain.usecase.GetExerciseDetailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted

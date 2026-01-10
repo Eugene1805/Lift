@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
+import java.time.LocalDateTime
 
 class Converters {
 
@@ -35,5 +36,14 @@ class Converters {
         MeasureType.valueOf(value)
     } catch (e: IllegalArgumentException) {
         MeasureType.REPS_AND_WEIGHT
+    }
+    @TypeConverter
+    fun fromTimestamp(value: String?): LocalDateTime? {
+        return value?.let { LocalDateTime.parse(it) }
+    }
+
+    @TypeConverter
+    fun dateToTimestamp(date: LocalDateTime?): String? {
+        return date?.toString()
     }
 }

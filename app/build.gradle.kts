@@ -77,6 +77,7 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    ksp(libs.androidx.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose) // Para usar hiltViewModel() en Compose
 
     implementation(libs.kotlinx.serialization.json)

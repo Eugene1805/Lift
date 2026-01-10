@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -46,10 +47,12 @@ fun AddExerciseRoute(
     val selectedBodyParts by viewModel.selectedBodyParts.collectAsStateWithLifecycle()
     val category by viewModel.selectedCategory.collectAsStateWithLifecycle()
     val measureType by viewModel.selectedMeasureType.collectAsStateWithLifecycle()
+    val isEditing = viewModel.isEditing
     AddExerciseScreen(
         name = name,
         selectedBodyParts = selectedBodyParts,
         category = category,
+        isEditing = isEditing,
         onNameChange = viewModel::onNameChange,
         onBodyPartToggle = viewModel::toggleBodyPart,
         onCategoryChange = viewModel::onCategoryChange,
@@ -66,6 +69,7 @@ fun AddExerciseScreen(
     name: String,
     selectedBodyParts: Set<BodyPart>,
     category: ExerciseCategory,
+    isEditing: Boolean,
     onNameChange: (String) -> Unit,
     onBodyPartToggle: (BodyPart) -> Unit,
     onCategoryChange: (ExerciseCategory) -> Unit,
@@ -79,14 +83,12 @@ fun AddExerciseScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = stringResource(R.string.screen_add_title),
-                        style = MaterialTheme.typography.titleLarge // Texto un poco más compacto que Headline
-                    )
+                    Text(if (isEditing) stringResource(R.string.screen_edit_title) else stringResource(R.string.screen_add_title))
+
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
                 windowInsets = WindowInsets(0, 0, 0, 0),
@@ -108,12 +110,12 @@ fun AddExerciseScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 isError = name.isBlank(),
-                // AQUÍ ESTÁ EL CAMBIO VISUAL:
+
                 supportingText = {
                     Text(
-                        text = "${name.length} / $MAX_EXERCISE_NAME_LENGTH",
+                        text = stringResource(id = R.string.text_field_character_counter, name.length, MAX_EXERCISE_NAME_LENGTH),
                         modifier = Modifier.fillMaxWidth(),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.End
+                        textAlign = TextAlign.End
                     )
                 }
             )
@@ -170,7 +172,7 @@ fun AddExerciseScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = name.isNotBlank()
             ) {
-                Icon(Icons.Default.Check, contentDescription = null)
+                Icon(Icons.Default.Check, contentDescription = stringResource(R.string.action_save))
                 Spacer(modifier = Modifier.padding(4.dp))
                 Text(stringResource(R.string.btn_save))
             }

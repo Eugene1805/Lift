@@ -1,7 +1,6 @@
 package com.eugene.lift.ui.feature.settings
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +39,7 @@ import com.eugene.lift.domain.model.AppTheme
 import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.ui.AppDropdown
+import androidx.core.net.toUri
 
 @Composable
 fun SettingsRoute() {
@@ -69,22 +69,25 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
 
-            // --- SECCIÓN: APARIENCIA ---
             SettingsSection(title = stringResource(R.string.section_appearance)) {
-                // Selector de Tema
+                
                 AppDropdown(
                     label = stringResource(R.string.label_theme),
                     options = AppTheme.entries,
                     selectedOption = settings.theme,
                     onOptionSelected = { viewModel.updateTheme(it) },
-                    labelProvider = { it.name } // Idealmente mapear a String Resource: "Claro", "Oscuro"
+                    labelProvider = { theme ->
+                        when (theme) {
+                            AppTheme.LIGHT -> stringResource(R.string.theme_light)
+                            AppTheme.DARK -> stringResource(R.string.theme_dark)
+                            AppTheme.SYSTEM -> stringResource(R.string.theme_system)
+                        }
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-
-                // Selector de Idioma
-                // Nota: Mapeamos manualmente los códigos a nombres legibles
-                val languages = listOf("en" to "English", "es" to "Español")
+                
+                val languages = listOf("en" to stringResource(R.string.language_english), "es" to stringResource(R.string.language_spanish))
                 val currentLangCode = viewModel.getCurrentLanguageCode()
                 val currentLangPair = languages.find { it.first == currentLangCode } ?: languages.first()
 
@@ -99,7 +102,6 @@ fun SettingsScreen(
 
             HorizontalDivider()
 
-            // --- SECCIÓN: UNIDADES ---
             SettingsSection(title = stringResource(R.string.section_units)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Box(modifier = Modifier.weight(1f)) {
@@ -108,7 +110,7 @@ fun SettingsScreen(
                             options = WeightUnit.entries,
                             selectedOption = settings.weightUnit,
                             onOptionSelected = { viewModel.updateWeightUnit(it) },
-                            labelProvider = { it.name }
+                            labelProvider = { it.name } // TODO: Use string resources
                         )
                     }
                     Box(modifier = Modifier.weight(1f)) {
@@ -117,7 +119,12 @@ fun SettingsScreen(
                             options = DistanceUnit.entries,
                             selectedOption = settings.distanceUnit,
                             onOptionSelected = { viewModel.updateDistanceUnit(it) },
-                            labelProvider = { it.name }
+                            labelProvider = { unit ->
+                                when (unit) {
+                                    DistanceUnit.KM -> stringResource(R.string.unit_km)
+                                    DistanceUnit.MILES -> stringResource(R.string.unit_miles)
+                                }
+                            }
                         )
                     }
                 }
@@ -125,25 +132,24 @@ fun SettingsScreen(
 
             HorizontalDivider()
 
-            // --- SECCIÓN: ACERCA DE ---
             SettingsSection(title = stringResource(R.string.section_about)) {
                 SettingsActionItem(
                     icon = Icons.Default.Info,
-                    title = "Version 1.0.0",
-                    subtitle = "Lift App - Built with Clean Architecture",
+                    title = stringResource(R.string.setting_version),
+                    subtitle = stringResource(R.string.app_name),
                     onClick = { /* Easter egg? */ }
                 )
 
                 SettingsActionItem(
                     icon = Icons.Default.Mail,
                     title = stringResource(R.string.btn_contact_us),
-                    subtitle = "support@liftapp.com",
+                    subtitle = stringResource(R.string.setting_contact_email),
                     onClick = {
                         val intent = Intent(Intent.ACTION_SENDTO).apply {
-                            data = Uri.parse("mailto:support@liftapp.com")
-                            putExtra(Intent.EXTRA_SUBJECT, "Lift App Support")
+                            data = "mailto:${context.getString(R.string.setting_contact_email)}".toUri()
+                            putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.setting_email_subject))
                         }
-                        context.startActivity(Intent.createChooser(intent, "Send Email"))
+                        context.startActivity(Intent.createChooser(intent, context.getString(R.string.setting_email_chooser_title)))
                     }
                 )
             }

@@ -110,7 +110,7 @@ fun ExerciseDetailScreen(
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    Text(stringResource(R.string.exercise_detail_no_image), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.exercise_detail_no_image), color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 

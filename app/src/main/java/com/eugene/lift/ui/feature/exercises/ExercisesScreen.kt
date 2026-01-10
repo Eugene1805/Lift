@@ -298,7 +298,7 @@ private fun ExerciseSupportingContent(exercise: Exercise) {
 
     Text(
         text = "$bodyPartsString • ${stringResource(exercise.category.labelRes)}",
-        color = MaterialTheme.colorScheme.onSurfaceVariant
+        color = MaterialTheme.colorScheme.onSurface
     )
 }
 /*

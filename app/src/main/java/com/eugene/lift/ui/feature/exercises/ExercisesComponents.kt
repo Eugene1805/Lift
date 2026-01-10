@@ -93,7 +93,7 @@ fun FilterBottomSheetContent(
         Text(
             text = stringResource(R.string.subtitle_category),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(8.dp))
 

@@ -125,7 +125,7 @@ fun AddExerciseScreen(
             Text(
                 text = stringResource(R.string.label_body_part),
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(8.dp))
 

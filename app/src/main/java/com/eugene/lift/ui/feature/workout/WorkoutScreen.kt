@@ -47,6 +47,7 @@ import com.eugene.lift.domain.model.WorkoutTemplate
 @Composable
 fun WorkoutRoute(
     onNavigateToEdit: (String?) -> Unit,
+    onTemplateClick: (String) -> Unit,
     viewModel: WorkoutViewModel = hiltViewModel()
 ) {
     val templates by viewModel.templates.collectAsStateWithLifecycle()
@@ -58,6 +59,7 @@ fun WorkoutRoute(
         onTabSelected = viewModel::onTabSelected,
         onCreateClick = { onNavigateToEdit(null) }, // Null ID = Crear
         onEditClick = { onNavigateToEdit(it.id) },
+        onTemplateClick = { onTemplateClick(it.id) },
         onArchiveClick = viewModel::archiveTemplate,
         onDeleteClick = { viewModel.deleteTemplate(it.id) }
     )
@@ -71,6 +73,7 @@ fun WorkoutScreen(
     onTabSelected: (Int) -> Unit,
     onCreateClick: () -> Unit,
     onEditClick: (WorkoutTemplate) -> Unit,
+    onTemplateClick: (WorkoutTemplate) -> Unit,
     onArchiveClick: (WorkoutTemplate) -> Unit,
     onDeleteClick: (WorkoutTemplate) -> Unit
 ) {
@@ -113,6 +116,7 @@ fun WorkoutScreen(
                 items(templates, key = { it.id }) { template ->
                     TemplateItemCard(
                         template = template,
+                        onClick = { onTemplateClick(template) },
                         onEdit = { onEditClick(template) },
                         onArchive = { onArchiveClick(template) },
                         onDelete = { onDeleteClick(template) }
@@ -126,13 +130,14 @@ fun WorkoutScreen(
 @Composable
 fun TemplateItemCard(
     template: WorkoutTemplate,
+    onClick: () -> Unit,
     onEdit: () -> Unit,
     onArchive: () -> Unit,
     onDelete: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
-    ElevatedCard(onClick = onEdit) {
+    ElevatedCard(onClick = onClick) {
         ListItem(
             headlineContent = { Text(template.name, style = MaterialTheme.typography.titleMedium) },
             supportingContent = {

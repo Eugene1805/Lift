@@ -1,76 +1,56 @@
 package com.eugene.lift.ui.feature.exercises
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.eugene.lift.R
-import com.eugene.lift.domain.model.BodyPart
-import com.eugene.lift.domain.model.ExerciseCategory
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.ImeAction
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.eugene.lift.R
+import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
+import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.usecase.SortOrder
 
 @Composable
 fun ExercisesRoute(
     onAddClick: () -> Unit,
     onExerciseClick: (String) -> Unit,
+    onExercisesSelected: (List<String>) -> Unit = {},
     isSelectionMode: Boolean = false,
     viewModel: ExercisesViewModel = hiltViewModel()
 ) {
     val exercises by viewModel.exercises.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
-
     val selectedBodyParts by viewModel.selectedBodyParts.collectAsStateWithLifecycle()
     val selectedCategories by viewModel.selectedCategories.collectAsStateWithLifecycle()
-
 
     ExercisesScreen(
         exercises = exercises,
@@ -85,6 +65,7 @@ fun ExercisesRoute(
         onClearFilters = viewModel::clearFilters,
         onAddClick = onAddClick,
         onExerciseClick = onExerciseClick,
+        onExercisesSelected = onExercisesSelected,
         isSelectionMode = isSelectionMode
     )
 }
@@ -104,20 +85,22 @@ fun ExercisesScreen(
     onClearFilters: () -> Unit,
     onAddClick: () -> Unit,
     onExerciseClick: (String) -> Unit,
+    onExercisesSelected: (List<String>) -> Unit,
     isSelectionMode: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-
     var showSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     val focusManager = LocalFocusManager.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
+    var selectedIds by remember { mutableStateOf(setOf<String>()) }
+
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        contentWindowInsets = WindowInsets(0,0,0,0),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            Column{
+            Column {
                 TopAppBar(
                     title = {
                         Text(
@@ -136,7 +119,6 @@ fun ExercisesScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = onSearchQueryChange,
@@ -148,7 +130,6 @@ fun ExercisesScreen(
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                         keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
                     )
-
 
                     val hasFilters = selectedBodyParts.isNotEmpty() || selectedCategories.isNotEmpty()
                     FilledTonalIconButton(
@@ -173,7 +154,18 @@ fun ExercisesScreen(
             }
         },
         floatingActionButton = {
-            if (!isSelectionMode) {
+            if (isSelectionMode) {
+                if (selectedIds.isNotEmpty()) {
+                    ExtendedFloatingActionButton(
+                        onClick = { onExercisesSelected(selectedIds.toList()) },
+                        icon = { Icon(Icons.Default.Check, null) },
+                        text = { Text("Agregar (${selectedIds.size})") },
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+            if(selectedIds.isEmpty()){
                 FloatingActionButton(
                     onClick = onAddClick,
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -183,17 +175,29 @@ fun ExercisesScreen(
                 }
             }
         }
-    )
-    { innerPadding ->
+    ) { innerPadding ->
+
         ExercisesContent(
             exercises = exercises,
             modifier = Modifier.padding(innerPadding),
-            onExerciseClick = onExerciseClick,
+            isSelectionMode = isSelectionMode,
+            selectedIds = selectedIds,
+            onExerciseClick = { exerciseId ->
+                if (isSelectionMode) {
+                    selectedIds = if (exerciseId in selectedIds) {
+                        selectedIds - exerciseId
+                    } else {
+                        selectedIds + exerciseId
+                    }
+                } else {
+                    onExerciseClick(exerciseId)
+                }
+            }
         )
 
         if (showSheet) {
             ModalBottomSheet(
-                onDismissRequest = {showSheet = false },
+                onDismissRequest = { showSheet = false },
                 sheetState = sheetState
             ) {
                 FilterBottomSheetContent(
@@ -202,7 +206,7 @@ fun ExercisesScreen(
                     onBodyPartToggle = onBodyPartToggle,
                     onCategoryToggle = onCategoryToggle,
                     onClearFilters = onClearFilters,
-                    onApply = { showSheet = false}
+                    onApply = { showSheet = false }
                 )
             }
         }
@@ -213,6 +217,8 @@ fun ExercisesScreen(
 fun ExercisesContent(
     exercises: List<Exercise>,
     onExerciseClick: (String) -> Unit,
+    isSelectionMode: Boolean,
+    selectedIds: Set<String>,
     modifier: Modifier = Modifier
 ) {
     if (exercises.isEmpty()) {
@@ -233,12 +239,14 @@ fun ExercisesContent(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(
-                items = exercises,
-                key = { it.id }
-            ) { exercise ->
+            items(items = exercises, key = { it.id }) { exercise ->
+                val isSelected = exercise.id in selectedIds
+
                 ExerciseItemCard(
-                    exercise = exercise, onClick = { onExerciseClick(exercise.id)}
+                    exercise = exercise,
+                    isSelectionMode = isSelectionMode,
+                    isSelected = isSelected,
+                    onClick = { onExerciseClick(exercise.id) }
                 )
             }
         }
@@ -246,9 +254,27 @@ fun ExercisesContent(
 }
 
 @Composable
-fun ExerciseItemCard(exercise: Exercise, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun ExerciseItemCard(
+    exercise: Exercise,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isSelectionMode: Boolean = false,
+    isSelected: Boolean = false
+) {
+    val cardColors = if (isSelected) {
+        CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    } else {
+        CardDefaults.elevatedCardColors()
+    }
 
-    ElevatedCard(onClick = onClick,modifier = modifier.fillMaxWidth()) {
+    ElevatedCard(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        colors = cardColors
+    ) {
         ListItem(
             headlineContent = {
                 Text(
@@ -260,7 +286,6 @@ fun ExerciseItemCard(exercise: Exercise, onClick: () -> Unit, modifier: Modifier
                 ExerciseSupportingContent(exercise)
             },
             leadingContent = {
-                // IMAGEN MINIATURA
                 if (exercise.imagePath != null) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
@@ -274,7 +299,6 @@ fun ExerciseItemCard(exercise: Exercise, onClick: () -> Unit, modifier: Modifier
                             .clip(RoundedCornerShape(8.dp))
                     )
                 } else {
-                    // Icono por defecto si no hay imagen
                     Box(
                         modifier = Modifier
                             .size(56.dp)
@@ -283,6 +307,14 @@ fun ExerciseItemCard(exercise: Exercise, onClick: () -> Unit, modifier: Modifier
                     ) {
                         Text(exercise.name.take(1), style = MaterialTheme.typography.titleMedium)
                     }
+                }
+            },
+            trailingContent = {
+                if (isSelectionMode) {
+                    Checkbox(
+                        checked = isSelected,
+                        onCheckedChange = { onClick() }
+                    )
                 }
             }
         )
@@ -301,52 +333,3 @@ private fun ExerciseSupportingContent(exercise: Exercise) {
         color = MaterialTheme.colorScheme.onSurface
     )
 }
-/*
-@Preview(showBackground = true)
-@Composable
-fun ExercisesScreenPreview() {
-    LiftTheme {
-        ExercisesScreen(
-            exercises = listOf(
-                ExerciseEntity(
-                    id = "1",
-                    name = "Push Up",
-                    bodyParts = listOf(BodyPart.CHEST, BodyPart.CHEST, BodyPart.SHOULDERS),
-                    category = ExerciseCategory.ASSISTED_BODYWEIGHT,
-                    measureType = MeasureType.REPS_AND_WEIGHT
-                ),
-                ExerciseEntity(
-                    id = "2",
-                    name = "Squat",
-                    bodyParts = listOf(BodyPart.CARDIO, BodyPart.CARDIO, BodyPart.CHEST),
-                    category = ExerciseCategory.BARBELL,
-                    measureType = MeasureType.REPS_AND_WEIGHT
-                ),
-                ExerciseEntity(
-                    id = "9",
-                    name = "Plank",
-                    bodyParts = listOf(BodyPart.CORE, BodyPart.SHOULDERS),
-                    category = ExerciseCategory.CARDIO,
-                    measureType = MeasureType.REPS_AND_WEIGHT
-                ),
-                ExerciseEntity(
-                    id = "4",
-                    name = "Pull Up",
-                    bodyParts = listOf(BodyPart.BACK, BodyPart.BACK),
-                    category = ExerciseCategory.CARDIO,
-                    measureType = MeasureType.REPS_AND_WEIGHT
-                )
-            ),
-            searchQuery = "",
-            sortOrder = SortOrder.NAME_ASC,
-            selectedBodyParts = emptySet(),
-            selectedCategories = emptySet(),
-            onSearchQueryChange = {},
-            onSortToggle = {},
-            onBodyPartToggle = {},
-            onCategoryToggle = {},
-            onClearFilters = {},
-            onAddClick = {}
-        )
-    }
-}*/

@@ -104,4 +104,29 @@
     <string name="label_routine_name">Routine Name</string>
     <string name="label_sets">Sets</string>
     <string name="label_reps">Reps</string>
+
+    <!-- Active Workout Screen -->
+    <string name="active_workout_training">Training</string>
+    <string name="active_workout_configuration">Configuration</string>
+    <string name="active_workout_use_rpe">Use RPE (1-10)</string>
+    <string name="active_workout_use_rir">Use RIR (Reps in Reserve)</string>
+    <string name="active_workout_hide_metric">Hide metric</string>
+    <string name="active_workout_finish">Finish</string>
+    <string name="active_workout_add_exercise">Add Exercise</string>
+    <string name="active_workout_view_details">View details</string>
+    <string name="active_workout_set">Set</string>
+    <string name="active_workout_kg">Kg</string>
+    <string name="active_workout_reps">Reps</string>
+    <string name="active_workout_add_set">Add Set</string>
+    <string name="active_workout_add_10s">+10s</string>
+    <string name="active_workout_kg_lowercase">kg</string>
+    <string name="active_workout_reps_lowercase">reps</string>
+    <string name="active_workout_complete">Complete</string>
+
+    <!-- Template Detail Screen -->
+    <string name="template_detail_edit_template">Edit Template</string>
+    <string name="template_detail_start_routine">Start Routine</string>
+    <string name="template_detail_notes">Notes:</string>
+    <string name="template_detail_exercises_count">%d Exercises</string>
+    <string name="template_detail_series">Series</string>
 </resources>

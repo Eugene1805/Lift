@@ -83,4 +83,10 @@ class WorkoutRepositoryImpl @Inject constructor(
             list.map { it.toDomain() }
         }
     }
+
+    override suspend fun getLastHistoryForExercise(exerciseId: String): WorkoutSession? {
+        // Mapeamos el resultado del DAO al Dominio
+        val sessionComplete = dao.getLastSessionWithExercise(exerciseId) ?: return null
+        return sessionComplete.toDomain()
+    }
 }

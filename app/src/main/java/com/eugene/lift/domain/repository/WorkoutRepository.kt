@@ -18,4 +18,6 @@ interface WorkoutRepository {
 
 
     fun getExerciseHistory(exerciseId: String): Flow<List<WorkoutSession>>
+
+    suspend fun getLastHistoryForExercise(exerciseId: String): WorkoutSession?
 }

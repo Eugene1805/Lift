@@ -81,14 +81,15 @@ class EditTemplateViewModel @Inject constructor(
         }
     }
 
-    fun onExerciseSelected(exerciseId: String) {
-        viewModelScope.launch {
-            // Recolectamos el primer valor (el ejercicio) y cancelamos el flujo
-            // Nota: firstOrNull es útil para obtener un valor puntual de un Flow
-            val exercise = getExerciseDetailUseCase(exerciseId).firstOrNull()
+    fun onExercisesSelected(exerciseIds: List<String>) {
+        if (exerciseIds.isEmpty()) return
 
-            if (exercise != null) {
-                addExercise(exercise)
+        viewModelScope.launch {
+            exerciseIds.forEach { id ->
+                val exercise = getExerciseDetailUseCase(id).firstOrNull()
+                if (exercise != null) {
+                    addExercise(exercise)
+                }
             }
         }
     }

@@ -27,5 +27,7 @@ data class WorkoutSetEntity(
     val completed: Boolean,
     val rpe: Double? = null,
     val rir: Int? = null,
-    val isPr: Boolean = false
+    val isPr: Boolean = false,
+    val timeSeconds: Long? = null,
+    val distance: Double? = null
 )

@@ -1,17 +1,22 @@
 package com.eugene.lift.ui.feature.workout.active
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eugene.lift.domain.manager.RestTimerManager
 import com.eugene.lift.domain.model.SessionExercise
+import com.eugene.lift.domain.model.UserSettings
+import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.WorkoutSet
 import com.eugene.lift.domain.usecase.GetExerciseDetailUseCase
+import com.eugene.lift.domain.usecase.GetSettingsUseCase
 import com.eugene.lift.domain.usecase.workout.StartEmptyWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.StartWorkoutFromTemplateUseCase
 import com.eugene.lift.domain.usecase.workout.FinishWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.GetLastHistoryForExerciseUseCase
+import com.eugene.lift.domain.util.WeightConverter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -32,7 +37,8 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val finishWorkoutUseCase: FinishWorkoutUseCase,
     private val restTimerManager: RestTimerManager,
     private val getExerciseDetailUseCase: GetExerciseDetailUseCase,
-    private val getLastHistoryForExerciseUseCase: GetLastHistoryForExerciseUseCase
+    private val getLastHistoryForExerciseUseCase: GetLastHistoryForExerciseUseCase,
+    private val getSettingsUseCase: GetSettingsUseCase
 ) : ViewModel() {
 
     private val templateId: String? = savedStateHandle["templateId"]
@@ -51,6 +57,12 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private val _elapsedTimeSeconds = MutableStateFlow(0L)
     val elapsedTimeSeconds = _elapsedTimeSeconds.asStateFlow()
+
+    val userSettings = getSettingsUseCase()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UserSettings())
+
+    private val _isAutoTimerEnabled = MutableStateFlow(true)
+    val isAutoTimerEnabled = _isAutoTimerEnabled.asStateFlow()
 
     init {
         initializeSession()
@@ -75,12 +87,9 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private fun startSessionTicker() {
         viewModelScope.launch {
-            // Calculamos el inicio real
             val startTime = System.currentTimeMillis()
-
             while (isActive) {
                 val now = System.currentTimeMillis()
-                // Calculamos diferencia para ser precisos y no depender del lag del delay
                 val elapsed = (now - startTime) / 1000
                 _elapsedTimeSeconds.value = elapsed
                 delay(1000)
@@ -89,39 +98,39 @@ class ActiveWorkoutViewModel @Inject constructor(
     }
 
     private suspend fun loadHistoryFor(exerciseId: String) {
-        val lastSession = getLastHistoryForExerciseUseCase(exerciseId) // <--- Llamada limpia
+        val lastSession = getLastHistoryForExerciseUseCase(exerciseId)
+        val unit = userSettings.value.weightUnit
+
         if (lastSession != null) {
             val oldExercise = lastSession.exercises.find { it.exercise.id == exerciseId }
             if (oldExercise != null) {
+                val displaySets = oldExercise.sets.map { set ->
+                    if (unit == WeightUnit.LBS) {
+                        set.copy(weight = WeightConverter.kgToLbs(set.weight))
+                    } else {
+                        set
+                    }
+                }
                 val currentMap = _historyState.value.toMutableMap()
-                currentMap[exerciseId] = oldExercise.sets
+                currentMap[exerciseId] = displaySets
                 _historyState.value = currentMap
             }
         }
     }
 
-    // --- Lógica de Actualización de Sets (Deep Copy) ---
-
-    /**
-     * Función auxiliar genérica para modificar un Set específico.
-     * Reconstruye toda la jerarquía (Session -> Exercise -> Sets) para mantener inmutabilidad.
-     */
     private fun updateSetState(exerciseIndex: Int, setIndex: Int, update: (WorkoutSet) -> WorkoutSet) {
         val currentSession = _activeSession.value ?: return
         val exercises = currentSession.exercises.toMutableList()
         val targetExercise = exercises[exerciseIndex]
         val sets = targetExercise.sets.toMutableList()
 
-        // Aplicamos la actualización al set específico
         sets[setIndex] = update(sets[setIndex])
 
-        // Reconstruimos el árbol
         exercises[exerciseIndex] = targetExercise.copy(sets = sets)
         _activeSession.value = currentSession.copy(exercises = exercises)
     }
 
     fun onWeightChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
-        // Permitimos input vacío temporalmente para UX, pero guardamos 0.0 si falla el parseo
         val weight = newValue.toDoubleOrNull() ?: 0.0
         updateSetState(exerciseIndex, setIndex) { it.copy(weight = weight) }
     }
@@ -131,48 +140,61 @@ class ActiveWorkoutViewModel @Inject constructor(
         updateSetState(exerciseIndex, setIndex) { it.copy(reps = reps) }
     }
 
+    // --- NUEVAS FUNCIONES ---
+    fun onDistanceChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
+        val dist = newValue.toDoubleOrNull()
+        updateSetState(exerciseIndex, setIndex) { it.copy(distance = dist) }
+    }
+
+    fun onTimeChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
+        val seconds = newValue.toLongOrNull()
+        updateSetState(exerciseIndex, setIndex) { it.copy(timeSeconds = seconds) }
+    }
+    // ------------------------
+
     fun onRpeChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
         val rpe = newValue.toDoubleOrNull()
         updateSetState(exerciseIndex, setIndex) { it.copy(rpe = rpe) }
     }
 
     fun toggleSetCompleted(exerciseIndex: Int, setIndex: Int) {
-        var wasCompleted = false
+        var isNowCompleted = false
         updateSetState(exerciseIndex, setIndex) {
-            wasCompleted = !it.completed // Guardamos el nuevo estado para usarlo abajo
-            it.copy(completed = wasCompleted)
+            isNowCompleted = !it.completed
+            it.copy(completed = isNowCompleted)
         }
 
-        // Si se marcó como completado, iniciamos el timer
-        if (wasCompleted) {
-            // TODO: Podríamos sacar el tiempo de descanso del ejercicio (restTimerSeconds)
-            // Por ahora usamos 90s por defecto
+        if (isNowCompleted && _isAutoTimerEnabled.value) {
             restTimerManager.startTimer(90)
-        } else {
-            // Opcional: Si desmarcas, ¿quieres cancelar el timer?
-            // restTimerManager.stopTimer()
         }
     }
 
-    // --- Acciones de Sesión ---
-
     fun finishWorkout(onSuccess: () -> Unit) {
-        val session = _activeSession.value ?: return
+        android.util.Log.d("DEBUG_LIFT", "Click en Finish detectado")
+
+        val session = _activeSession.value
+
+        // Log 2: Ver si tenemos sesión
+        if (session == null) {
+            android.util.Log.e("DEBUG_LIFT", "¡ERROR CRÍTICO! La sesión es NULL. Abortando.")
+            return
+        }
         viewModelScope.launch {
             try {
+                android.util.Log.d("DEBUG_LIFT", "Intentando guardar sesión...")
                 val finalSession = session.copy(
                     durationSeconds = _elapsedTimeSeconds.value
                 )
                 finishWorkoutUseCase(finalSession)
+                android.util.Log.d("DEBUG_LIFT", "¡Guardado exitoso!")
                 restTimerManager.stopTimer()
                 onSuccess()
             } catch (e: Exception) {
-                // Manejar error (ej: sesión vacía)
+                Log.e("ActiveWorkoutVM", "Error al guardar", e)
             }
         }
     }
 
-    // Métodos del Timer (Delegados)
     fun addTime(seconds: Long) = restTimerManager.addTime(seconds)
     fun stopTimer() = restTimerManager.stopTimer()
 
@@ -180,8 +202,6 @@ class ActiveWorkoutViewModel @Inject constructor(
         val currentSession = _activeSession.value ?: return
         val exercises = currentSession.exercises.toMutableList()
         val targetExercise = exercises[exerciseIndex]
-
-        // Copiamos el peso/reps del set anterior para facilitar la entrada de datos (UX)
         val previousSet = targetExercise.sets.lastOrNull()
 
         val newSet = WorkoutSet(
@@ -200,15 +220,14 @@ class ActiveWorkoutViewModel @Inject constructor(
         val currentSession = _activeSession.value ?: return
         val exercises = currentSession.exercises.toMutableList()
         val targetExercise = exercises[exerciseIndex]
-
         val newSets = targetExercise.sets.toMutableList()
         if (setIndex in newSets.indices) {
             newSets.removeAt(setIndex)
         }
-
         exercises[exerciseIndex] = targetExercise.copy(sets = newSets)
         _activeSession.value = currentSession.copy(exercises = exercises)
     }
+
     fun onAddExercisesToSession(exerciseIds: List<String>) {
         viewModelScope.launch {
             val currentSession = _activeSession.value ?: return@launch
@@ -217,15 +236,14 @@ class ActiveWorkoutViewModel @Inject constructor(
             exerciseIds.forEach { id ->
                 val exerciseDef = getExerciseDetailUseCase(id).firstOrNull()
                 if (exerciseDef != null) {
-                    // Creamos el ejercicio de sesión con 3 sets vacíos por defecto
                     val initialSets = (1..3).map {
                         WorkoutSet(
                             id = UUID.randomUUID().toString(),
                             weight = 0.0,
-                            reps = 0
+                            reps = 0,
+                            completed = false
                         )
                     }
-
                     newExercises.add(
                         SessionExercise(
                             id = UUID.randomUUID().toString(),
@@ -237,6 +255,10 @@ class ActiveWorkoutViewModel @Inject constructor(
             }
             _activeSession.value = currentSession.copy(exercises = newExercises)
         }
+    }
+
+    fun toggleAutoTimer() {
+        _isAutoTimerEnabled.value = !_isAutoTimerEnabled.value
     }
 
     fun setEffortMetric(metric: String?) {

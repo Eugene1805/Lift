@@ -36,7 +36,7 @@ fun SessionExerciseWithSets.toDomain(): SessionExercise {
             measureType = exercise.measureType,
             instructions = exercise.instructions,
             imagePath = exercise.imagePath,
-            bodyParts = emptyList() // TODO: Ajustar DAO si requieres esto en historial visual
+            bodyParts = bodyPartRefs.map { it.bodyPart }
         ),
         sets = sets
             .sortedBy { it.orderIndex }
@@ -52,11 +52,12 @@ fun WorkoutSetEntity.toDomain(): WorkoutSet {
         completed = completed,
         rpe = rpe,
         rir = rir,
-        isPr = isPr
+        isPr = isPr,
+        timeSeconds = timeSeconds,
+        distance = distance
     )
 }
 
-// --- Domain to Entity (Para Guardar) ---
 
 fun WorkoutSession.toEntity() = WorkoutSessionEntity(
     id = id,

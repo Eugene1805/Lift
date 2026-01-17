@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import javax.inject.Inject
 
@@ -21,8 +22,8 @@ class WorkoutRepositoryImpl @Inject constructor(
 
     override fun getHistory(from: LocalDate?, to: LocalDate?): Flow<List<WorkoutSession>> {
         // Si son null, ponemos rangos por defecto (ej: últimos 100 años o lógica de negocio)
-        val fromDate = from?.atStartOfDay() ?: LocalDate.MIN.atStartOfDay()
-        val toDate = to?.atTime(LocalTime.MAX) ?: LocalDate.MAX.atStartOfDay()
+        val fromDate = from?.atStartOfDay() ?: LocalDateTime.of(2000, 1, 1, 0, 0)
+        val toDate = to?.atTime(LocalTime.MAX) ?: LocalDateTime.of(3000, 12, 31, 23, 59)
 
         return dao.getHistory(fromDate, toDate).map { list ->
             list.map { it.toDomain() }

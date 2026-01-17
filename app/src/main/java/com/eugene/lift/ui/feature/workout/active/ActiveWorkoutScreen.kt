@@ -22,7 +22,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -38,6 +37,9 @@ import com.eugene.lift.ui.DeleteConfirmationRow
 import com.eugene.lift.ui.SwipeableSetRowWrapper
 import androidx.compose.ui.res.stringResource
 import com.eugene.lift.R
+import com.eugene.lift.domain.model.MeasureType
+import com.eugene.lift.domain.model.UserSettings
+import com.eugene.lift.domain.model.WeightUnit
 
 @Composable
 fun ActiveWorkoutRoute(
@@ -49,24 +51,31 @@ fun ActiveWorkoutRoute(
 ) {
     val activeSession by viewModel.activeSession.collectAsStateWithLifecycle()
     val timerState by viewModel.timerState.collectAsStateWithLifecycle()
-    val history by viewModel.historyState.collectAsStateWithLifecycle() // <--- NUEVO
-    val effortMetric by viewModel.effortMetric.collectAsStateWithLifecycle() // <--- NUEVO
-    val elapsedTime by viewModel.elapsedTimeSeconds.collectAsStateWithLifecycle() // <--- NUEVO
+    val history by viewModel.historyState.collectAsStateWithLifecycle()
+    val effortMetric by viewModel.effortMetric.collectAsStateWithLifecycle()
+    val elapsedTime by viewModel.elapsedTimeSeconds.collectAsStateWithLifecycle()
+    val userSettings by viewModel.userSettings.collectAsStateWithLifecycle()
+    val isAutoTimerEnabled by viewModel.isAutoTimerEnabled.collectAsStateWithLifecycle()
 
     if (activeSession != null) {
         ActiveWorkoutScreen(
             sessionName = activeSession!!.name,
             exercises = activeSession!!.exercises,
-            history = history, // Pasar historial
-            effortMetric = effortMetric, // Pasar config RPE
+            history = history,
+            effortMetric = effortMetric,
             timerState = timerState,
             elapsedTime = elapsedTime,
+            userSettings = userSettings,
+            isAutoTimerEnabled = isAutoTimerEnabled,
+            onToggleAutoTimer = viewModel::toggleAutoTimer,
             onWeightChange = viewModel::onWeightChange,
             onRepsChange = viewModel::onRepsChange,
+            onDistanceChange = viewModel::onDistanceChange,
+            onTimeChange = viewModel::onTimeChange,
             onRpeChange = viewModel::onRpeChange,
             onSetCompleted = viewModel::toggleSetCompleted,
             onFinishClick = { viewModel.finishWorkout(onSuccess = onNavigateBack) },
-            onCancelClick = onNavigateBack, // TODO: Preguntar confirmación antes de salir
+            onCancelClick = onNavigateBack,
             onTimerAdd = viewModel::addTime,
             onTimerStop = viewModel::stopTimer,
             onAddSet = viewModel::addSet,
@@ -76,7 +85,6 @@ fun ActiveWorkoutRoute(
             onMetricChange = viewModel::setEffortMetric
         )
     } else {
-        // Loading state
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
@@ -92,31 +100,35 @@ fun ActiveWorkoutScreen(
     effortMetric: String?,
     timerState: TimerState,
     elapsedTime: Long,
+    userSettings: UserSettings,
+    isAutoTimerEnabled: Boolean,
+    onToggleAutoTimer: () -> Unit,
     onWeightChange: (Int, Int, String) -> Unit,
     onRepsChange: (Int, Int, String) -> Unit,
+    onDistanceChange: (Int, Int, String) -> Unit, // <--- RECIBIR
+    onTimeChange: (Int, Int, String) -> Unit,     // <--- RECIBIR
     onRpeChange: (Int, Int, String) -> Unit,
     onSetCompleted: (Int, Int) -> Unit,
     onFinishClick: () -> Unit,
     onCancelClick: () -> Unit,
     onTimerAdd: (Long) -> Unit,
     onTimerStop: () -> Unit,
-    onAddSet: (Int) -> Unit,        // Nuevo
-    onRemoveSet: (Int, Int) -> Unit, // Nuevo
+    onAddSet: (Int) -> Unit,
+    onRemoveSet: (Int, Int) -> Unit,
     onAddExercise: () -> Unit,
     onExerciseClick: (String) -> Unit,
     onMetricChange: (String?) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
+
     val formattedTime = remember(elapsedTime) {
         val hours = elapsedTime / 3600
         val minutes = (elapsedTime % 3600) / 60
         val seconds = elapsedTime % 60
-        if (hours > 0) {
-            "%02d:%02d:%02d".format(hours, minutes, seconds)
-        } else {
-            "%02d:%02d".format(minutes, seconds)
-        }
+        if (hours > 0) "%02d:%02d:%02d".format(hours, minutes, seconds)
+        else "%02d:%02d".format(minutes, seconds)
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -130,7 +142,6 @@ fun ActiveWorkoutScreen(
                                 modifier = Modifier.weight(1f, fill = false)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            // CHIP DE TIEMPO
                             Surface(
                                 color = MaterialTheme.colorScheme.secondaryContainer,
                                 shape = MaterialTheme.shapes.small,
@@ -146,60 +157,41 @@ fun ActiveWorkoutScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onCancelClick) {
-                        Icon(Icons.Default.Close, null)
-                    }
+                    IconButton(onClick = onCancelClick) { Icon(Icons.Default.Close, null) }
                 },
                 actions = {
                     IconButton(onClick = { showMenu = true }) {
                         Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.active_workout_configuration))
                     }
-
-                    // MENÚ DESPLEGABLE
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
+                    DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.active_workout_use_rpe)) },
-                            onClick = {
-                                onMetricChange("RPE")
-                                showMenu = false
-                            },
-                            trailingIcon = {
-                                if (effortMetric == "RPE") Icon(Icons.Default.Check, null)
-                            }
+                            onClick = { onMetricChange("RPE"); showMenu = false },
+                            trailingIcon = { if (effortMetric == "RPE") Icon(Icons.Default.Check, null) }
                         )
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.active_workout_use_rir)) },
-                            onClick = {
-                                onMetricChange("RIR")
-                                showMenu = false
-                            },
-                            trailingIcon = {
-                                if (effortMetric == "RIR") Icon(Icons.Default.Check, null)
-                            }
+                            onClick = { onMetricChange("RIR"); showMenu = false },
+                            trailingIcon = { if (effortMetric == "RIR") Icon(Icons.Default.Check, null) }
                         )
                         HorizontalDivider()
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.active_workout_hide_metric)) },
-                            onClick = {
-                                onMetricChange(null)
-                                showMenu = false
-                            },
-                            trailingIcon = {
-                                if (effortMetric == null) Icon(Icons.Default.Check, null)
-                            }
+                            onClick = { onMetricChange(null); showMenu = false },
+                            trailingIcon = { if (effortMetric == null) Icon(Icons.Default.Check, null) }
+                        )
+                        HorizontalDivider()
+                        DropdownMenuItem(
+                            text = { Text("Auto-timer al finalizar serie") },
+                            onClick = { onToggleAutoTimer() },
+                            trailingIcon = { Switch(checked = isAutoTimerEnabled, onCheckedChange = null) }
                         )
                     }
-                    Button(onClick = onFinishClick) {
-                        Text(stringResource(R.string.active_workout_finish))
-                    }
+                    Button(onClick = onFinishClick) { Text(stringResource(R.string.active_workout_finish)) }
                 }
             )
         },
         bottomBar = {
-            // TIMER FLOTANTE
             AnimatedVisibility(
                 visible = timerState.isRunning,
                 enter = slideInVertically { it },
@@ -218,20 +210,24 @@ fun ActiveWorkoutScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            itemsIndexed(exercises) { exIndex, exercise ->
+            itemsIndexed(exercises, key = { _, item -> item.id }) { exIndex, exercise ->
                 val exerciseHistory = history[exercise.exercise.id] ?: emptyList()
                 ActiveExerciseCard(
                     exercise = exercise,
-                    exerciseHistory = exerciseHistory, // Pasamos la lista histórica
+                    exerciseHistory = exerciseHistory,
                     effortMetric = effortMetric,
                     exIndex = exIndex,
+                    userSettings = userSettings,
+                    weightUnitLabel = if (userSettings.weightUnit == WeightUnit.KG) "kg" else "lbs",
                     onWeightChange = onWeightChange,
                     onRepsChange = onRepsChange,
                     onRpeChange = onRpeChange,
+                    onDistanceChange = onDistanceChange,
+                    onTimeChange = onTimeChange,
                     onSetCompleted = onSetCompleted,
                     onAddSet = { onAddSet(exIndex) },
-                    onRemoveSet = { setIndex -> onRemoveSet(exIndex, setIndex)},
-                    onExerciseClick = { onExerciseClick(exercise.exercise.id) } // <--- 4. PASAR ID
+                    onRemoveSet = { setIndex -> onRemoveSet(exIndex, setIndex) },
+                    onExerciseClick = { onExerciseClick(exercise.exercise.id) }
                 )
             }
 
@@ -246,7 +242,7 @@ fun ActiveWorkoutScreen(
                 }
             }
 
-            item { Spacer(modifier = Modifier.height(80.dp)) } // Espacio para el timer
+            item { Spacer(modifier = Modifier.height(80.dp)) }
         }
     }
 }
@@ -254,11 +250,15 @@ fun ActiveWorkoutScreen(
 @Composable
 fun ActiveExerciseCard(
     exercise: SessionExercise,
-    exerciseHistory: List<WorkoutSet>, // Historial
+    exerciseHistory: List<WorkoutSet>,
     effortMetric: String?,
     exIndex: Int,
+    weightUnitLabel: String,
+    userSettings: UserSettings,
     onWeightChange: (Int, Int, String) -> Unit,
     onRepsChange: (Int, Int, String) -> Unit,
+    onDistanceChange: (Int, Int, String) -> Unit, // <--- RECIBIR
+    onTimeChange: (Int, Int, String) -> Unit,     // <--- RECIBIR
     onRpeChange: (Int, Int, String) -> Unit,
     onSetCompleted: (Int, Int) -> Unit,
     onAddSet: () -> Unit,
@@ -266,13 +266,15 @@ fun ActiveExerciseCard(
     onExerciseClick: () -> Unit
 ) {
     val setsInDeleteMode = remember { mutableStateListOf<String>() }
+
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(modifier = Modifier.padding(8.dp)) {
+            // Header del Ejercicio
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(onClick = onExerciseClick) // <--- 6. CLICKABLE EN TODO EL HEADER
-                    .padding(8.dp), // Padding interno para mejor touch target
+                    .clickable(onClick = onExerciseClick)
+                    .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -282,62 +284,81 @@ fun ActiveExerciseCard(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
-
                 Icon(
                     imageVector = Icons.Default.Info,
-                    contentDescription = stringResource(R.string.active_workout_view_details),
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
                     modifier = Modifier.size(20.dp)
                 )
             }
 
-            // Cabecera Tabla
+            // Cabeceras Dinámicas (Según MeasureType)
             Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
                 Text(stringResource(R.string.active_workout_set), modifier = Modifier.width(32.dp), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
-                Text(stringResource(R.string.active_workout_kg), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
-                Text(stringResource(R.string.active_workout_reps), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
+
+                when (exercise.exercise.measureType) {
+                    MeasureType.REPS_AND_WEIGHT -> {
+                        Text(weightUnitLabel.uppercase(), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.active_workout_reps), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
+                    }
+                    MeasureType.REPS_ONLY -> {
+                        Text(stringResource(R.string.active_workout_reps), modifier = Modifier.weight(2f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
+                    }
+                    MeasureType.DISTANCE_TIME -> {
+                        val distUnit = if (userSettings.weightUnit == WeightUnit.KG) "KM" else "MI"
+                        Text(distUnit, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
+                        Text("TIEMPO", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
+                    }
+                    MeasureType.TIME -> {
+                        Text("TIEMPO", modifier = Modifier.weight(2f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
+                    }
+                }
+
                 if (effortMetric != null) {
                     Text(
-                        text = effortMetric, // "RPE" o "RIR"
-                        modifier = Modifier.weight(1f).clickable { /* onToggleMetric() si quieres */ },
+                        text = effortMetric,
+                        modifier = Modifier.weight(1f),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
-                Spacer(modifier = Modifier.width(48.dp)) // Checkbox area
+                Spacer(modifier = Modifier.width(48.dp))
             }
 
             exercise.sets.forEachIndexed { setIndex, set ->
                 val historySet = exerciseHistory.getOrNull(setIndex)
+
+                // Key fundamental para evitar bugs visuales
                 key(set.id) {
                     if (set.id in setsInDeleteMode) {
-
                         DeleteConfirmationRow(
                             setNumber = setIndex + 1,
                             onConfirm = {
-
                                 onRemoveSet(setIndex)
-
                                 setsInDeleteMode.remove(set.id)
                             },
-                            onCancel = {
-                                setsInDeleteMode.remove(set.id)
-                            }
+                            onCancel = { setsInDeleteMode.remove(set.id) }
                         )
-                    }else {
+                    } else {
                         SwipeableSetRowWrapper(
                             itemKey = set.id,
                             onSwipeTriggered = { setsInDeleteMode.add(set.id) }
                         ) {
                             SetRowItem(
                                 set = set,
+                                measureType = exercise.exercise.measureType,
                                 setNumber = setIndex + 1,
                                 historySet = historySet,
                                 effortMetric = effortMetric,
+                                weightUnitLabel = weightUnitLabel,
                                 onWeightChange = { onWeightChange(exIndex, setIndex, it) },
                                 onRepsChange = { onRepsChange(exIndex, setIndex, it) },
                                 onRpeChange = { onRpeChange(exIndex, setIndex, it) },
+                                // --- AHORA SÍ PASAMOS LOS CALLBACKS ---
+                                onDistanceChange = { onDistanceChange(exIndex, setIndex, it) },
+                                onTimeChange = { onTimeChange(exIndex, setIndex, it) },
+                                // --------------------------------------
                                 onCompleted = { onSetCompleted(exIndex, setIndex) }
                             )
                         }
@@ -360,15 +381,18 @@ fun ActiveExerciseCard(
 @Composable
 fun SetRowItem(
     set: WorkoutSet,
+    measureType: MeasureType,
     setNumber: Int,
-    historySet: WorkoutSet?, // Puede ser null si es un set nuevo
+    historySet: WorkoutSet?,
     effortMetric: String?,
+    weightUnitLabel: String,
     onWeightChange: (String) -> Unit,
     onRepsChange: (String) -> Unit,
+    onDistanceChange: (String) -> Unit,
+    onTimeChange: (String) -> Unit,
     onRpeChange: (String) -> Unit,
     onCompleted: () -> Unit
 ) {
-
     val rowBackground = if (set.completed)
         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
     else
@@ -383,79 +407,102 @@ fun SetRowItem(
     ) {
         Text(text = setNumber.toString(), modifier = Modifier.width(32.dp).padding(top = 10.dp), textAlign = TextAlign.Center)
 
-        Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
-            CompactDecimalInput(
-                value = if (set.weight > 0) set.weight.toString() else "",
-                onValueChange = onWeightChange,
-                modifier = Modifier.fillMaxWidth()
-            )
-            if (historySet != null) {
-                Text(
-                    text = "${historySet.weight} ${stringResource(R.string.active_workout_kg_lowercase)}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.outline,
-                    fontSize = 10.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+        // LÓGICA POLIMÓRFICA DE INPUTS
+        when(measureType) {
+            MeasureType.REPS_AND_WEIGHT -> {
+                Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
+                    CompactDecimalInput(
+                        value = if (set.weight > 0) set.weight.toString() else "",
+                        onValueChange = onWeightChange,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (historySet != null) HistoryText("${historySet.weight} $weightUnitLabel")
+                }
+                Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
+                    CompactNumberInput(
+                        value = if (set.reps > 0) set.reps.toString() else "",
+                        onValueChange = onRepsChange,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (historySet != null) HistoryText("${historySet.reps} reps")
+                }
+            }
+            MeasureType.REPS_ONLY -> {
+                Column(modifier = Modifier.weight(2f).padding(horizontal = 4.dp)) {
+                    CompactNumberInput(
+                        value = if (set.reps > 0) set.reps.toString() else "",
+                        onValueChange = onRepsChange,
+                        modifier = Modifier.fillMaxWidth(0.6f).align(Alignment.CenterHorizontally)
+                    )
+                    if (historySet != null) HistoryText("${historySet.reps} reps", Modifier.align(Alignment.CenterHorizontally))
+                }
+            }
+            MeasureType.DISTANCE_TIME -> {
+                Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
+                    CompactDecimalInput(
+                        value = if ((set.distance ?: 0.0) > 0) set.distance.toString() else "",
+                        onValueChange = onDistanceChange,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (historySet != null) HistoryText("${historySet.distance ?: "-"} km")
+                }
+                Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
+                    CompactNumberInput(
+                        value = if ((set.timeSeconds ?: 0) > 0) set.timeSeconds.toString() else "",
+                        onValueChange = onTimeChange,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (historySet != null) HistoryText("${historySet.timeSeconds ?: "-"} s")
+                }
+            }
+            MeasureType.TIME -> {
+                Column(modifier = Modifier.weight(2f).padding(horizontal = 4.dp)) {
+                    CompactNumberInput(
+                        value = if ((set.timeSeconds ?: 0) > 0) set.timeSeconds.toString() else "",
+                        onValueChange = onTimeChange,
+                        modifier = Modifier.fillMaxWidth(0.6f).align(Alignment.CenterHorizontally)
+                    )
+                    if (historySet != null) HistoryText("${historySet.timeSeconds ?: "-"} s", Modifier.align(Alignment.CenterHorizontally))
+                }
             }
         }
 
-        Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
-            CompactNumberInput(
-                value = if (set.reps > 0) set.reps.toString() else "",
-                onValueChange = onRepsChange,
-                modifier = Modifier.fillMaxWidth()
-            )
-            if (historySet != null) {
-                Text(
-                    text = "${historySet.reps} ${stringResource(R.string.active_workout_reps_lowercase)}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.outline,
-                    fontSize = 10.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-
-        // --- RPE/RIR OPCIONAL ---
+        // RPE/RIR (Común)
         if (effortMetric != null) {
             Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
                 CompactDecimalInput(
                     value = if (effortMetric == "RPE") (set.rpe?.toString() ?: "") else (set.rir?.toString() ?: ""),
-                    onValueChange = {
-                        // Aquí deberías decidir si guardas en rpe o rir según el modo
-                        onRpeChange(it)
-                    },
+                    onValueChange = onRpeChange,
                     modifier = Modifier.fillMaxWidth()
                 )
                 if (historySet != null) {
                     val histVal = if (effortMetric == "RPE") historySet.rpe else historySet.rir
-                    if (histVal != null) {
-                        Text(
-                            text = "$histVal",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.outline,
-                            fontSize = 10.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
+                    if (histVal != null) HistoryText("$histVal")
                 }
             }
         }
 
         IconButton(onClick = onCompleted, modifier = Modifier.width(48.dp).padding(top = 0.dp)) {
             Icon(
-                imageVector = if (set.completed) Icons.Default.Check else Icons.Default.Check, // Mismo icono, cambia color
-                contentDescription = stringResource(R.string.active_workout_complete),
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
                 tint = if (set.completed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
             )
         }
     }
 }
 
+@Composable
+fun HistoryText(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.outline,
+        fontSize = 10.sp,
+        textAlign = TextAlign.Center,
+        modifier = modifier.fillMaxWidth()
+    )
+}
 @Composable
 fun RestTimerBar(
     state: TimerState,
@@ -493,7 +540,6 @@ fun RestTimerBar(
     }
 }
 
-// Helpers Inputs
 @Composable
 fun CompactNumberInput(value: String, onValueChange: (String) -> Unit, modifier: Modifier) {
     BasicTextFieldStyle(value, onValueChange, modifier, KeyboardType.Number)

@@ -11,6 +11,11 @@ data class SessionExerciseWithSets(
 
     @Relation(parentColumn = "exerciseId", entityColumn = "id")
     val exercise: ExerciseEntity,
+    @Relation(
+        parentColumn = "exerciseId",
+        entityColumn = "exerciseId"
+    )
+    val bodyPartRefs: List<ExerciseBodyPartCrossRef>,
 
     @Relation(parentColumn = "id", entityColumn = "sessionExerciseId")
     val sets: List<WorkoutSetEntity>
@@ -88,4 +93,5 @@ interface WorkoutDao {
 
     @Query("DELETE FROM workout_sessions WHERE id = :id")
     suspend fun deleteSession(id: String)
+
 }

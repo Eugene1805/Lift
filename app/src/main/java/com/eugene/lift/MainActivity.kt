@@ -54,11 +54,17 @@ import com.eugene.lift.ui.feature.workout.active.ActiveWorkoutViewModel
 import com.eugene.lift.ui.feature.workout.detail.TemplateDetailRoute
 import com.eugene.lift.ui.feature.workout.edit.EditTemplateScreen
 import com.eugene.lift.ui.feature.workout.edit.EditTemplateViewModel
+import com.eugene.lift.ui.navigation.ActiveWorkoutRoute
 import com.eugene.lift.ui.navigation.ExerciseAddRoute
 import com.eugene.lift.ui.navigation.ExerciseDetailRoute
 import com.eugene.lift.ui.navigation.ExerciseListRoute
 import com.eugene.lift.ui.navigation.ExercisePickerRoute
+import com.eugene.lift.ui.navigation.HistoryRoute
+import com.eugene.lift.ui.navigation.ProfileRoute
+import com.eugene.lift.ui.navigation.SettingsRoute
+import com.eugene.lift.ui.navigation.TemplateDetailRoute
 import com.eugene.lift.ui.navigation.TemplateEditRoute
+import com.eugene.lift.ui.navigation.WorkoutRoute
 import com.eugene.lift.ui.theme.LiftTheme
 import com.eugene.lift.worker.SeedDatabaseWorker
 import dagger.hilt.android.AndroidEntryPoint
@@ -110,11 +116,11 @@ fun MainAppShell() {
     val navController = rememberNavController()
 
     val bottomNavItems = listOf(
-        BottomNavItem(R.string.nav_profile, Icons.Default.Person, com.eugene.lift.ui.navigation.ProfileRoute),
-        BottomNavItem(R.string.nav_history, Icons.Default.History, com.eugene.lift.ui.navigation.HistoryRoute),
-        BottomNavItem(R.string.nav_workout, Icons.Default.Add, com.eugene.lift.ui.navigation.WorkoutRoute),
+        BottomNavItem(R.string.nav_profile, Icons.Default.Person, ProfileRoute),
+        BottomNavItem(R.string.nav_history, Icons.Default.History, HistoryRoute),
+        BottomNavItem(R.string.nav_workout, Icons.Default.Add, WorkoutRoute),
         BottomNavItem(R.string.nav_exercises, Icons.Default.FitnessCenter, ExerciseListRoute),
-        BottomNavItem(R.string.nav_settings, Icons.Default.Settings, com.eugene.lift.ui.navigation.SettingsRoute)
+        BottomNavItem(R.string.nav_settings, Icons.Default.Settings, SettingsRoute)
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -157,42 +163,46 @@ fun MainAppShell() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = com.eugene.lift.ui.navigation.WorkoutRoute,
+            startDestination = WorkoutRoute,
             modifier = Modifier.padding(innerPadding)
         ) {
 
-            composable<com.eugene.lift.ui.navigation.ProfileRoute> {
+            composable<ProfileRoute> {
                 ProfileRoute()
             }
 
-            composable<com.eugene.lift.ui.navigation.HistoryRoute> {
-                HistoryRoute()
+            composable<HistoryRoute> {
+                HistoryRoute(
+                    onSessionClick = { sessionId ->}
+                )
             }
 
-            composable<com.eugene.lift.ui.navigation.WorkoutRoute> {
+            composable<WorkoutRoute> {
                 WorkoutRoute(
                     onNavigateToEdit = { templateId ->
                         navController.navigate(TemplateEditRoute(templateId))
                     },
-                    onTemplateClick = { templateId -> // CAMBIO DE NOMBRE (antes onStartWorkout)
-                        // Ahora vamos al Detalle
+                    onTemplateClick = { templateId ->
                         navController.navigate(
                             com.eugene.lift.ui.navigation.TemplateDetailRoute(
                                 templateId
                             )
                         )
+                    },
+                    onStartEmptyClick = {
+                        navController.navigate(com.eugene.lift.ui.navigation.ActiveWorkoutRoute(templateId = null))
                     }
                 )
             }
 
-            composable<com.eugene.lift.ui.navigation.TemplateDetailRoute> {
+            composable<TemplateDetailRoute> {
                 TemplateDetailRoute(
                     onNavigateBack = { navController.popBackStack() },
                     onStartWorkout = { templateId ->
                         // Aquí SÍ iniciamos el entrenamiento (reemplazando la pantalla de detalle para que al dar atrás volvamos a la lista)
                         navController.navigate(com.eugene.lift.ui.navigation.ActiveWorkoutRoute(templateId = templateId)) {
                             // Opcional: Sacar el detalle del stack para que "Atrás" en el entreno vaya a la lista
-                            popUpTo(com.eugene.lift.ui.navigation.WorkoutRoute)
+                            popUpTo(WorkoutRoute)
                         }
                     },
                     onEditTemplate = { templateId ->
@@ -239,15 +249,16 @@ fun MainAppShell() {
                         navController.popBackStack()
                     },
                     onExercisesSelected = { ids ->
-                        navController.previousBackStackEntry
-                            ?.savedStateHandle
-                            ?.set("selected_exercise_ids", ids)
+                        val previousEntry = navController.previousBackStackEntry
+                        previousEntry?.savedStateHandle?.set("selected_exercise_ids", ids)
+
+                        previousEntry?.savedStateHandle?.set("selected_exercise_ids_active", ids)
 
                         navController.popBackStack()
                     }
                 )
             }
-            composable<com.eugene.lift.ui.navigation.SettingsRoute> {
+            composable<SettingsRoute> {
                 SettingsRoute()
             }
 
@@ -272,10 +283,8 @@ fun MainAppShell() {
                     }
                 )
             }
-            composable<com.eugene.lift.ui.navigation.ActiveWorkoutRoute> { backStackEntry ->
+            composable<ActiveWorkoutRoute> { backStackEntry ->
                 val viewModel: ActiveWorkoutViewModel = hiltViewModel()
-
-                // 1. ESCUCHAR RESULTADOS DEL PICKER
                 val savedStateHandle = backStackEntry.savedStateHandle
                 val selectedExerciseIds = savedStateHandle.get<List<String>>("selected_exercise_ids_active")
 
@@ -289,8 +298,6 @@ fun MainAppShell() {
                 ActiveWorkoutRoute(
                     onNavigateBack = { navController.popBackStack() },
                     onAddExerciseClick = {
-                        // Vamos al picker (reutilizamos la ruta existente)
-                        // Importante: Usamos una key distinta en savedStateHandle para no confundir con el editor
                         navController.navigate(ExercisePickerRoute)
                     },
                     onExerciseClick = { exerciseId ->

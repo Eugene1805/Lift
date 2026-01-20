@@ -1,6 +1,7 @@
 package com.eugene.lift.data.local
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -25,11 +26,15 @@ class SettingsDataSource @Inject constructor(
 ) {
     private val dataStore = context.dataStore
 
+    companion object {
+        private const val TAG = "SettingsDataSource"
+    }
 
     private object Keys {
         val THEME = stringPreferencesKey("theme")
         val WEIGHT_UNIT = stringPreferencesKey("weight_unit")
         val DISTANCE_UNIT = stringPreferencesKey("distance_unit")
+        val LANGUAGE_CODE = stringPreferencesKey("language_code")
     }
 
     // Leemos y convertimos los Strings guardados a Enums
@@ -37,23 +42,59 @@ class SettingsDataSource @Inject constructor(
         val themeName = preferences[Keys.THEME] ?: AppTheme.SYSTEM.name
         val weightName = preferences[Keys.WEIGHT_UNIT] ?: WeightUnit.KG.name
         val distanceName = preferences[Keys.DISTANCE_UNIT] ?: DistanceUnit.KM.name
+        val langCode = preferences[Keys.LANGUAGE_CODE] ?: "en"
+
+        Log.d(TAG, "Reading settings from DataStore - theme: $themeName, weight: $weightName, distance: $distanceName, language: $langCode")
 
         UserSettings(
             theme = runCatching { AppTheme.valueOf(themeName) }.getOrDefault(AppTheme.SYSTEM),
             weightUnit = runCatching { WeightUnit.valueOf(weightName) }.getOrDefault(WeightUnit.KG),
-            distanceUnit = runCatching { DistanceUnit.valueOf(distanceName) }.getOrDefault(DistanceUnit.KM)
+            distanceUnit = runCatching { DistanceUnit.valueOf(distanceName) }.getOrDefault(DistanceUnit.KM),
+            languageCode = langCode
         )
     }
 
+    suspend fun setLanguageCode(code: String) {
+        Log.d(TAG, "Writing language code to DataStore: $code")
+        try {
+            dataStore.edit { prefs -> prefs[Keys.LANGUAGE_CODE] = code }
+            Log.i(TAG, "Language code saved successfully to DataStore")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save language code to DataStore", e)
+            throw e
+        }
+    }
+
     suspend fun setTheme(theme: AppTheme) {
-        dataStore.edit { prefs -> prefs[Keys.THEME] = theme.name }
+        Log.d(TAG, "Writing theme to DataStore: ${theme.name}")
+        try {
+            dataStore.edit { prefs -> prefs[Keys.THEME] = theme.name }
+            Log.i(TAG, "Theme saved successfully to DataStore")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save theme to DataStore", e)
+            throw e
+        }
     }
 
     suspend fun setWeightUnit(unit: WeightUnit) {
-        dataStore.edit { prefs -> prefs[Keys.WEIGHT_UNIT] = unit.name }
+        Log.d(TAG, "Writing weight unit to DataStore: ${unit.name}")
+        try {
+            dataStore.edit { prefs -> prefs[Keys.WEIGHT_UNIT] = unit.name }
+            Log.i(TAG, "Weight unit saved successfully to DataStore")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save weight unit to DataStore", e)
+            throw e
+        }
     }
 
     suspend fun setDistanceUnit(unit: DistanceUnit) {
-        dataStore.edit { prefs -> prefs[Keys.DISTANCE_UNIT] = unit.name }
+        Log.d(TAG, "Writing distance unit to DataStore: ${unit.name}")
+        try {
+            dataStore.edit { prefs -> prefs[Keys.DISTANCE_UNIT] = unit.name }
+            Log.i(TAG, "Distance unit saved successfully to DataStore")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save distance unit to DataStore", e)
+            throw e
+        }
     }
 }

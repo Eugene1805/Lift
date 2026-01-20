@@ -15,5 +15,6 @@ enum class DistanceUnit {
 data class UserSettings(
     val theme: AppTheme = AppTheme.SYSTEM,
     val weightUnit: WeightUnit = WeightUnit.KG,
-    val distanceUnit: DistanceUnit = DistanceUnit.KM
+    val distanceUnit: DistanceUnit = DistanceUnit.KM,
+    val languageCode: String = "en"
 )

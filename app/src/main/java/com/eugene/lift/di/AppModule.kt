@@ -52,6 +52,7 @@ object AppModule {
     fun provideTemplateDao(db: AppDatabase): TemplateDao = db.templateDao()
 
     @Provides
+    @Singleton
     fun provideFolderDao(db: AppDatabase): FolderDao = db.folderDao()
 
     @Provides

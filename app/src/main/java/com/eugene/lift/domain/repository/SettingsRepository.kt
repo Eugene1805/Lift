@@ -11,4 +11,7 @@ interface SettingsRepository {
     suspend fun setTheme(theme: AppTheme)
     suspend fun setWeightUnit(unit: WeightUnit)
     suspend fun setDistanceUnit(unit: DistanceUnit)
+    suspend fun setLanguageCode(code: String)
 }
+
+

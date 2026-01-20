@@ -1,5 +1,10 @@
 package com.eugene.lift
 
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.res.AssetManager
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,11 +27,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -40,7 +48,9 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.eugene.lift.domain.model.AppTheme
+import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.UserSettings
+import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.usecase.GetSettingsUseCase
 import com.eugene.lift.ui.feature.exercises.AddExerciseRoute
 import com.eugene.lift.ui.feature.exercises.ExercisesRoute
@@ -68,6 +78,7 @@ import com.eugene.lift.ui.navigation.WorkoutRoute
 import com.eugene.lift.ui.theme.LiftTheme
 import com.eugene.lift.worker.SeedDatabaseWorker
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -86,19 +97,37 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             val settingsState by getSettingsUseCase()
-                .collectAsState(initial = UserSettings())
+                .collectAsState(initial = UserSettings(AppTheme.SYSTEM, WeightUnit.KG, DistanceUnit.KM, "en"))
 
-            val useDarkTheme = when (settingsState.theme) {
-                AppTheme.LIGHT -> false
-                AppTheme.DARK -> true
-                AppTheme.SYSTEM -> isSystemInDarkTheme()
+            val context = LocalContext.current
+
+            // 2. Creamos el contexto localizado pero lo envolvemos en nuestro HiltSafeLocalizedContext
+            val localizedContext = remember(settingsState.languageCode) {
+                val locale = Locale(settingsState.languageCode)
+                Locale.setDefault(locale)
+                val config = Configuration(context.resources.configuration)
+                config.setLocale(locale)
+
+                // Creamos el contexto de configuración (el que tiene las traducciones)
+                val configContext = context.createConfigurationContext(config)
+
+                // IMPORTANTE: Envolvemos el contexto original (la Activity)
+                // para que Hilt pueda encontrarla haciendo "baseContext"
+                HiltSafeLocalizedContext(base = context, localizedConfigContext = configContext)
             }
-            LiftTheme (darkTheme = useDarkTheme){
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    MainAppShell()
+            CompositionLocalProvider(LocalContext provides localizedContext) {
+                val useDarkTheme = when (settingsState.theme) {
+                    AppTheme.LIGHT -> false
+                    AppTheme.DARK -> true
+                    AppTheme.SYSTEM -> isSystemInDarkTheme()
+                }
+                LiftTheme (darkTheme = useDarkTheme){
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        MainAppShell()
+                    }
                 }
             }
         }
@@ -307,4 +336,13 @@ fun MainAppShell() {
             }
         }
     }
+}
+
+class HiltSafeLocalizedContext(
+    base: Context,
+    private val localizedConfigContext: Context
+) : ContextWrapper(base) {
+    // Redirigimos las llamadas de recursos al contexto localizado
+    override fun getResources(): Resources = localizedConfigContext.resources
+    override fun getAssets(): AssetManager = localizedConfigContext.assets
 }

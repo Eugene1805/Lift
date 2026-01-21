@@ -1,3 +1,4 @@
+
 package com.eugene.lift.ui.feature.exercises
 
 import androidx.compose.foundation.background
@@ -159,7 +160,7 @@ fun ExercisesScreen(
                     ExtendedFloatingActionButton(
                         onClick = { onExercisesSelected(selectedIds.toList()) },
                         icon = { Icon(Icons.Default.Check, null) },
-                        text = { Text("Agregar (${selectedIds.size})") },
+                        text = { Text(stringResource(R.string.exercise_add_selected, selectedIds.size)) },
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )

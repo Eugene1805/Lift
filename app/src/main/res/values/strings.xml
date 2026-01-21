@@ -151,4 +151,27 @@
     <string name="folder_cancel">Cancel</string>
     <string name="folder_move_to_title">Move to...</string>
     <string name="folder_root">Root (No folder)</string>
+
+    <!-- Workout Screen - Actions -->
+    <string name="workout_move_to_folder">Move to folder</string>
+    <string name="workout_duplicate">Duplicate</string>
+    <string name="workout_share">Share</string>
+    <string name="workout_delete">Delete</string>
+    <string name="workout_quick_start_title">Quick Start</string>
+    <string name="workout_quick_start_subtitle">Start an empty session</string>
+    <string name="workout_no_archived">No archived routines</string>
+    <string name="workout_routine_copied">Routine copied to clipboard</string>
+
+    <!-- Active Workout - Additional -->
+    <string name="active_workout_auto_timer">Auto-timer when finishing set</string>
+    <string name="active_workout_time_label">TIME</string>
+    <string name="active_workout_distance_km">km</string>
+    <string name="active_workout_time_s">s</string>
+
+    <!-- Exercise List -->
+    <string name="exercise_add_selected">Add (%d)</string>
+
+    <!-- Components -->
+    <string name="component_delete">Delete</string>
+    <string name="component_swipe_color_label">SwipeColor</string>
 </resources>

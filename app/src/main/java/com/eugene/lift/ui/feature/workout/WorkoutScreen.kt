@@ -100,7 +100,7 @@ fun WorkoutRoute(
             viewModel.duplicateTemplate(template.id)
         },
         onShareClick = {
-            Toast.makeText(context, "Rutina copiada al portapapeles", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.workout_routine_copied), Toast.LENGTH_SHORT).show()
         },
         onStartEmptyClick = { onStartEmptyClick(null) }
     )

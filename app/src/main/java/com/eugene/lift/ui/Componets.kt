@@ -33,8 +33,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.eugene.lift.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -112,7 +114,7 @@ fun SwipeableSetRowWrapper(
                 if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart)
                     MaterialTheme.colorScheme.errorContainer
                 else Color.Transparent,
-                label = "SwipeColor"
+                label = stringResource(R.string.component_swipe_color_label)
             )
 
             Box(

@@ -182,7 +182,7 @@ fun ActiveWorkoutScreen(
                         )
                         HorizontalDivider()
                         DropdownMenuItem(
-                            text = { Text("Auto-timer al finalizar serie") },
+                            text = { Text(stringResource(R.string.active_workout_auto_timer)) },
                             onClick = { onToggleAutoTimer() },
                             trailingIcon = { Switch(checked = isAutoTimerEnabled, onCheckedChange = null) }
                         )
@@ -307,10 +307,10 @@ fun ActiveExerciseCard(
                     MeasureType.DISTANCE_TIME -> {
                         val distUnit = if (userSettings.weightUnit == WeightUnit.KG) "KM" else "MI"
                         Text(distUnit, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
-                        Text("TIEMPO", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.active_workout_time_label), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
                     }
                     MeasureType.TIME -> {
-                        Text("TIEMPO", modifier = Modifier.weight(2f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.active_workout_time_label), modifier = Modifier.weight(2f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
                     }
                 }
 
@@ -462,7 +462,7 @@ fun SetRowItem(
                         onValueChange = onTimeChange,
                         modifier = Modifier.fillMaxWidth(0.6f).align(Alignment.CenterHorizontally)
                     )
-                    if (historySet != null) HistoryText("${historySet.timeSeconds ?: "-"} s", Modifier.align(Alignment.CenterHorizontally))
+                    if (historySet != null) HistoryText("${historySet.timeSeconds ?: "-"} ${stringResource(R.string.active_workout_time_s)}", Modifier.align(Alignment.CenterHorizontally))
                 }
             }
         }

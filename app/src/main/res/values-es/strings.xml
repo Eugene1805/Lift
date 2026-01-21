@@ -12,16 +12,34 @@
 
     <string name="part_chest">Pecho</string>
     <string name="part_back">Espalda</string>
+    <string name="part_lats">Dorsales</string>
+    <string name="part_traps">Trapecios</string>
+    <string name="part_lower_back">Espalda Baja</string>
     <string name="part_legs">Pierna</string>
+    <string name="part_quadriceps">Cuádriceps</string>
+    <string name="part_hamstrings">Isquiotibiales</string>
+    <string name="part_glutes">Glúteos</string>
+    <string name="part_calves">Gemelos</string>
+    <string name="part_adductors">Aductores</string>
+    <string name="part_abductors">Abductores</string>
     <string name="part_shoulders">Hombros</string>
+    <string name="part_front_delts">Deltoides Anterior</string>
+    <string name="part_side_delts">Deltoides Lateral</string>
+    <string name="part_rear_delts">Deltoides Posterior</string>
     <string name="part_arms">Brazos</string>
+    <string name="part_biceps">Bíceps</string>
+    <string name="part_triceps">Tríceps</string>
+    <string name="part_forearms">Antebrazos</string>
     <string name="part_core">Core / Abdomen</string>
+    <string name="part_neck">Cuello</string>
+    <string name="part_full_body">Cuerpo Completo</string>
     <string name="part_cardio">Cardio</string>
     <string name="part_other">Otro</string>
 
     <string name="cat_barbell">Barra</string>
     <string name="cat_dumbbell">Mancuernas</string>
     <string name="cat_machine">Máquina</string>
+    <string name="cat_bodyweight">Peso Corporal</string>
     <string name="cat_weighted_bw">Peso Corporal + Lastre</string>
     <string name="cat_assisted_bw">Peso Corporal Asistido</string>
     <string name="cat_reps_only">Solo Repeticiones</string>

@@ -10,16 +10,34 @@
 
     <string name="part_chest">Chest</string>
     <string name="part_back">Back</string>
+    <string name="part_lats">Lats</string>
+    <string name="part_traps">Traps</string>
+    <string name="part_lower_back">Lower Back</string>
     <string name="part_legs">Legs</string>
+    <string name="part_quadriceps">Quadriceps</string>
+    <string name="part_hamstrings">Hamstrings</string>
+    <string name="part_glutes">Glutes</string>
+    <string name="part_calves">Calves</string>
+    <string name="part_adductors">Adductors</string>
+    <string name="part_abductors">Abductors</string>
     <string name="part_shoulders">Shoulders</string>
+    <string name="part_front_delts">Front Delts</string>
+    <string name="part_side_delts">Side Delts</string>
+    <string name="part_rear_delts">Rear Delts</string>
     <string name="part_arms">Arms</string>
+    <string name="part_biceps">Biceps</string>
+    <string name="part_triceps">Triceps</string>
+    <string name="part_forearms">Forearms</string>
     <string name="part_core">Core</string>
+    <string name="part_neck">Neck</string>
+    <string name="part_full_body">Full Body</string>
     <string name="part_cardio">Cardio</string>
     <string name="part_other">Other</string>
 
     <string name="cat_barbell">Barbell</string>
     <string name="cat_dumbbell">Dumbbell</string>
     <string name="cat_machine">Machine</string>
+    <string name="cat_bodyweight">Bodyweight</string>
     <string name="cat_weighted_bw">Weighted Bodyweight</string>
     <string name="cat_assisted_bw">Assisted Bodyweight</string>
     <string name="cat_reps_only">Reps Only</string>

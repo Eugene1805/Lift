@@ -26,7 +26,7 @@ class ExerciseSeeder @Inject constructor(
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_bench_desc),
                 imagePath = null,
-                bodyParts = listOf(BodyPart.CHEST, BodyPart.ARMS, BodyPart.SHOULDERS)
+                bodyParts = listOf(BodyPart.CHEST, BodyPart.TRICEPS, BodyPart.FRONT_DELTS)
             ),
             Exercise(
                 id = UUID.randomUUID().toString(),
@@ -35,16 +35,16 @@ class ExerciseSeeder @Inject constructor(
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_squat_desc),
                 imagePath = null,
-                bodyParts = listOf(BodyPart.LEGS, BodyPart.CORE)
+                bodyParts = listOf(BodyPart.QUADRICEPS, BodyPart.GLUTES, BodyPart.HAMSTRINGS, BodyPart.CORE)
             ),
             Exercise(
                 id = UUID.randomUUID().toString(),
                 name = context.getString(R.string.seed_pullup),
-                category = ExerciseCategory.ASSISTED_BODYWEIGHT,
+                category = ExerciseCategory.BODYWEIGHT,
                 measureType = MeasureType.REPS_ONLY,
                 instructions = context.getString(R.string.seed_pullup_desc),
                 imagePath = null,
-                bodyParts = listOf(BodyPart.BACK, BodyPart.ARMS)
+                bodyParts = listOf(BodyPart.LATS, BodyPart.BICEPS, BodyPart.REAR_DELTS)
             )
         )
 

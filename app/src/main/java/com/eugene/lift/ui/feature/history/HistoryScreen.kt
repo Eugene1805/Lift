@@ -21,7 +21,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eugene.lift.R
+import com.eugene.lift.domain.model.UserSettings
+import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.model.WorkoutSession
+import com.eugene.lift.domain.util.WeightConverter
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -30,9 +33,11 @@ fun HistoryRoute(
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
     val historyItems by viewModel.historyItems.collectAsStateWithLifecycle()
+    val userSettings by viewModel.userSettings.collectAsStateWithLifecycle()
 
     HistoryScreen(
         historyItems = historyItems,
+        userSettings = userSettings,
         onSessionClick = onSessionClick
     )
 }
@@ -41,11 +46,16 @@ fun HistoryRoute(
 @Composable
 fun HistoryScreen(
     historyItems: List<HistoryUiItem>,
+    userSettings: UserSettings,
     onSessionClick: (String) -> Unit
 ) {
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.history_title)) })
+            TopAppBar(
+                title = { Text(stringResource(R.string.history_title)) },
+                windowInsets = WindowInsets(0, 0, 0, 0)
+            )
         }
     ) { innerPadding ->
         if (historyItems.isEmpty()) {
@@ -69,6 +79,7 @@ fun HistoryScreen(
                             item(key = item.session.id) {
                                 HistorySessionCard(
                                     session = item.session,
+                                    userSettings = userSettings,
                                     onClick = { onSessionClick(item.session.id) }
                                 )
                             }
@@ -99,11 +110,13 @@ fun HistoryHeader(title: String) {
 @Composable
 fun HistorySessionCard(
     session: WorkoutSession,
+    userSettings: UserSettings,
     onClick: () -> Unit
 ) {
     Card(
         onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp)
@@ -148,9 +161,22 @@ fun HistorySessionCard(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Volumen Total (Suma de Peso * Reps de todos los sets completados)
-                val totalVolume = session.exercises.flatMap { it.sets }
+                val totalVolumeKg = session.exercises.flatMap { it.sets }
                     .filter { it.completed }
                     .sumOf { it.weight * it.reps }
+
+                // Convert to display unit
+                val totalVolume = if (userSettings.weightUnit == WeightUnit.LBS) {
+                    WeightConverter.kgToLbs(totalVolumeKg)
+                } else {
+                    totalVolumeKg
+                }
+
+                val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
+                    stringResource(R.string.history_lbs)
+                } else {
+                    stringResource(R.string.history_kg)
+                }
 
                 if (totalVolume > 0) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -162,7 +188,7 @@ fun HistorySessionCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "${formatWeight(totalVolume)} ${stringResource(R.string.history_kg)}",
+                            text = "${formatWeight(totalVolume)} $weightLabel",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -238,7 +264,17 @@ fun HistorySessionCard(
                             }
 
                             // Derecha: Mejor Set (ej: "100kg x 5")
-                            val bestSetText = getBestSetString(sessionExercise.sets, stringResource(R.string.history_kg), stringResource(R.string.history_reps))
+                            val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
+                                stringResource(R.string.history_lbs)
+                            } else {
+                                stringResource(R.string.history_kg)
+                            }
+                            val bestSetText = getBestSetString(
+                                sessionExercise.sets,
+                                weightLabel,
+                                stringResource(R.string.history_reps),
+                                userSettings
+                            )
                             Text(
                                 text = bestSetText,
                                 style = MaterialTheme.typography.bodyMedium,
@@ -265,14 +301,26 @@ fun formatWeight(weight: Double): String {
 }
 
 // Calcula el "Mejor Set" para mostrar en el resumen
-fun getBestSetString(sets: List<com.eugene.lift.domain.model.WorkoutSet>, kgLabel: String, repsLabel: String): String {
+fun getBestSetString(
+    sets: List<com.eugene.lift.domain.model.WorkoutSet>,
+    kgLabel: String,
+    repsLabel: String,
+    userSettings: UserSettings
+): String {
     // Filtramos completados y ordenamos por peso descendente
     val bestSet = sets.filter { it.completed }
         .maxWithOrNull(compareBy({ it.weight }, { it.reps }))
         ?: return "-"
 
+    // Convert weight from kg (storage) to display unit
+    val displayWeight = if (userSettings.weightUnit == WeightUnit.LBS) {
+        WeightConverter.kgToLbs(bestSet.weight)
+    } else {
+        bestSet.weight
+    }
+
     return when {
-        bestSet.weight > 0 -> "${formatWeight(bestSet.weight)}$kgLabel × ${bestSet.reps}"
+        displayWeight > 0 -> "${formatWeight(displayWeight)}$kgLabel × ${bestSet.reps}"
         bestSet.reps > 0 -> "${bestSet.reps} $repsLabel"
         (bestSet.timeSeconds ?: 0) > 0 -> formatDurationSimple(bestSet.timeSeconds!!)
         (bestSet.distance ?: 0.0) > 0 -> "${bestSet.distance} km"

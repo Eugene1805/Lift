@@ -68,7 +68,7 @@
 
     <string name="title_profile">User Profile</string>
     <string name="title_history">Workout History</string>
-    <string name="title_workout">Current Workout</string>
+    <string name="title_workout">Workouts</string>
     <string name="title_settings">Settings</string>
 
     <string name="seed_bench_press">Bench Press (Barbell)</string>
@@ -358,11 +358,31 @@
     <string name="seed_decline_chest_press_machine">Decline Chest Press (Machine)</string>
     <string name="seed_decline_chest_press_machine_desc">1. Sit in decline chest press machine.\n2. Adjust seat so handles at lower chest level.\n3. Press handles forward until arms extended.\n4. Targets lower chest specifically.\n5. Return under control to starting position.</string>
     <string name="seed_incline_cable_fly">Incline Cable Fly</string>
-    <string name="seed_incline_cable_fly_desc">1. Set bench to 30-45 degrees between cables.\n2. Set cables to low position.\n3. Lie back, bring handles together above upper chest.\n4. Targets upper chest with fly motion.\n5. Lower in arc motion maintaining tension.</string>
+    <string name="seed_incline_cable_fly_desc">1. Set bench to 30–45 degrees between cables.\n2. Set cables to low position.\n3. Lie back, bring handles together above upper chest.\n4. Targets upper chest with fly motion.\n5. Lower in arc motion maintaining tension.</string>
     <string name="seed_decline_cable_fly">Decline Cable Fly</string>
     <string name="seed_decline_cable_fly_desc">1. Set bench to decline between cables.\n2. Set cables to high position.\n3. Lie back, bring handles together at lower chest.\n4. Targets lower chest with fly motion.\n5. Lower in arc motion maintaining tension.</string>
     <string name="seed_machine_fly">Machine Fly (Pec Fly)</string>
     <string name="seed_machine_fly_desc">1. Sit in machine fly, back against pad.\n2. Adjust handles to chest height.\n3. Bring handles together in front of chest.\n4. Squeeze chest at peak contraction.\n5. Return under control to stretch position.</string>
+
+    <!-- Pullover Variations -->
+    <string name="seed_machine_pullover">Machine Pullover</string>
+    <string name="seed_machine_pullover_desc">1. Sit in pullover machine with back against pad.\n2. Place arms on pads or grip handles.\n3. Pull down in an arc motion to your torso.\n4. Feel the stretch in lats and chest at top.\n5. Control the movement back to starting position.</string>
+    <string name="seed_cable_pullover_rope">Cable Pullover with Rope</string>
+    <string name="seed_cable_pullover_rope_desc">1. Attach rope to high pulley.\n2. Stand facing away, lean forward slightly.\n3. Pull rope down in arc motion to hips.\n4. Keep arms slightly bent throughout.\n5. Control return to stretch position.</string>
+    <string name="seed_cable_pullover_bar">Cable Pullover with Bar</string>
+    <string name="seed_cable_pullover_bar_desc">1. Attach straight or EZ bar to high pulley.\n2. Stand facing away, lean forward slightly.\n3. Pull bar down in arc motion to thighs.\n4. Keep arms slightly bent throughout.\n5. Control return to stretch position.</string>
+
+    <!-- Overhead Triceps Extensions - Cable -->
+    <string name="seed_cable_overhead_triceps_extension">Cable Overhead Triceps Extension (Bilateral)</string>
+    <string name="seed_cable_overhead_triceps_extension_desc">1. Set cable to low position, face away from machine.\n2. Grip rope or bar overhead with both hands.\n3. Step forward to create tension.\n4. Extend arms overhead, keeping elbows stationary.\n5. Lower under control behind head.</string>
+    <string name="seed_cable_overhead_triceps_extension_unilateral">Cable Overhead Triceps Extension (Unilateral)</string>
+    <string name="seed_cable_overhead_triceps_extension_unilateral_desc">1. Set cable to low position, face away from machine.\n2. Grip handle with one hand overhead.\n3. Step forward to create tension.\n4. Extend arm overhead, keeping elbow stationary.\n5. Lower under control behind head, repeat other side.</string>
+    <string name="seed_cable_overhead_triceps_extension_cuff">Cable Overhead Triceps Extension with Cuff (Unilateral)</string>
+    <string name="seed_cable_overhead_triceps_extension_cuff_desc">1. Attach ankle cuff to wrist or use wrist cuff.\n2. Set cable to low position, face away.\n3. Position arm overhead with cuff attached.\n4. Extend arm overhead, keeping elbow stationary.\n5. Lower under control behind head.</string>
+
+    <!-- Overhead Triceps Extensions - Machine -->
+    <string name="seed_machine_overhead_triceps_extension">Machine Overhead Triceps Extension</string>
+    <string name="seed_machine_overhead_triceps_extension_desc">1. Sit in overhead triceps extension machine.\n2. Adjust seat so arms align with pivot point.\n3. Grip handles overhead or behind head.\n4. Extend arms upward, squeezing triceps.\n5. Lower under control to starting position.</string>
 
     <string name="section_appearance">Appearance</string>
     <string name="section_units">Units</string>
@@ -398,11 +418,18 @@
     <string name="tab_my_routines">My Routines</string>
     <string name="tab_archived">Archived</string>
     <string name="empty_routines">No routines here</string>
+    <string name="empty_archived">No archived routines</string>
     <string name="exercise_count">Exercises: %d</string>
     <string name="action_edit">Edit</string>
     <string name="action_archive">Archive</string>
     <string name="action_unarchive">Unarchive</string>
     <string name="action_delete">Delete</string>
+    <string name="action_move_to_folder">Move to folder</string>
+    <string name="action_duplicate">Duplicate</string>
+    <string name="action_share">Share</string>
+    <string name="share_routine_text">Routine: %1$s\n%2$d Exercises.</string>
+    <string name="quick_start_title">Quick Workout</string>
+    <string name="quick_start_subtitle">Start an empty session</string>
     <string name="title_edit_routine">Edit Routine</string>
     <string name="btn_add_exercise">Add Exercise</string>
     <string name="label_routine_name">Routine Name</string>
@@ -441,6 +468,7 @@
     <string name="history_yesterday">Yesterday</string>
     <string name="history_prs">PRs</string>
     <string name="history_kg">kg</string>
+    <string name="history_lbs">lbs</string>
     <string name="history_reps">reps</string>
     <string name="history_hours_short">h</string>
     <string name="history_minutes_short">m</string>

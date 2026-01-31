@@ -367,6 +367,27 @@
     <string name="seed_decline_cable_fly_desc">1. Ajusta banco en decline entre poleas.\n2. Ajusta poleas a posición alta.\n3. Acuéstate, junta manijas en pecho inferior.\n4. Trabaja pecho inferior con movimiento de apertura.\n5. Baja en movimiento de arco manteniendo tensión.</string>
     <string name="seed_machine_fly">Aperturas en Máquina (Pec Fly)</string>
     <string name="seed_machine_fly_desc">1. Siéntate en máquina de aperturas, espalda contra almohadilla.\n2. Ajusta manijas a altura del pecho.\n3. Junta manijas frente al pecho.\n4. Aprieta pecho en contracción máxima.\n5. Regresa controladamente a posición de estiramiento.</string>
+
+    <!-- Variaciones de Pullover -->
+    <string name="seed_machine_pullover">Pullover en Máquina</string>
+    <string name="seed_machine_pullover_desc">1. Siéntate en máquina de pullover, espalda contra almohadilla.\n2. Coloca brazos en almohadillas o agarra manijas.\n3. Jala hacia abajo en movimiento de arco hacia tu torso.\n4. Siente el estiramiento en dorsales y pecho arriba.\n5. Controla el movimiento de vuelta a la posición inicial.</string>
+    <string name="seed_cable_pullover_rope">Pullover en Polea con Cuerda</string>
+    <string name="seed_cable_pullover_rope_desc">1. Ajusta cuerda a polea alta.\n2. Párate de espaldas, inclínate ligeramente hacia adelante.\n3. Jala cuerda hacia abajo en arco hasta las caderas.\n4. Mantén brazos ligeramente flexionados durante todo el movimiento.\n5. Controla el regreso a posición de estiramiento.</string>
+    <string name="seed_cable_pullover_bar">Pullover en Polea con Barra</string>
+    <string name="seed_cable_pullover_bar_desc">1. Ajusta barra recta o EZ a polea alta.\n2. Párate de espaldas, inclínate ligeramente hacia adelante.\n3. Jala barra hacia abajo en arco hasta los muslos.\n4. Mantén brazos ligeramente flexionados durante todo el movimiento.\n5. Controla el regreso a posición de estiramiento.</string>
+
+    <!-- Extensiones de Tríceps sobre Cabeza - Polea -->
+    <string name="seed_cable_overhead_triceps_extension">Extensión de Tríceps sobre Cabeza en Polea (Bilateral)</string>
+    <string name="seed_cable_overhead_triceps_extension_desc">1. Ajusta polea a posición baja, da la espalda a la máquina.\n2. Agarra cuerda o barra sobre la cabeza con ambas manos.\n3. Da un paso adelante para crear tensión.\n4. Extiende brazos sobre la cabeza, manteniendo codos fijos.\n5. Baja controladamente detrás de la cabeza.</string>
+    <string name="seed_cable_overhead_triceps_extension_unilateral">Extensión de Tríceps sobre Cabeza en Polea (Unilateral)</string>
+    <string name="seed_cable_overhead_triceps_extension_unilateral_desc">1. Ajusta polea a posición baja, da la espalda a la máquina.\n2. Agarra manija con una mano sobre la cabeza.\n3. Da un paso adelante para crear tensión.\n4. Extiende brazo sobre la cabeza, manteniendo codo fijo.\n5. Baja controladamente detrás de la cabeza, repite con el otro lado.</string>
+    <string name="seed_cable_overhead_triceps_extension_cuff">Extensión de Tríceps sobre Cabeza en Polea con Correa (Unilateral)</string>
+    <string name="seed_cable_overhead_triceps_extension_cuff_desc">1. Ajusta correa de tobillo a muñeca o usa correa de muñeca.\n2. Ajusta polea a posición baja, da la espalda.\n3. Posiciona brazo sobre la cabeza con correa ajustada.\n4. Extiende brazo sobre la cabeza, manteniendo codo fijo.\n5. Baja controladamente detrás de la cabeza.</string>
+
+    <!-- Extensiones de Tríceps sobre Cabeza - Máquina -->
+    <string name="seed_machine_overhead_triceps_extension">Extensión de Tríceps sobre Cabeza en Máquina</string>
+    <string name="seed_machine_overhead_triceps_extension_desc">1. Siéntate en máquina de extensión de tríceps sobre cabeza.\n2. Ajusta asiento para alinear brazos con punto de pivote.\n3. Agarra manijas sobre la cabeza o detrás de la cabeza.\n4. Extiende brazos hacia arriba, apretando tríceps.\n5. Baja controladamente a posición inicial.</string>
+
     <string name="section_appearance">Apariencia</string>
     <string name="section_units">Unidades</string>
     <string name="section_about">Acerca de</string>
@@ -401,11 +422,18 @@
     <string name="tab_my_routines">Mis Rutinas</string>
     <string name="tab_archived">Archivadas</string>
     <string name="empty_routines">No hay rutinas aquí</string>
+    <string name="empty_archived">No hay archivadas</string>
     <string name="exercise_count">Ejercicios: %d</string>
     <string name="action_edit">Editar</string>
     <string name="action_archive">Archivar</string>
     <string name="action_unarchive">Desarchivar</string>
     <string name="action_delete">Eliminar</string>
+    <string name="action_move_to_folder">Mover a carpeta</string>
+    <string name="action_duplicate">Duplicar</string>
+    <string name="action_share">Compartir</string>
+    <string name="share_routine_text">Rutina: %1$s\n%2$d Ejercicios.</string>
+    <string name="quick_start_title">Entrenamiento Rápido</string>
+    <string name="quick_start_subtitle">Iniciar una sesión vacía</string>
     <string name="title_edit_routine">Editar Rutina</string>
     <string name="btn_add_exercise">Agregar Ejercicio</string>
     <string name="label_routine_name">Nombre de Rutina</string>
@@ -444,6 +472,7 @@
     <string name="history_yesterday">Ayer</string>
     <string name="history_prs">PRs</string>
     <string name="history_kg">kg</string>
+    <string name="history_lbs">lbs</string>
     <string name="history_reps">reps</string>
     <string name="history_hours_short">h</string>
     <string name="history_minutes_short">m</string>

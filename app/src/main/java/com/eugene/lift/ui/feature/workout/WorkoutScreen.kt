@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -88,8 +89,8 @@ fun WorkoutRoute(
         folders = folders,
         currentFolderId = currentFolderId,
         onTabSelected = viewModel::onTabSelected,
-        onSelectFolder = viewModel::selectFolder,     // Conectar ViewModel
-        onCreateFolder = viewModel::createFolder,     // Conectar ViewModel
+        onSelectFolder = viewModel::selectFolder,
+        onCreateFolder = viewModel::createFolder,
         onMoveTemplate = viewModel::moveTemplate,
         onCreateClick = { onNavigateToEdit(null) },
         onEditClick = { onNavigateToEdit(it.id) },
@@ -137,12 +138,16 @@ fun WorkoutScreen(
     }
 
     var showCreateFolderDialog by remember { mutableStateOf(false) }
-    var templateToMove by remember { mutableStateOf<WorkoutTemplate?>(null) } // Si no es null, mostramos el diálogo
+    var templateToMove by remember { mutableStateOf<WorkoutTemplate?>(null) }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             Column {
-                TopAppBar(title = { Text(stringResource(R.string.title_workout)) })
+                TopAppBar(
+                    title = { Text(stringResource(R.string.title_workout)) },
+                    windowInsets = WindowInsets(0, 0, 0, 0)
+                )
                 TabRow(selectedTabIndex = selectedTab) {
                     Tab(
                         selected = selectedTab == 0,
@@ -188,54 +193,60 @@ fun WorkoutScreen(
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (page == 0) {
                     item {
-                        FolderRow(
-                            folders = folders,
-                            currentFolderId = currentFolderId,
-                            onFolderClick = { onSelectFolder(it) },
-                            onBackToRoot = { onSelectFolder(null) }, // Null = Ir a raíz
-                            onCreateFolderClick = { showCreateFolderDialog = true },
-                            onDeleteFolder = { /* TODO: Implementar borrado si quieres */ }
-                        )
+                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            FolderRow(
+                                folders = folders,
+                                currentFolderId = currentFolderId,
+                                onFolderClick = { onSelectFolder(it) },
+                                onBackToRoot = { onSelectFolder(null) }, // Null = Ir a raíz
+                                onCreateFolderClick = { showCreateFolderDialog = true },
+                                onDeleteFolder = { /* TODO: Implementar borrado si quieres */ }
+                            )
+                        }
                     }
                     item {
-                        QuickStartCard(onClick = onStartEmptyClick)
+                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            QuickStartCard(onClick = onStartEmptyClick)
+                        }
                     }
                     if (currentTemplates.isNotEmpty()) {
                         item {
-                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
                         }
                     }
                 }
 
                 if (currentTemplates.isNotEmpty()) {
                     items(currentTemplates, key = { it.id }) { template ->
-                        TemplateItemCard(
-                            template = template,
-                            onClick = { onTemplateClick(template) },
-                            onEdit = { onEditClick(template) },
-                            onArchive = { onArchiveClick(template) },
-                            onDelete = { onDeleteClick(template) },
-                            onDuplicate = { onDuplicateClick(template) },
-                            onShare = { onShareClick() },
-                            onMove = { templateToMove = template }
-                        )
+                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            TemplateItemCard(
+                                template = template,
+                                onClick = { onTemplateClick(template) },
+                                onEdit = { onEditClick(template) },
+                                onArchive = { onArchiveClick(template) },
+                                onDelete = { onDeleteClick(template) },
+                                onDuplicate = { onDuplicateClick(template) },
+                                onShare = { onShareClick() },
+                                onMove = { templateToMove = template }
+                            )
+                        }
                     }
                 } else {
                     item {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 32.dp),
+                                .padding(start = 16.dp, end = 16.dp, top = 32.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = if (page == 0) stringResource(R.string.empty_routines)
-                                else "No hay archivados",
+                                else stringResource(R.string.empty_archived),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -280,6 +291,8 @@ fun TemplateItemCard(
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
+
     ElevatedCard(onClick = onClick) {
         ListItem(
             headlineContent = { Text(template.name, style = MaterialTheme.typography.titleMedium) },
@@ -304,7 +317,7 @@ fun TemplateItemCard(
                             leadingIcon = { Icon(if(template.isArchived) Icons.Default.Unarchive else Icons.Default.Archive, null) }
                         )
                         DropdownMenuItem(
-                            text = { Text("Mover a carpeta") },
+                            text = { Text(stringResource(R.string.action_move_to_folder)) },
                             onClick = { showMenu = false; onMove() },
                             leadingIcon = { Icon(Icons.Default.Folder, null) }
                         )
@@ -315,16 +328,16 @@ fun TemplateItemCard(
                             leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) }
                         )
                         DropdownMenuItem(
-                            text = { Text("Duplicar") },
+                            text = { Text(stringResource(R.string.action_duplicate)) },
                             onClick = { showMenu = false; onDuplicate() },
                             leadingIcon = { Icon(Icons.Default.ContentCopy, null) }
                         )
 
                         DropdownMenuItem(
-                            text = { Text("Compartir") },
+                            text = { Text(stringResource(R.string.action_share)) },
                             onClick = {
                                 showMenu = false
-                                val textToCopy = "Rutina: ${template.name}\n${template.exercises.size} Ejercicios."
+                                val textToCopy = context.getString(R.string.share_routine_text, template.name, template.exercises.size)
                                 clipboardManager.setText(AnnotatedString(textToCopy))
                                 onShare() // Callback por si quieres mostrar un Toast/Snackbar
                             },
@@ -355,12 +368,12 @@ fun QuickStartCard(onClick: () -> Unit) {
         ) {
             Column {
                 Text(
-                    text = "Entrenamiento Rápido",
+                    text = stringResource(R.string.quick_start_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Iniciar una sesión vacía",
+                    text = stringResource(R.string.quick_start_subtitle),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }

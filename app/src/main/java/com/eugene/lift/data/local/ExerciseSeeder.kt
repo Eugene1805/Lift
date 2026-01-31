@@ -1488,6 +1488,75 @@ class ExerciseSeeder @Inject constructor(
                 instructions = context.getString(R.string.seed_machine_fly_desc),
                 imagePath = null,
                 bodyParts = listOf(BodyPart.CHEST, BodyPart.FRONT_DELTS)
+            ),
+
+            // Pullover Variations
+            Exercise(
+                id = UUID.randomUUID().toString(),
+                name = context.getString(R.string.seed_machine_pullover),
+                category = ExerciseCategory.MACHINE,
+                measureType = MeasureType.REPS_AND_WEIGHT,
+                instructions = context.getString(R.string.seed_machine_pullover_desc),
+                imagePath = null,
+                bodyParts = listOf(BodyPart.LATS, BodyPart.CHEST)
+            ),
+            Exercise(
+                id = UUID.randomUUID().toString(),
+                name = context.getString(R.string.seed_cable_pullover_rope),
+                category = ExerciseCategory.MACHINE,
+                measureType = MeasureType.REPS_AND_WEIGHT,
+                instructions = context.getString(R.string.seed_cable_pullover_rope_desc),
+                imagePath = null,
+                bodyParts = listOf(BodyPart.LATS, BodyPart.CHEST)
+            ),
+            Exercise(
+                id = UUID.randomUUID().toString(),
+                name = context.getString(R.string.seed_cable_pullover_bar),
+                category = ExerciseCategory.MACHINE,
+                measureType = MeasureType.REPS_AND_WEIGHT,
+                instructions = context.getString(R.string.seed_cable_pullover_bar_desc),
+                imagePath = null,
+                bodyParts = listOf(BodyPart.LATS, BodyPart.CHEST)
+            ),
+
+            // Overhead Triceps Extensions - Cable/Pulley Variations
+            Exercise(
+                id = UUID.randomUUID().toString(),
+                name = context.getString(R.string.seed_cable_overhead_triceps_extension),
+                category = ExerciseCategory.MACHINE,
+                measureType = MeasureType.REPS_AND_WEIGHT,
+                instructions = context.getString(R.string.seed_cable_overhead_triceps_extension_desc),
+                imagePath = null,
+                bodyParts = listOf(BodyPart.TRICEPS)
+            ),
+            Exercise(
+                id = UUID.randomUUID().toString(),
+                name = context.getString(R.string.seed_cable_overhead_triceps_extension_unilateral),
+                category = ExerciseCategory.MACHINE,
+                measureType = MeasureType.REPS_AND_WEIGHT,
+                instructions = context.getString(R.string.seed_cable_overhead_triceps_extension_unilateral_desc),
+                imagePath = null,
+                bodyParts = listOf(BodyPart.TRICEPS)
+            ),
+            Exercise(
+                id = UUID.randomUUID().toString(),
+                name = context.getString(R.string.seed_cable_overhead_triceps_extension_cuff),
+                category = ExerciseCategory.MACHINE,
+                measureType = MeasureType.REPS_AND_WEIGHT,
+                instructions = context.getString(R.string.seed_cable_overhead_triceps_extension_cuff_desc),
+                imagePath = null,
+                bodyParts = listOf(BodyPart.TRICEPS)
+            ),
+
+            // Overhead Triceps Extensions - Machine Variations
+            Exercise(
+                id = UUID.randomUUID().toString(),
+                name = context.getString(R.string.seed_machine_overhead_triceps_extension),
+                category = ExerciseCategory.MACHINE,
+                measureType = MeasureType.REPS_AND_WEIGHT,
+                instructions = context.getString(R.string.seed_machine_overhead_triceps_extension_desc),
+                imagePath = null,
+                bodyParts = listOf(BodyPart.TRICEPS)
             )
         )
 

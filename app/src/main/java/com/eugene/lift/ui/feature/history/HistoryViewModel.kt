@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eugene.lift.R
 import com.eugene.lift.domain.model.WorkoutSession
+import com.eugene.lift.domain.model.UserSettings
+import com.eugene.lift.domain.usecase.GetSettingsUseCase
 import com.eugene.lift.domain.usecase.history.GetWorkoutHistoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -26,8 +28,12 @@ sealed interface HistoryUiItem {
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
     getWorkoutHistoryUseCase: GetWorkoutHistoryUseCase,
+    getSettingsUseCase: GetSettingsUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    val userSettings = getSettingsUseCase()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UserSettings())
 
     val historyItems: StateFlow<List<HistoryUiItem>> = getWorkoutHistoryUseCase()
         .map { sessions ->

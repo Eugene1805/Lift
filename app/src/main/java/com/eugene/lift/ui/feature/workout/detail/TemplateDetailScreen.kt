@@ -1,6 +1,7 @@
 package com.eugene.lift.ui.feature.workout.detail
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -50,6 +51,7 @@ fun TemplateDetailScreen(
     onExerciseClick: (String) -> Unit
 ) {
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = { Text(template?.name ?: "") },
@@ -63,7 +65,8 @@ fun TemplateDetailScreen(
                     IconButton(onClick = onEditTemplate) {
                         Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.template_detail_edit_template))
                     }
-                }
+                },
+                windowInsets = WindowInsets(0, 0, 0, 0)
             )
         },
         floatingActionButton = {

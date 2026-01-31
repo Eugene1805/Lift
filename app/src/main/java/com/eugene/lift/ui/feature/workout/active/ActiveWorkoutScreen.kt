@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.BasicTextField
@@ -40,6 +41,7 @@ import com.eugene.lift.R
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
+import com.eugene.lift.domain.util.WeightConverter
 
 @Composable
 fun ActiveWorkoutRoute(
@@ -73,6 +75,7 @@ fun ActiveWorkoutRoute(
             onDistanceChange = viewModel::onDistanceChange,
             onTimeChange = viewModel::onTimeChange,
             onRpeChange = viewModel::onRpeChange,
+            onRirChange = viewModel::onRirChange,
             onSetCompleted = viewModel::toggleSetCompleted,
             onFinishClick = { viewModel.finishWorkout(onSuccess = onNavigateBack) },
             onCancelClick = onNavigateBack,
@@ -105,9 +108,10 @@ fun ActiveWorkoutScreen(
     onToggleAutoTimer: () -> Unit,
     onWeightChange: (Int, Int, String) -> Unit,
     onRepsChange: (Int, Int, String) -> Unit,
-    onDistanceChange: (Int, Int, String) -> Unit, // <--- RECIBIR
-    onTimeChange: (Int, Int, String) -> Unit,     // <--- RECIBIR
+    onDistanceChange: (Int, Int, String) -> Unit,
+    onTimeChange: (Int, Int, String) -> Unit,
     onRpeChange: (Int, Int, String) -> Unit,
+    onRirChange: (Int, Int, String) -> Unit,
     onSetCompleted: (Int, Int) -> Unit,
     onFinishClick: () -> Unit,
     onCancelClick: () -> Unit,
@@ -130,6 +134,7 @@ fun ActiveWorkoutScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = {
@@ -188,7 +193,8 @@ fun ActiveWorkoutScreen(
                         )
                     }
                     Button(onClick = onFinishClick) { Text(stringResource(R.string.active_workout_finish)) }
-                }
+                },
+                windowInsets = WindowInsets(0, 0, 0, 0)
             )
         },
         bottomBar = {
@@ -207,7 +213,7 @@ fun ActiveWorkoutScreen(
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.padding(innerPadding).fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             itemsIndexed(exercises, key = { _, item -> item.id }) { exIndex, exercise ->
@@ -222,6 +228,7 @@ fun ActiveWorkoutScreen(
                     onWeightChange = onWeightChange,
                     onRepsChange = onRepsChange,
                     onRpeChange = onRpeChange,
+                    onRirChange = onRirChange,
                     onDistanceChange = onDistanceChange,
                     onTimeChange = onTimeChange,
                     onSetCompleted = onSetCompleted,
@@ -257,9 +264,10 @@ fun ActiveExerciseCard(
     userSettings: UserSettings,
     onWeightChange: (Int, Int, String) -> Unit,
     onRepsChange: (Int, Int, String) -> Unit,
-    onDistanceChange: (Int, Int, String) -> Unit, // <--- RECIBIR
-    onTimeChange: (Int, Int, String) -> Unit,     // <--- RECIBIR
+    onDistanceChange: (Int, Int, String) -> Unit,
+    onTimeChange: (Int, Int, String) -> Unit,
     onRpeChange: (Int, Int, String) -> Unit,
+    onRirChange: (Int, Int, String) -> Unit,
     onSetCompleted: (Int, Int) -> Unit,
     onAddSet: () -> Unit,
     onRemoveSet: (Int) -> Unit,
@@ -268,13 +276,13 @@ fun ActiveExerciseCard(
     val setsInDeleteMode = remember { mutableStateListOf<String>() }
 
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-        Column(modifier = Modifier.padding(8.dp)) {
-            // Header del Ejercicio
+        Column(modifier = Modifier.fillMaxWidth()) {
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onExerciseClick)
-                    .padding(8.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -292,8 +300,7 @@ fun ActiveExerciseCard(
                 )
             }
 
-            // Cabeceras Dinámicas (Según MeasureType)
-            Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
                 Text(stringResource(R.string.active_workout_set), modifier = Modifier.width(32.dp), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
 
                 when (exercise.exercise.measureType) {
@@ -329,7 +336,6 @@ fun ActiveExerciseCard(
             exercise.sets.forEachIndexed { setIndex, set ->
                 val historySet = exerciseHistory.getOrNull(setIndex)
 
-                // Key fundamental para evitar bugs visuales
                 key(set.id) {
                     if (set.id in setsInDeleteMode) {
                         DeleteConfirmationRow(
@@ -352,13 +358,13 @@ fun ActiveExerciseCard(
                                 historySet = historySet,
                                 effortMetric = effortMetric,
                                 weightUnitLabel = weightUnitLabel,
+                                userSettings = userSettings,
                                 onWeightChange = { onWeightChange(exIndex, setIndex, it) },
                                 onRepsChange = { onRepsChange(exIndex, setIndex, it) },
                                 onRpeChange = { onRpeChange(exIndex, setIndex, it) },
-                                // --- AHORA SÍ PASAMOS LOS CALLBACKS ---
+                                onRirChange = { onRirChange(exIndex, setIndex, it) },
                                 onDistanceChange = { onDistanceChange(exIndex, setIndex, it) },
                                 onTimeChange = { onTimeChange(exIndex, setIndex, it) },
-                                // --------------------------------------
                                 onCompleted = { onSetCompleted(exIndex, setIndex) }
                             )
                         }
@@ -368,7 +374,7 @@ fun ActiveExerciseCard(
 
             TextButton(
                 onClick = onAddSet,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
             ) {
                 Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(4.dp))
@@ -386,17 +392,34 @@ fun SetRowItem(
     historySet: WorkoutSet?,
     effortMetric: String?,
     weightUnitLabel: String,
+    userSettings: UserSettings,
     onWeightChange: (String) -> Unit,
     onRepsChange: (String) -> Unit,
     onDistanceChange: (String) -> Unit,
     onTimeChange: (String) -> Unit,
     onRpeChange: (String) -> Unit,
+    onRirChange: (String) -> Unit,
     onCompleted: () -> Unit
 ) {
     val rowBackground = if (set.completed)
         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
     else
         MaterialTheme.colorScheme.surface
+
+    // Convert weight from kg (storage) to display unit
+    val displayWeight = if (userSettings.weightUnit == WeightUnit.LBS) {
+        WeightConverter.kgToLbs(set.weight)
+    } else {
+        set.weight
+    }
+
+    val historyDisplayWeight = historySet?.let {
+        if (userSettings.weightUnit == WeightUnit.LBS) {
+            WeightConverter.kgToLbs(it.weight)
+        } else {
+            it.weight
+        }
+    }
 
     Row(
         modifier = Modifier
@@ -407,16 +430,15 @@ fun SetRowItem(
     ) {
         Text(text = setNumber.toString(), modifier = Modifier.width(32.dp).padding(top = 10.dp), textAlign = TextAlign.Center)
 
-        // LÓGICA POLIMÓRFICA DE INPUTS
         when(measureType) {
             MeasureType.REPS_AND_WEIGHT -> {
                 Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
                     CompactDecimalInput(
-                        value = if (set.weight > 0) set.weight.toString() else "",
+                        value = if (displayWeight > 0) displayWeight.toString() else "",
                         onValueChange = onWeightChange,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    if (historySet != null) HistoryText("${historySet.weight} $weightUnitLabel")
+                    if (historyDisplayWeight != null) HistoryText("$historyDisplayWeight $weightUnitLabel")
                 }
                 Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
                     CompactNumberInput(
@@ -467,14 +489,21 @@ fun SetRowItem(
             }
         }
 
-        // RPE/RIR (Común)
         if (effortMetric != null) {
             Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
-                CompactDecimalInput(
-                    value = if (effortMetric == "RPE") (set.rpe?.toString() ?: "") else (set.rir?.toString() ?: ""),
-                    onValueChange = onRpeChange,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                if (effortMetric == "RPE") {
+                    CompactDecimalInput(
+                        value = set.rpe?.toString() ?: "",
+                        onValueChange = onRpeChange,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    CompactNumberInput(
+                        value = set.rir?.toString() ?: "",
+                        onValueChange = onRirChange,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
                 if (historySet != null) {
                     val histVal = if (effortMetric == "RPE") historySet.rpe else historySet.rir
                     if (histVal != null) HistoryText("$histVal")
@@ -522,7 +551,6 @@ fun RestTimerBar(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Timer, null)
                 Spacer(modifier = Modifier.width(16.dp))
-                // Formato MM:SS
                 val min = state.timeRemainingSeconds / 60
                 val sec = state.timeRemainingSeconds % 60
                 Text(
@@ -561,7 +589,7 @@ fun BasicTextFieldStyle(value: String, onValueChange: (String) -> Unit, modifier
         modifier = modifier
             .background(containerColor, shape)
             .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), shape)
-            .padding(horizontal = 8.dp, vertical = 8.dp), // <--- AQUÍ SI PUEDES PONER PADDING A TU GUSTO
+            .padding(horizontal = 8.dp, vertical = 8.dp),
         singleLine = true,
         textStyle = MaterialTheme.typography.bodyMedium.copy(
             color = MaterialTheme.colorScheme.onSurface,

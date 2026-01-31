@@ -52,7 +52,7 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val _historyState = MutableStateFlow<Map<String, List<WorkoutSet>>>(emptyMap())
     val historyState = _historyState.asStateFlow()
 
-    private val _effortMetric = MutableStateFlow<String?>("RPE") // "RPE", "RIR" o null
+    private val _effortMetric = MutableStateFlow<String?>("RIR") // "RPE", "RIR" o null
     val effortMetric = _effortMetric.asStateFlow()
 
     private val _elapsedTimeSeconds = MutableStateFlow(0L)
@@ -131,8 +131,14 @@ class ActiveWorkoutViewModel @Inject constructor(
     }
 
     fun onWeightChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
-        val weight = newValue.toDoubleOrNull() ?: 0.0
-        updateSetState(exerciseIndex, setIndex) { it.copy(weight = weight) }
+        val weightInDisplayUnit = newValue.toDoubleOrNull() ?: 0.0
+        // Convert to kg for storage if user preference is lbs
+        val weightInKg = if (userSettings.value.weightUnit == WeightUnit.LBS) {
+            WeightConverter.lbsToKg(weightInDisplayUnit)
+        } else {
+            weightInDisplayUnit
+        }
+        updateSetState(exerciseIndex, setIndex) { it.copy(weight = weightInKg) }
     }
 
     fun onRepsChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
@@ -155,6 +161,11 @@ class ActiveWorkoutViewModel @Inject constructor(
     fun onRpeChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
         val rpe = newValue.toDoubleOrNull()
         updateSetState(exerciseIndex, setIndex) { it.copy(rpe = rpe) }
+    }
+
+    fun onRirChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
+        val rir = newValue.toIntOrNull()
+        updateSetState(exerciseIndex, setIndex) { it.copy(rir = rir) }
     }
 
     fun toggleSetCompleted(exerciseIndex: Int, setIndex: Int) {
@@ -224,7 +235,14 @@ class ActiveWorkoutViewModel @Inject constructor(
         if (setIndex in newSets.indices) {
             newSets.removeAt(setIndex)
         }
-        exercises[exerciseIndex] = targetExercise.copy(sets = newSets)
+
+        // Si no quedan series, eliminar el ejercicio completo
+        if (newSets.isEmpty()) {
+            exercises.removeAt(exerciseIndex)
+        } else {
+            exercises[exerciseIndex] = targetExercise.copy(sets = newSets)
+        }
+
         _activeSession.value = currentSession.copy(exercises = exercises)
     }
 

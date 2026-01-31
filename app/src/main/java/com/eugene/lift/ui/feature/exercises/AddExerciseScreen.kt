@@ -91,6 +91,14 @@ fun AddExerciseScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
+                actions = {
+                    Button(
+                        onClick = onSaveClick,
+                        enabled = name.isNotBlank()
+                    ) {
+                        Text(stringResource(R.string.btn_save))
+                    }
+                },
                 windowInsets = WindowInsets(0, 0, 0, 0),
                 scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
             )
@@ -164,18 +172,6 @@ fun AddExerciseScreen(
                 onOptionSelected = onMeasureTypeChange,
                 labelProvider = { type -> stringResource(type.labelRes) }
             )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Button(
-                onClick = onSaveClick,
-                modifier = Modifier.fillMaxWidth(),
-                enabled = name.isNotBlank()
-            ) {
-                Icon(Icons.Default.Check, contentDescription = stringResource(R.string.action_save))
-                Spacer(modifier = Modifier.padding(4.dp))
-                Text(stringResource(R.string.btn_save))
-            }
         }
     }
 }

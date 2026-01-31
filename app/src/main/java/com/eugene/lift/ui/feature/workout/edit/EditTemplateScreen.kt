@@ -1,12 +1,12 @@
 package com.eugene.lift.ui.feature.workout.edit
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,6 +31,7 @@ fun EditTemplateScreen(
     val exercises by viewModel.exercises.collectAsStateWithLifecycle()
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.title_edit_routine)) },
@@ -40,10 +41,11 @@ fun EditTemplateScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.saveTemplate(onSuccess = onNavigateBack) }) {
-                        Icon(Icons.Default.Save, contentDescription = stringResource(R.string.action_save))
+                    Button(onClick = { viewModel.saveTemplate(onSuccess = onNavigateBack) }) {
+                        Text(stringResource(R.string.action_save))
                     }
-                }
+                },
+                windowInsets = WindowInsets(0, 0, 0, 0)
             )
         },
         floatingActionButton = {

@@ -294,18 +294,19 @@ fun TemplateItemCard(
     val context = LocalContext.current
 
     ElevatedCard(onClick = onClick) {
-        ListItem(
-            headlineContent = { Text(template.name, style = MaterialTheme.typography.titleMedium) },
-            supportingContent = {
-                val count = template.exercises.size
-                Text(stringResource(R.string.exercise_count, count))
-            },
-            trailingContent = {
-                Box {
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = null)
-                    }
-                    DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            ListItem(
+                headlineContent = { Text(template.name, style = MaterialTheme.typography.titleMedium) },
+                supportingContent = {
+                    val count = template.exercises.size
+                    Text(stringResource(R.string.exercise_count, count))
+                },
+                trailingContent = {
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = null)
+                        }
+                        DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.action_edit)) },
                             onClick = { showMenu = false; onEdit() },
@@ -347,6 +348,37 @@ fun TemplateItemCard(
                 }
             }
         )
+
+        // Exercise list with set counts
+        if (template.exercises.isNotEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
+            ) {
+                template.exercises.forEach { exercise ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = exercise.exercise.name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = stringResource(R.string.template_sets_count, exercise.targetSets),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
     }
 }
 

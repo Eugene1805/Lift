@@ -12,6 +12,8 @@ import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.WorkoutSet
 import com.eugene.lift.domain.usecase.GetExerciseDetailUseCase
 import com.eugene.lift.domain.usecase.GetSettingsUseCase
+import com.eugene.lift.domain.usecase.template.CreateTemplateFromWorkoutUseCase
+import com.eugene.lift.domain.usecase.template.UpdateTemplateFromWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.StartEmptyWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.StartWorkoutFromTemplateUseCase
 import com.eugene.lift.domain.usecase.workout.FinishWorkoutUseCase
@@ -35,6 +37,8 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val startWorkoutFromTemplateUseCase: StartWorkoutFromTemplateUseCase,
     private val startEmptyWorkoutUseCase: StartEmptyWorkoutUseCase,
     private val finishWorkoutUseCase: FinishWorkoutUseCase,
+    private val updateTemplateFromWorkoutUseCase: UpdateTemplateFromWorkoutUseCase,
+    private val createTemplateFromWorkoutUseCase: CreateTemplateFromWorkoutUseCase,
     private val restTimerManager: RestTimerManager,
     private val getExerciseDetailUseCase: GetExerciseDetailUseCase,
     private val getLastHistoryForExerciseUseCase: GetLastHistoryForExerciseUseCase,
@@ -45,6 +49,9 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private val _activeSession = MutableStateFlow<WorkoutSession?>(null)
     val activeSession = _activeSession.asStateFlow()
+
+    // Store original template exercises for comparison
+    private var originalTemplateExercises: List<SessionExercise> = emptyList()
 
     val timerState = restTimerManager.timerState
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), restTimerManager.timerState.value)
@@ -71,17 +78,63 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private fun initializeSession() {
         viewModelScope.launch {
-            val session = if (templateId != null) {
-                startWorkoutFromTemplateUseCase(templateId)
-            } else {
-                startEmptyWorkoutUseCase()
+            val session = createSession() ?: run {
+                _activeSession.value = null
+                return@launch
             }
-            _activeSession.value = session
 
-            // Cargar historial usando el Use Case
-            session?.exercises?.forEach { sessionExercise ->
-                loadHistoryFor(sessionExercise.exercise.id)
+            // Store original exercises for change detection
+            originalTemplateExercises = session.exercises.map { it.copy() }
+
+            loadHistoryForSession(session)
+            _activeSession.value = updatedSessionWithHistory(session)
+        }
+    }
+
+    private suspend fun createSession(): WorkoutSession? {
+        return if (templateId != null) {
+            startWorkoutFromTemplateUseCase(templateId)
+        } else {
+            startEmptyWorkoutUseCase()
+        }
+    }
+
+    private suspend fun loadHistoryForSession(session: WorkoutSession) {
+        for (sessionExercise in session.exercises) {
+            loadHistoryFor(sessionExercise.exercise.id)
+        }
+    }
+
+    private fun updatedSessionWithHistory(session: WorkoutSession): WorkoutSession {
+        val updatedExercises = session.exercises.map { updateExerciseWithHistory(it) }
+        return session.copy(exercises = updatedExercises)
+    }
+
+    private fun updateExerciseWithHistory(sessionExercise: SessionExercise): SessionExercise {
+        val historySets = _historyState.value[sessionExercise.exercise.id]
+        val lastHistorySet = historySets?.lastOrNull()
+
+        return if (lastHistorySet == null) {
+            sessionExercise // No history, leave as is
+        } else {
+            val weightFromHistory = lastHistorySet.weight // in display units from loadHistoryFor
+            val repsFromHistory = lastHistorySet.reps
+
+            val weightInKg = if (userSettings.value.weightUnit == WeightUnit.LBS) {
+                WeightConverter.lbsToKg(weightFromHistory)
+            } else {
+                weightFromHistory
             }
+
+            val updatedSets = sessionExercise.sets.map { currentSet ->
+                // If the set is "empty" (0/0), fill with history.
+                if (currentSet.weight == 0.0 && currentSet.reps == 0) {
+                    currentSet.copy(weight = weightInKg, reps = repsFromHistory)
+                } else {
+                    currentSet
+                }
+            }
+            sessionExercise.copy(sets = updatedSets)
         }
     }
 
@@ -132,7 +185,6 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     fun onWeightChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
         val weightInDisplayUnit = newValue.toDoubleOrNull() ?: 0.0
-        // Convert to kg for storage if user preference is lbs
         val weightInKg = if (userSettings.value.weightUnit == WeightUnit.LBS) {
             WeightConverter.lbsToKg(weightInDisplayUnit)
         } else {
@@ -146,7 +198,6 @@ class ActiveWorkoutViewModel @Inject constructor(
         updateSetState(exerciseIndex, setIndex) { it.copy(reps = reps) }
     }
 
-    // --- NUEVAS FUNCIONES ---
     fun onDistanceChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
         val dist = newValue.toDoubleOrNull()
         updateSetState(exerciseIndex, setIndex) { it.copy(distance = dist) }
@@ -156,16 +207,30 @@ class ActiveWorkoutViewModel @Inject constructor(
         val seconds = newValue.toLongOrNull()
         updateSetState(exerciseIndex, setIndex) { it.copy(timeSeconds = seconds) }
     }
-    // ------------------------
+
 
     fun onRpeChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
-        val rpe = newValue.toDoubleOrNull()
-        updateSetState(exerciseIndex, setIndex) { it.copy(rpe = rpe) }
+        if (newValue.isEmpty()) {
+            updateSetState(exerciseIndex, setIndex) { it.copy(rpe = null) }
+            return
+        }
+        newValue.toDoubleOrNull()?.let {
+            if (it in 1.0..10.0) {
+                updateSetState(exerciseIndex, setIndex) { set -> set.copy(rpe = it) }
+            }
+        }
     }
 
     fun onRirChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
-        val rir = newValue.toIntOrNull()
-        updateSetState(exerciseIndex, setIndex) { it.copy(rir = rir) }
+        if (newValue.isEmpty()) {
+            updateSetState(exerciseIndex, setIndex) { it.copy(rir = null) }
+            return
+        }
+        newValue.toIntOrNull()?.let {
+            if (it in 0..10) {
+                updateSetState(exerciseIndex, setIndex) { set -> set.copy(rir = it) }
+            }
+        }
     }
 
     fun toggleSetCompleted(exerciseIndex: Int, setIndex: Int) {
@@ -180,30 +245,71 @@ class ActiveWorkoutViewModel @Inject constructor(
         }
     }
 
-    fun finishWorkout(onSuccess: () -> Unit) {
-        android.util.Log.d("DEBUG_LIFT", "Click en Finish detectado")
+    fun finishWorkout(updateTemplate: Boolean?, onSuccess: () -> Unit) {
+        Log.d("DEBUG_LIFT", "Click en Finish detectado")
 
         val session = _activeSession.value
 
-        // Log 2: Ver si tenemos sesión
         if (session == null) {
-            android.util.Log.e("DEBUG_LIFT", "¡ERROR CRÍTICO! La sesión es NULL. Abortando.")
+            Log.e("DEBUG_LIFT", "¡ERROR CRÍTICO! La sesión es NULL. Abortando.")
             return
         }
         viewModelScope.launch {
             try {
-                android.util.Log.d("DEBUG_LIFT", "Intentando guardar sesión...")
+                Log.d("DEBUG_LIFT", "Intentando guardar sesión...")
                 val finalSession = session.copy(
                     durationSeconds = _elapsedTimeSeconds.value
                 )
+
+                // Update existing template if requested
+                if (updateTemplate == true && finalSession.templateId != null) {
+                    updateTemplateFromWorkoutUseCase(finalSession)
+                }
+
+                // Create new template from Quick Start workout if requested
+                if (updateTemplate == true && finalSession.templateId == null) {
+                    createTemplateFromWorkoutUseCase(finalSession)
+                }
+
                 finishWorkoutUseCase(finalSession)
-                android.util.Log.d("DEBUG_LIFT", "¡Guardado exitoso!")
+                Log.d("DEBUG_LIFT", "¡Guardado exitoso!")
                 restTimerManager.stopTimer()
                 onSuccess()
             } catch (e: Exception) {
                 Log.e("ActiveWorkoutVM", "Error al guardar", e)
             }
         }
+    }
+
+    fun hasTemplate(): Boolean {
+        return _activeSession.value?.templateId != null
+    }
+
+    fun hasWorkoutBeenModified(): Boolean {
+        val currentSession = _activeSession.value ?: return false
+
+        // If there's no template, no modification to check
+        if (currentSession.templateId == null) return false
+
+        // Get current exercises
+        val currentExercises = currentSession.exercises
+
+        // Check if number of exercises changed
+        if (originalTemplateExercises.size != currentExercises.size) return true
+
+        // Check if exercise order or exercises changed
+        for (i in originalTemplateExercises.indices) {
+            val originalEx = originalTemplateExercises[i]
+            val currentEx = currentExercises.getOrNull(i) ?: return true
+
+            // Check if exercise ID changed (different exercise in this position)
+            if (originalEx.exercise.id != currentEx.exercise.id) return true
+
+            // Check if number of sets changed
+            if (originalEx.sets.size != currentEx.sets.size) return true
+        }
+
+        return false
     }
 
     fun addTime(seconds: Long) = restTimerManager.addTime(seconds)
@@ -236,7 +342,6 @@ class ActiveWorkoutViewModel @Inject constructor(
             newSets.removeAt(setIndex)
         }
 
-        // Si no quedan series, eliminar el ejercicio completo
         if (newSets.isEmpty()) {
             exercises.removeAt(exerciseIndex)
         } else {
@@ -249,29 +354,54 @@ class ActiveWorkoutViewModel @Inject constructor(
     fun onAddExercisesToSession(exerciseIds: List<String>) {
         viewModelScope.launch {
             val currentSession = _activeSession.value ?: return@launch
-            val newExercises = currentSession.exercises.toMutableList()
 
-            exerciseIds.forEach { id ->
-                val exerciseDef = getExerciseDetailUseCase(id).firstOrNull()
-                if (exerciseDef != null) {
-                    val initialSets = (1..3).map {
-                        WorkoutSet(
-                            id = UUID.randomUUID().toString(),
-                            weight = 0.0,
-                            reps = 0,
-                            completed = false
-                        )
-                    }
-                    newExercises.add(
-                        SessionExercise(
-                            id = UUID.randomUUID().toString(),
-                            exercise = exerciseDef,
-                            sets = initialSets
-                        )
-                    )
-                }
+            val newExercises = exerciseIds.mapNotNull { exerciseId ->
+                createSessionExerciseFromId(exerciseId)
             }
-            _activeSession.value = currentSession.copy(exercises = newExercises)
+
+            _activeSession.value = currentSession.copy(
+                exercises = currentSession.exercises + newExercises
+            )
+        }
+    }
+
+    private suspend fun createSessionExerciseFromId(exerciseId: String): SessionExercise? {
+        val exerciseDef = getExerciseDetailUseCase(exerciseId).firstOrNull() ?: return null
+
+        loadHistoryFor(exerciseId)
+
+        val (initialWeightKg, initialReps) = getInitialSetDataFromHistory(exerciseId)
+
+        val initialSets = (1..3).map {
+            WorkoutSet(
+                id = UUID.randomUUID().toString(),
+                weight = initialWeightKg,
+                reps = initialReps,
+                completed = false
+            )
+        }
+
+        return SessionExercise(
+            id = UUID.randomUUID().toString(),
+            exercise = exerciseDef,
+            sets = initialSets
+        )
+    }
+
+    private fun getInitialSetDataFromHistory(exerciseId: String): Pair<Double, Int> {
+        val lastHistorySet = _historyState.value[exerciseId]?.lastOrNull()
+
+        return if (lastHistorySet != null) {
+            val initialReps = lastHistorySet.reps
+            val weightFromHistory = lastHistorySet.weight
+            val initialWeightKg = if (userSettings.value.weightUnit == WeightUnit.LBS) {
+                WeightConverter.lbsToKg(weightFromHistory)
+            } else {
+                weightFromHistory
+            }
+            initialWeightKg to initialReps
+        } else {
+            0.0 to 0
         }
     }
 

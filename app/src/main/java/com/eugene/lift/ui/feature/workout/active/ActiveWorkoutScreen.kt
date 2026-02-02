@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
@@ -69,6 +70,8 @@ fun ActiveWorkoutRoute(
             elapsedTime = elapsedTime,
             userSettings = userSettings,
             isAutoTimerEnabled = isAutoTimerEnabled,
+            hasTemplate = viewModel.hasTemplate(),
+            hasWorkoutBeenModified = viewModel.hasWorkoutBeenModified(),
             onToggleAutoTimer = viewModel::toggleAutoTimer,
             onWeightChange = viewModel::onWeightChange,
             onRepsChange = viewModel::onRepsChange,
@@ -77,7 +80,9 @@ fun ActiveWorkoutRoute(
             onRpeChange = viewModel::onRpeChange,
             onRirChange = viewModel::onRirChange,
             onSetCompleted = viewModel::toggleSetCompleted,
-            onFinishClick = { viewModel.finishWorkout(onSuccess = onNavigateBack) },
+            onFinishClick = { updateTemplate ->
+                viewModel.finishWorkout(updateTemplate, onSuccess = onNavigateBack)
+            },
             onCancelClick = onNavigateBack,
             onTimerAdd = viewModel::addTime,
             onTimerStop = viewModel::stopTimer,
@@ -105,6 +110,8 @@ fun ActiveWorkoutScreen(
     elapsedTime: Long,
     userSettings: UserSettings,
     isAutoTimerEnabled: Boolean,
+    hasTemplate: Boolean,
+    hasWorkoutBeenModified: Boolean,
     onToggleAutoTimer: () -> Unit,
     onWeightChange: (Int, Int, String) -> Unit,
     onRepsChange: (Int, Int, String) -> Unit,
@@ -113,7 +120,7 @@ fun ActiveWorkoutScreen(
     onRpeChange: (Int, Int, String) -> Unit,
     onRirChange: (Int, Int, String) -> Unit,
     onSetCompleted: (Int, Int) -> Unit,
-    onFinishClick: () -> Unit,
+    onFinishClick: (Boolean?) -> Unit,
     onCancelClick: () -> Unit,
     onTimerAdd: (Long) -> Unit,
     onTimerStop: () -> Unit,
@@ -124,6 +131,86 @@ fun ActiveWorkoutScreen(
     onMetricChange: (String?) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    var showExitDialog by remember { mutableStateOf(false) }
+    var showTemplateUpdateDialog by remember { mutableStateOf(false) }
+    var showSaveAsTemplateDialog by remember { mutableStateOf(false) }
+
+    // Handle back button press
+    BackHandler {
+        showExitDialog = true
+    }
+
+    // Save As Template Dialog (for Quick Start workouts)
+    if (showSaveAsTemplateDialog) {
+        AlertDialog(
+            onDismissRequest = { showSaveAsTemplateDialog = false },
+            title = { Text(stringResource(R.string.save_as_template_title)) },
+            text = { Text(stringResource(R.string.save_as_template_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showSaveAsTemplateDialog = false
+                    onFinishClick(true)
+                }) {
+                    Text(stringResource(R.string.save_as_template_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showSaveAsTemplateDialog = false
+                    onFinishClick(false)
+                }) {
+                    Text(stringResource(R.string.save_as_template_decline))
+                }
+            }
+        )
+    }
+
+    // Template Update Dialog
+    if (showTemplateUpdateDialog) {
+        AlertDialog(
+            onDismissRequest = { showTemplateUpdateDialog = false },
+            title = { Text(stringResource(R.string.update_template_title)) },
+            text = { Text(stringResource(R.string.update_template_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showTemplateUpdateDialog = false
+                    onFinishClick(true)
+                }) {
+                    Text(stringResource(R.string.update_template_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showTemplateUpdateDialog = false
+                    onFinishClick(false)
+                }) {
+                    Text(stringResource(R.string.update_template_decline))
+                }
+            }
+        )
+    }
+
+    // Exit Dialog
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            title = { Text(stringResource(R.string.exit_workout_title)) },
+            text = { Text(stringResource(R.string.exit_workout_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showExitDialog = false
+                    onCancelClick()
+                }) {
+                    Text(stringResource(R.string.exit_workout_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitDialog = false }) {
+                    Text(stringResource(R.string.exit_workout_cancel))
+                }
+            }
+        )
+    }
 
     val formattedTime = remember(elapsedTime) {
         val hours = elapsedTime / 3600
@@ -162,7 +249,7 @@ fun ActiveWorkoutScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onCancelClick) { Icon(Icons.Default.Close, null) }
+                    IconButton(onClick = { showExitDialog = true }) { Icon(Icons.Default.Close, null) }
                 },
                 actions = {
                     IconButton(onClick = { showMenu = true }) {
@@ -192,7 +279,22 @@ fun ActiveWorkoutScreen(
                             trailingIcon = { Switch(checked = isAutoTimerEnabled, onCheckedChange = null) }
                         )
                     }
-                    Button(onClick = onFinishClick) { Text(stringResource(R.string.active_workout_finish)) }
+                    Button(onClick = {
+                        when {
+                            // Has template and modified -> ask to update template
+                            hasTemplate && hasWorkoutBeenModified -> {
+                                showTemplateUpdateDialog = true
+                            }
+                            // No template (Quick Start) -> ask to save as template
+                            !hasTemplate -> {
+                                showSaveAsTemplateDialog = true
+                            }
+                            // Has template but not modified -> just finish
+                            else -> {
+                                onFinishClick(null)
+                            }
+                        }
+                    }) { Text(stringResource(R.string.active_workout_finish)) }
                 },
                 windowInsets = WindowInsets(0, 0, 0, 0)
             )

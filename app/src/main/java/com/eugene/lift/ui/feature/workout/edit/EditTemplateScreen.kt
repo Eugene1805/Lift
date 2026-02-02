@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,11 +59,27 @@ fun EditTemplateScreen(
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
             // Nombre de la Rutina
+            val isNameError = name.isBlank() || name.length > MAX_TEMPLATE_NAME_LENGTH
+
             OutlinedTextField(
                 value = name,
                 onValueChange = viewModel::onNameChange,
                 label = { Text(stringResource(R.string.label_routine_name)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                isError = isNameError,
+                supportingText = {
+                    Text(
+                        text = stringResource(id = R.string.text_field_character_counter, name.length, MAX_TEMPLATE_NAME_LENGTH),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.End,
+                        color = if (name.length > MAX_TEMPLATE_NAME_LENGTH) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+                    )
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))

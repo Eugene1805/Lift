@@ -18,6 +18,8 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 
+const val MAX_TEMPLATE_NAME_LENGTH = 50
+
 @HiltViewModel
 class EditTemplateViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -50,7 +52,9 @@ class EditTemplateViewModel @Inject constructor(
     }
 
     fun onNameChange(newName: String) {
-        _name.value = newName
+        if (newName.length <= MAX_TEMPLATE_NAME_LENGTH) {
+            _name.value = newName
+        }
     }
 
     // Llamado cuando el usuario selecciona un ejercicio en el Picker

@@ -464,6 +464,7 @@
     <string name="template_detail_notes">Notas:</string>
     <string name="template_detail_exercises_count">%d Ejercicios</string>
     <string name="template_detail_series">Series</string>
+    <string name="template_sets_count">%d series</string>
 
     <!-- History Screen -->
     <string name="history_title">Historial</string>
@@ -476,6 +477,7 @@
     <string name="history_reps">reps</string>
     <string name="history_hours_short">h</string>
     <string name="history_minutes_short">m</string>
+    <string name="history_best_set">Mejor serie:</string>
 
     <!-- Folder Components -->
     <string name="folder_back">Atrás</string>
@@ -486,7 +488,7 @@
     <string name="folder_create">Crear</string>
     <string name="folder_cancel">Cancelar</string>
     <string name="folder_move_to_title">Mover a...</string>
-    <string name="folder_root">Raíz (Sin carpeta)</string>
+    <string name="folder_root">Entrenamientos</string>
 
     <!-- Workout Screen - Actions -->
     <string name="workout_move_to_folder">Mover a carpeta</string>
@@ -503,6 +505,18 @@
     <string name="active_workout_time_label">TIEMPO</string>
     <string name="active_workout_distance_km">km</string>
     <string name="active_workout_time_s">s</string>
+    <string name="exit_workout_title">¿Salir del Entrenamiento?</string>
+    <string name="exit_workout_message">¿Estás seguro que deseas salir? Se perderá tu progreso.</string>
+    <string name="exit_workout_confirm">Salir</string>
+    <string name="exit_workout_cancel">Cancelar</string>
+    <string name="update_template_title">¿Actualizar Plantilla?</string>
+    <string name="update_template_message">¿Deseas actualizar la plantilla con los cambios realizados durante este entrenamiento?</string>
+    <string name="update_template_confirm">Actualizar Plantilla</string>
+    <string name="update_template_decline">Solo Este Entrenamiento</string>
+    <string name="save_as_template_title">¿Guardar como Plantilla?</string>
+    <string name="save_as_template_message">¿Deseas guardar este entrenamiento como plantilla para uso futuro?</string>
+    <string name="save_as_template_confirm">Guardar como Plantilla</string>
+    <string name="save_as_template_decline">Solo Guardar Entrenamiento</string>
 
     <!-- Exercise List -->
     <string name="exercise_add_selected">Agregar (%d)</string>

@@ -218,69 +218,125 @@ fun HistorySessionCard(
 
             Spacer(modifier = Modifier.height(12.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // "Best set" header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Text(
+                    text = stringResource(R.string.history_best_set),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             // 3. LISTA DE EJERCICIOS (Vertical)
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 session.exercises.forEach { sessionExercise ->
                     val completedSets = sessionExercise.sets.count { it.completed }
+                    val hasPR = sessionExercise.sets.any { it.isPr }
 
                     // Solo mostramos ejercicios que tuvieron actividad
                     if (completedSets > 0 || sessionExercise.sets.isNotEmpty()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            // Izquierda: Círculo con Sets + Nombre
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                // Indicador de Series (ej: "3")
-                                Surface(
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.surfaceVariant,
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Text(
-                                            text = "$completedSets",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.width(12.dp))
-
-                                Text(
-                                    text = sessionExercise.exercise.name,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-
-                            // Derecha: Mejor Set (ej: "100kg x 5")
-                            val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
-                                stringResource(R.string.history_lbs)
+                        // Highlight background if exercise has PR
+                        Surface(
+                            color = if (hasPR) {
+                                Color(0xFFFFC107).copy(alpha = 0.15f) // Gold tint for PR
                             } else {
-                                stringResource(R.string.history_kg)
+                                Color.Transparent
+                            },
+                            shape = MaterialTheme.shapes.small,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    // Izquierda: Círculo con Sets + Nombre
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        // Indicador de Series (ej: "3")
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = MaterialTheme.colorScheme.surfaceVariant,
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Text(
+                                                    text = "$completedSets",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.width(12.dp))
+
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = sessionExercise.exercise.name,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+
+                                            // PR Trophy icon
+                                            if (hasPR) {
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Icon(
+                                                    imageVector = Icons.Default.EmojiEvents,
+                                                    contentDescription = "PR",
+                                                    modifier = Modifier.size(16.dp),
+                                                    tint = Color(0xFFFFC107)
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    // Derecha: Mejor Set (ej: "Best set: 100kg x 5 @2")
+                                    val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
+                                        stringResource(R.string.history_lbs)
+                                    } else {
+                                        stringResource(R.string.history_kg)
+                                    }
+
+                                    val bestSet = sessionExercise.sets.filter { it.completed }
+                                        .maxWithOrNull(compareBy({ it.weight }, { it.reps }))
+
+                                    val bestSetText = getBestSetString(
+                                        sessionExercise.sets,
+                                        weightLabel,
+                                        stringResource(R.string.history_reps),
+                                        userSettings
+                                    )
+
+                                    // Show effort metric for the best set only
+                                    val effortText = bestSet?.let { set ->
+                                        when {
+                                            set.rpe != null -> " RPE ${set.rpe}"
+                                            set.rir != null -> " @${set.rir}"
+                                            else -> ""
+                                        }
+                                    } ?: ""
+
+                                    // Single line (without "Best set:" label - it's now at card header)
+                                    Text(
+                                        text = "$bestSetText$effortText",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
                             }
-                            val bestSetText = getBestSetString(
-                                sessionExercise.sets,
-                                weightLabel,
-                                stringResource(R.string.history_reps),
-                                userSettings
-                            )
-                            Text(
-                                text = bestSetText,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
                         }
                     }
                 }
@@ -334,6 +390,7 @@ fun formatDurationSimple(seconds: Long): String {
     val minutes = (seconds % 3600) / 60
     return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
 }
+
 
 // Versión Composable de formatDuration que usa strings resources
 @Composable

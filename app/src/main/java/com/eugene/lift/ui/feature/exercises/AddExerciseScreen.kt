@@ -111,19 +111,26 @@ fun AddExerciseScreen(
                 .padding(16.dp)
         ) {
 
+            val isNameError = name.isBlank() || name.length > MAX_EXERCISE_NAME_LENGTH
+
             OutlinedTextField(
                 value = name,
                 onValueChange = onNameChange,
                 label = { Text(stringResource(R.string.label_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                isError = name.isBlank(),
+                isError = isNameError,
 
                 supportingText = {
                     Text(
                         text = stringResource(id = R.string.text_field_character_counter, name.length, MAX_EXERCISE_NAME_LENGTH),
                         modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.End
+                        textAlign = TextAlign.End,
+                        color = if (name.length > MAX_EXERCISE_NAME_LENGTH) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
                     )
                 }
             )

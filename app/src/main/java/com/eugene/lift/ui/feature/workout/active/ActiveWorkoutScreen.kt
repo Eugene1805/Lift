@@ -296,7 +296,11 @@ fun ActiveWorkoutScreen(
                         }
                     }) { Text(stringResource(R.string.active_workout_finish)) }
                 },
-                windowInsets = WindowInsets(0, 0, 0, 0)
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                )
             )
         },
         bottomBar = {

@@ -54,7 +54,11 @@ fun HistoryScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.history_title)) },
-                windowInsets = WindowInsets(0, 0, 0, 0)
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                )
             )
         }
     ) { innerPadding ->
@@ -94,14 +98,14 @@ fun HistoryScreen(
 @Composable
 fun HistoryHeader(title: String) {
     Surface(
-        color = MaterialTheme.colorScheme.surface, // O surfaceVariant para resaltar más
+        color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
     }
@@ -122,7 +126,6 @@ fun HistorySessionCard(
             .padding(horizontal = 16.dp, vertical = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // 1. CABECERA: Nombre, Hora y Duración
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top,
@@ -155,17 +158,14 @@ fun HistorySessionCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 2. ESTADÍSTICAS: Volumen y PRs
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Volumen Total (Suma de Peso * Reps de todos los sets completados)
                 val totalVolumeKg = session.exercises.flatMap { it.sets }
                     .filter { it.completed }
                     .sumOf { it.weight * it.reps }
 
-                // Convert to display unit
                 val totalVolume = if (userSettings.weightUnit == WeightUnit.LBS) {
                     WeightConverter.kgToLbs(totalVolumeKg)
                 } else {
@@ -195,7 +195,6 @@ fun HistorySessionCard(
                     }
                 }
 
-                // Contador de PRs
                 val prCount = session.exercises.flatMap { it.sets }.count { it.isPr }
                 if (prCount > 0) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -203,7 +202,7 @@ fun HistorySessionCard(
                             imageVector = Icons.Default.EmojiEvents,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
-                            tint = Color(0xFFFFC107) // Color Dorado/Ambar
+                            tint = Color(0xFFFFC107)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
@@ -220,7 +219,6 @@ fun HistorySessionCard(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(8.dp))
 
-            // "Best set" header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -234,18 +232,15 @@ fun HistorySessionCard(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // 3. LISTA DE EJERCICIOS (Vertical)
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 session.exercises.forEach { sessionExercise ->
                     val completedSets = sessionExercise.sets.count { it.completed }
                     val hasPR = sessionExercise.sets.any { it.isPr }
 
-                    // Solo mostramos ejercicios que tuvieron actividad
                     if (completedSets > 0 || sessionExercise.sets.isNotEmpty()) {
-                        // Highlight background if exercise has PR
                         Surface(
                             color = if (hasPR) {
-                                Color(0xFFFFC107).copy(alpha = 0.15f) // Gold tint for PR
+                                Color(0xFFFFC107).copy(alpha = 0.15f)
                             } else {
                                 Color.Transparent
                             },
@@ -258,12 +253,10 @@ fun HistorySessionCard(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    // Izquierda: Círculo con Sets + Nombre
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier.weight(1f)
                                     ) {
-                                        // Indicador de Series (ej: "3")
                                         Surface(
                                             shape = CircleShape,
                                             color = MaterialTheme.colorScheme.surfaceVariant,
@@ -289,7 +282,6 @@ fun HistorySessionCard(
                                                 overflow = TextOverflow.Ellipsis
                                             )
 
-                                            // PR Trophy icon
                                             if (hasPR) {
                                                 Spacer(modifier = Modifier.width(6.dp))
                                                 Icon(
@@ -302,7 +294,6 @@ fun HistorySessionCard(
                                         }
                                     }
 
-                                    // Derecha: Mejor Set (ej: "Best set: 100kg x 5 @2")
                                     val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
                                         stringResource(R.string.history_lbs)
                                     } else {
@@ -328,7 +319,6 @@ fun HistorySessionCard(
                                         }
                                     } ?: ""
 
-                                    // Single line (without "Best set:" label - it's now at card header)
                                     Text(
                                         text = "$bestSetText$effortText",
                                         style = MaterialTheme.typography.bodyMedium,
@@ -345,9 +335,6 @@ fun HistorySessionCard(
     }
 }
 
-// --- FUNCIONES DE UTILIDAD (Ponlas al final del archivo o en tu util) ---
-
-// Formatea doubles quitando decimales si es entero (100.0 -> "100")
 fun formatWeight(weight: Double): String {
     return if (weight % 1.0 == 0.0) {
         weight.toInt().toString()
@@ -356,19 +343,16 @@ fun formatWeight(weight: Double): String {
     }
 }
 
-// Calcula el "Mejor Set" para mostrar en el resumen
 fun getBestSetString(
     sets: List<com.eugene.lift.domain.model.WorkoutSet>,
     kgLabel: String,
     repsLabel: String,
     userSettings: UserSettings
 ): String {
-    // Filtramos completados y ordenamos por peso descendente
     val bestSet = sets.filter { it.completed }
         .maxWithOrNull(compareBy({ it.weight }, { it.reps }))
         ?: return "-"
 
-    // Convert weight from kg (storage) to display unit
     val displayWeight = if (userSettings.weightUnit == WeightUnit.LBS) {
         WeightConverter.kgToLbs(bestSet.weight)
     } else {
@@ -384,7 +368,6 @@ fun getBestSetString(
     }
 }
 
-// Utilidad simple para formato 1h 30m (version non-Composable)
 fun formatDurationSimple(seconds: Long): String {
     val hours = seconds / 3600
     val minutes = (seconds % 3600) / 60
@@ -392,7 +375,6 @@ fun formatDurationSimple(seconds: Long): String {
 }
 
 
-// Versión Composable de formatDuration que usa strings resources
 @Composable
 fun formatDuration(seconds: Long): String {
     val hoursLabel = stringResource(R.string.history_hours_short)

@@ -66,7 +66,11 @@ fun TemplateDetailScreen(
                         Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.template_detail_edit_template))
                     }
                 },
-                windowInsets = WindowInsets(0, 0, 0, 0)
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                )
             )
         },
         floatingActionButton = {

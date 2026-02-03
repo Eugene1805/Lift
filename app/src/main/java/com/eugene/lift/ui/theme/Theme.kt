@@ -15,12 +15,12 @@ private val DarkColorScheme = darkColorScheme(
     primary = PrimaryPurple,
     onPrimary = Color.White,
     primaryContainer = Color(0xFF5B21B6), // Darker purple for containers
-    onPrimaryContainer = DarkText,
+    onPrimaryContainer = Color(0xFFE9D5FF),
 
     secondary = SecondaryTeal,
     onSecondary = Color.White,
     secondaryContainer = Color(0xFF0E7490), // Darker teal for containers
-    onSecondaryContainer = DarkText,
+    onSecondaryContainer = Color(0xFFCFFAFE),
 
     tertiary = Color(0xFF8B5CF6), // Lighter purple accent
     onTertiary = Color.White,
@@ -28,24 +28,24 @@ private val DarkColorScheme = darkColorScheme(
     error = WarningOrange,
     onError = Color.White,
 
-    background = DarkBackground,
+    background = DarkBackground, // Pure black
     onBackground = DarkText,
 
-    surface = DarkSurface,
+    surface = DarkSurface, // Very dark gray for cards
     onSurface = DarkText,
 
-    surfaceVariant = Color(0xFF3D2E6B), // Slightly lighter surface
-    onSurfaceVariant = Color(0xFFCAC4D0),
+    surfaceVariant = Color(0xFF2A2A2A), // Slightly lighter than surface
+    onSurfaceVariant = Color(0xFFB0B0B0),
 
-    outline = Color(0xFF6D5F8D),
-    outlineVariant = Color(0xFF4A3B6E)
+    outline = Color(0xFF3D3D3D),
+    outlineVariant = Color(0xFF2A2A2A)
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryPurple,
     onPrimary = Color.White,
     primaryContainer = Color(0xFFE9D5FF), // Light purple for containers
-    onPrimaryContainer = LightText,
+    onPrimaryContainer = Color(0xFF312E81),
 
     secondary = SecondaryTeal,
     onSecondary = Color.White,
@@ -58,17 +58,17 @@ private val LightColorScheme = lightColorScheme(
     error = WarningOrange,
     onError = Color.White,
 
-    background = LightBackground,
+    background = LightBackground, // Pure white
     onBackground = LightText,
 
-    surface = LightSurface,
+    surface = LightSurface, // Very light gray for cards
     onSurface = LightText,
 
-    surfaceVariant = Color(0xFFF5F3FF), // Very light purple
-    onSurfaceVariant = Color(0xFF49454F),
+    surfaceVariant = Color(0xFFF5F5F5), // Slightly darker than surface
+    onSurfaceVariant = Color(0xFF5A5A5A),
 
-    outline = Color(0xFFCAC4D0),
-    outlineVariant = Color(0xFFE7E0EC)
+    outline = Color(0xFFE0E0E0),
+    outlineVariant = Color(0xFFF0F0F0)
 )
 
 @Composable

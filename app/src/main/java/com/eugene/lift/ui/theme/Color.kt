@@ -13,11 +13,11 @@ val SuccessGreen = Color(0xFF10B981)
 val WarningOrange = Color(0xFFF97316) // Orange-red for clear distinction
 
 // Light Theme Colors
-val LightBackground = Color(0xFFFAF5FF) // Very subtle purple tint
-val LightSurface = Color(0xFFFFFFFF)
-val LightText = Color(0xFF312E81)
+val LightBackground = Color(0xFFFFFFFF) // Pure white
+val LightSurface = Color(0xFFFAFAFA) // Very light gray for cards
+val LightText = Color(0xFF1A1A1A) // Near black for text
 
 // Dark Theme Colors
-val DarkBackground = Color(0xFF1E1B4B) // Deep purple-blue
-val DarkSurface = Color(0xFF2D1B69) // Deep purple-gray
-val DarkText = Color(0xFFE0E7FF) // Soft light blue
+val DarkBackground = Color(0xFF121212) // Pure black
+val DarkSurface = Color(0xFF1A1A1A) // Very dark gray for cards
+val DarkText = Color(0xFFE0E0E0) // Light gray for text

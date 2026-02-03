@@ -110,7 +110,12 @@ fun ExercisesScreen(
                         )
                     },
                     windowInsets = WindowInsets(0, 0, 0, 0),
-                    scrollBehavior = scrollBehavior
+                    scrollBehavior = scrollBehavior,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.onBackground,
+                        scrolledContainerColor = MaterialTheme.colorScheme.background
+                    )
                 )
 
                 Row(

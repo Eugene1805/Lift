@@ -3,7 +3,6 @@ package com.eugene.lift.ui.feature.settings
 import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -23,6 +21,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -61,7 +62,11 @@ fun SettingsScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.title_settings)) },
-                windowInsets = WindowInsets(0, 0, 0, 0)
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         }
     ) { innerPadding ->
@@ -108,29 +113,62 @@ fun SettingsScreen(
             HorizontalDivider()
 
             SettingsSection(title = stringResource(R.string.section_units)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Box(modifier = Modifier.weight(1f)) {
-                        AppDropdown(
-                            label = stringResource(R.string.label_weight),
-                            options = WeightUnit.entries,
-                            selectedOption = settings.weightUnit,
-                            onOptionSelected = { viewModel.updateWeightUnit(it) },
-                            labelProvider = { it.name } // TODO: Use string resources
-                        )
-                    }
-                    Box(modifier = Modifier.weight(1f)) {
-                        AppDropdown(
-                            label = stringResource(R.string.label_distance),
-                            options = DistanceUnit.entries,
-                            selectedOption = settings.distanceUnit,
-                            onOptionSelected = { viewModel.updateDistanceUnit(it) },
-                            labelProvider = { unit ->
-                                when (unit) {
-                                    DistanceUnit.KM -> stringResource(R.string.unit_km)
-                                    DistanceUnit.MILES -> stringResource(R.string.unit_miles)
-                                }
+                // Weight Unit
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(R.string.label_weight),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        WeightUnit.entries.forEachIndexed { index, unit ->
+                            SegmentedButton(
+                                selected = settings.weightUnit == unit,
+                                onClick = { viewModel.updateWeightUnit(unit) },
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = index,
+                                    count = WeightUnit.entries.size
+                                )
+                            ) {
+                                Text(unit.name)
                             }
-                        )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Distance Unit
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(R.string.label_distance),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        DistanceUnit.entries.forEachIndexed { index, unit ->
+                            SegmentedButton(
+                                selected = settings.distanceUnit == unit,
+                                onClick = { viewModel.updateDistanceUnit(unit) },
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = index,
+                                    count = DistanceUnit.entries.size
+                                )
+                            ) {
+                                Text(
+                                    when (unit) {
+                                        DistanceUnit.KM -> stringResource(R.string.unit_km)
+                                        DistanceUnit.MILES -> stringResource(R.string.unit_miles)
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -168,7 +206,8 @@ fun SettingsSection(title: String, content: @Composable () -> Unit) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.secondary,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
         )
         Spacer(modifier = Modifier.height(16.dp))
         content()
@@ -186,15 +225,27 @@ fun SettingsActionItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(modifier = Modifier.width(16.dp))
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.padding(end = 16.dp)
+        )
         Column {
-            Text(text = title, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
             if (subtitle != null) {
-                Text(text = subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }

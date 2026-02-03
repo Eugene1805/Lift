@@ -27,6 +27,7 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -81,7 +82,11 @@ fun ExerciseDetailScreen(
                         Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.exercise_detail_edit))
                     }
                 },
-                windowInsets = WindowInsets(0,0,0,0)
+                windowInsets = WindowInsets(0,0,0,0),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                )
             )
         }
     ) { innerPadding ->

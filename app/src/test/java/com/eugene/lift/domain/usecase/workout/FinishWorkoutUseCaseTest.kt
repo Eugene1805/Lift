@@ -43,7 +43,9 @@ class FinishWorkoutUseCaseTest {
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
-        useCase = FinishWorkoutUseCase(repository)
+        val userProfileRepository = mockk<com.eugene.lift.domain.repository.UserProfileRepository>(relaxed = true)
+        coEvery { userProfileRepository.getCurrentProfileOnce() } returns null
+        useCase = FinishWorkoutUseCase(repository, userProfileRepository)
     }
 
     @Test

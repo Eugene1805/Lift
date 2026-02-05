@@ -5,6 +5,7 @@ import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.repository.ExerciseRepository
+import com.eugene.lift.domain.repository.WorkoutRepository
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first
@@ -22,6 +23,7 @@ import org.junit.Test
 class GetExercisesUseCaseTest {
 
     private lateinit var repository: ExerciseRepository
+    private lateinit var workoutRepository: WorkoutRepository
     private lateinit var useCase: GetExercisesUseCase
 
     private val sampleExercises = listOf(
@@ -57,7 +59,10 @@ class GetExercisesUseCaseTest {
     @Before
     fun setup() {
         repository = mockk()
-        useCase = GetExercisesUseCase(repository)
+        workoutRepository = mockk()
+        coEvery { workoutRepository.getExerciseUsageCount() } returns emptyMap()
+        coEvery { workoutRepository.getExerciseLastUsedDates() } returns emptyMap()
+        useCase = GetExercisesUseCase(repository, workoutRepository)
     }
 
     @Test

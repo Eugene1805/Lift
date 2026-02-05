@@ -90,4 +90,14 @@ class WorkoutRepositoryImpl @Inject constructor(
         val sessionComplete = dao.getLastSessionWithExercise(exerciseId) ?: return null
         return sessionComplete.toDomain()
     }
+
+    override suspend fun getExerciseUsageCount(): Map<String, Int> {
+        return dao.getExerciseUsageCount().associate { it.exerciseId to it.useCount }
+    }
+
+    override suspend fun getExerciseLastUsedDates(): Map<String, LocalDateTime> {
+        return dao.getExerciseLastUsedDates()
+            .filter { it.lastUsedDate != null }
+            .associate { it.exerciseId to it.lastUsedDate!! }
+    }
 }

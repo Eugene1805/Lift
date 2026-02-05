@@ -24,9 +24,12 @@ import androidx.compose.runtime.*
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -512,18 +515,24 @@ fun SetRowItem(
     else
         MaterialTheme.colorScheme.surface
 
-    // Convert weight from kg (storage) to display unit
-    val displayWeight = if (userSettings.weightUnit == WeightUnit.LBS) {
-        WeightConverter.kgToLbs(set.weight)
-    } else {
-        set.weight
-    }
+    // Weight is stored in display units during workout, no conversion needed
+    val displayWeight = set.weight
 
     val historyDisplayWeight = historySet?.let {
+        // History is stored in kg, so convert to display units
         if (userSettings.weightUnit == WeightUnit.LBS) {
             WeightConverter.kgToLbs(it.weight)
         } else {
             it.weight
+        }
+    }
+
+    // Format weight: show as integer if whole number, otherwise show decimal
+    fun formatWeight(weight: Double): String {
+        return if (weight == weight.toLong().toDouble()) {
+            weight.toLong().toString()
+        } else {
+            weight.toString()
         }
     }
 
@@ -540,11 +549,11 @@ fun SetRowItem(
             MeasureType.REPS_AND_WEIGHT -> {
                 Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
                     CompactDecimalInput(
-                        value = if (displayWeight > 0) displayWeight.toString() else "",
+                        value = if (displayWeight > 0) formatWeight(displayWeight) else "",
                         onValueChange = onWeightChange,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    if (historyDisplayWeight != null) HistoryText("$historyDisplayWeight $weightUnitLabel")
+                    if (historyDisplayWeight != null) HistoryText("${formatWeight(historyDisplayWeight)} $weightUnitLabel")
                 }
                 Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
                     CompactNumberInput(
@@ -567,12 +576,16 @@ fun SetRowItem(
             }
             MeasureType.DISTANCE_TIME -> {
                 Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
+                    val distanceValue = set.distance ?: 0.0
                     CompactDecimalInput(
-                        value = if ((set.distance ?: 0.0) > 0) set.distance.toString() else "",
+                        value = if (distanceValue > 0) formatWeight(distanceValue) else "",
                         onValueChange = onDistanceChange,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    if (historySet != null) HistoryText("${historySet.distance ?: "-"} km")
+                    if (historySet != null) {
+                        val histDist = historySet.distance
+                        HistoryText("${if (histDist != null) formatWeight(histDist) else "-"} km")
+                    }
                 }
                 Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
                     CompactNumberInput(
@@ -676,26 +689,101 @@ fun RestTimerBar(
 
 @Composable
 fun CompactNumberInput(value: String, onValueChange: (String) -> Unit, modifier: Modifier) {
-    BasicTextFieldStyle(value, onValueChange, modifier, KeyboardType.Number)
+    CompactTextInput(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        keyboardType = KeyboardType.Number,
+        filterInput = { input -> input.filter { it.isDigit() } }
+    )
 }
 
 @Composable
 fun CompactDecimalInput(value: String, onValueChange: (String) -> Unit, modifier: Modifier) {
-    BasicTextFieldStyle(value, onValueChange, modifier, KeyboardType.Decimal)
+    CompactTextInput(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        keyboardType = KeyboardType.Decimal,
+        filterInput = { input ->
+            // Allow digits and at most one decimal point
+            buildString {
+                var decimalAdded = false
+                for (char in input) {
+                    when {
+                        char.isDigit() -> append(char)
+                        char == '.' && !decimalAdded -> {
+                            append(char)
+                            decimalAdded = true
+                        }
+                    }
+                }
+            }
+        }
+    )
 }
 
 @Composable
-fun BasicTextFieldStyle(value: String, onValueChange: (String) -> Unit, modifier: Modifier, keyboardType: KeyboardType) {
+fun CompactTextInput(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier,
+    keyboardType: KeyboardType,
+    filterInput: (String) -> String
+) {
     val shape = MaterialTheme.shapes.small
     val containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
 
+    // Use TextFieldValue to control selection
+    var textFieldValue by remember { mutableStateOf(TextFieldValue(value)) }
+    var isFocused by remember { mutableStateOf(false) }
+
+    // Sync when external value changes (from ViewModel)
+    // But ONLY when not focused - this prevents round-trip conversion issues during typing
+    LaunchedEffect(value, isFocused) {
+        if (!isFocused && textFieldValue.text != value) {
+            textFieldValue = TextFieldValue(
+                text = value,
+                selection = TextRange(value.length)
+            )
+        }
+    }
+
     BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
+        value = textFieldValue,
+        onValueChange = { newTextFieldValue ->
+            val filtered = filterInput(newTextFieldValue.text)
+            val newSelection = if (filtered.length < newTextFieldValue.text.length) {
+                TextRange(minOf(newTextFieldValue.selection.start, filtered.length))
+            } else {
+                newTextFieldValue.selection
+            }
+            textFieldValue = TextFieldValue(text = filtered, selection = newSelection)
+            onValueChange(filtered)
+        },
         modifier = modifier
             .background(containerColor, shape)
             .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), shape)
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp)
+            .onFocusChanged { focusState ->
+                val wasFocused = isFocused
+                isFocused = focusState.isFocused
+
+                if (focusState.isFocused && textFieldValue.text.isNotEmpty()) {
+                    // Select all text when gaining focus
+                    textFieldValue = textFieldValue.copy(
+                        selection = TextRange(0, textFieldValue.text.length)
+                    )
+                } else if (wasFocused && !focusState.isFocused) {
+                    // When losing focus, sync with the external value
+                    if (textFieldValue.text != value) {
+                        textFieldValue = TextFieldValue(
+                            text = value,
+                            selection = TextRange(value.length)
+                        )
+                    }
+                }
+            },
         singleLine = true,
         textStyle = MaterialTheme.typography.bodyMedium.copy(
             color = MaterialTheme.colorScheme.onSurface,

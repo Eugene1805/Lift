@@ -61,7 +61,6 @@ fun TemplateDetailScreen(
                     }
                 },
                 actions = {
-                    // Botón para ir a Editar desde aquí (muy útil)
                     IconButton(onClick = onEditTemplate) {
                         Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.template_detail_edit_template))
                     }
@@ -93,7 +92,6 @@ fun TemplateDetailScreen(
                     .padding(innerPadding)
                     .padding(16.dp)
             ) {
-                // Notas (si existen)
                 if (template.notes.isNotBlank()) {
                     Text(
                         text = stringResource(R.string.template_detail_notes),
@@ -114,15 +112,14 @@ fun TemplateDetailScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                // Lista de ejercicios (Solo Lectura)
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(bottom = 80.dp) // Espacio para el FAB
+                    contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
                     items(template.exercises) { item ->
                         TemplateExerciseReadOnlyCard(
                             item = item,
-                            onClick = { onExerciseClick(item.exercise.id) } // <--- USAR
+                            onClick = { onExerciseClick(item.exercise.id) }
                         )                    }
                 }
             }

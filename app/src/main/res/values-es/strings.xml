@@ -58,8 +58,14 @@
     <string name="action_sort_asc">Orden: A-Z</string>
     <string name="action_sort_desc">Orden: Z-A</string>
     <string name="title_filters">Filtros</string>
+    <string name="filter_exercise_count">%d ejercicios</string>
     <string name="subtitle_body_part">Grupo Muscular</string>
     <string name="subtitle_category">Categoría</string>
+    <string name="subtitle_sort_order">Ordenar por</string>
+    <string name="sort_name_asc">A-Z</string>
+    <string name="sort_name_desc">Z-A</string>
+    <string name="sort_recent">Reciente</string>
+    <string name="sort_frequency">Frecuente</string>
     <string name="btn_clear_filters">Limpiar Filtros</string>
     <string name="btn_apply">Aplicar</string>
     <string name="sort">Ordenar</string>
@@ -72,7 +78,7 @@
 
     <string name="title_profile">Perfil de Usuario</string>
     <string name="title_history">Historial de Entrenamientos</string>
-    <string name="title_workout">Entrenamiento Actual</string>
+    <string name="title_workout">Entrenamientos</string>
     <string name="title_settings">Configuración</string>
 
     <string name="seed_bench_press">Press de Banca (Barra)</string>
@@ -480,6 +486,7 @@
     <string name="history_best_set">Mejor serie:</string>
 
     <!-- Folder Components -->
+    <string name="history_detail_set">Set %d</string>
     <string name="folder_back">Atrás</string>
     <string name="folder_new">Nueva</string>
     <string name="folder_new_dialog_title">Nueva Carpeta</string>
@@ -524,4 +531,11 @@
     <!-- Components -->
     <string name="component_delete">Borrar</string>
     <string name="component_swipe_color_label">ColorDeslizar</string>
+    <string name="action_start_workout">Iniciar entrenamiento</string>
+    <string name="history_detail_title">Sesión</string>
+    <string name="history_detail_duration">Duración</string>
+    <string name="history_detail_volume">Volumen</string>
+    <string name="history_detail_prs">PRs</string>
+    <string name="history_detail_exercises">Ejercicios</string>
+    <string name="history_detail_sets">%d sets</string>
 </resources>

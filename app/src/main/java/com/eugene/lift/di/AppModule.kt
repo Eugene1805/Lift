@@ -9,16 +9,20 @@ import com.eugene.lift.data.local.SettingsDataSource
 import com.eugene.lift.data.local.dao.ExerciseDao
 import com.eugene.lift.data.local.dao.FolderDao
 import com.eugene.lift.data.local.dao.TemplateDao
+import com.eugene.lift.data.local.dao.UserCredentialsDao
+import com.eugene.lift.data.local.dao.UserProfileDao
 import com.eugene.lift.data.local.dao.WorkoutDao
 import com.eugene.lift.data.repository.ExerciseRepositoryImpl
 import com.eugene.lift.data.repository.FolderRepositoryImpl
 import com.eugene.lift.data.repository.SettingsRepositoryImpl
 import com.eugene.lift.data.repository.TemplateRepositoryImpl
+import com.eugene.lift.data.repository.UserProfileRepositoryImpl
 import com.eugene.lift.data.repository.WorkoutRepositoryImpl
 import com.eugene.lift.domain.repository.ExerciseRepository
 import com.eugene.lift.domain.repository.FolderRepository
 import com.eugene.lift.domain.repository.SettingsRepository
 import com.eugene.lift.domain.repository.TemplateRepository
+import com.eugene.lift.domain.repository.UserProfileRepository
 import com.eugene.lift.domain.repository.WorkoutRepository
 import dagger.Module
 import dagger.Provides
@@ -100,5 +104,22 @@ object AppModule {
         @ApplicationContext context: Context
     ): ExerciseSeeder {
         return ExerciseSeeder(repository, context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserProfileDao(db: AppDatabase): UserProfileDao = db.userProfileDao()
+
+    @Provides
+    @Singleton
+    fun provideUserCredentialsDao(db: AppDatabase): UserCredentialsDao = db.userCredentialsDao()
+
+    @Provides
+    @Singleton
+    fun provideUserProfileRepository(
+        userProfileDao: UserProfileDao,
+        userCredentialsDao: UserCredentialsDao
+    ): UserProfileRepository {
+        return UserProfileRepositoryImpl(userProfileDao, userCredentialsDao)
     }
 }

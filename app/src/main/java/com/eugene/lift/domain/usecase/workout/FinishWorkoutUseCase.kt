@@ -1,6 +1,7 @@
 package com.eugene.lift.domain.usecase.workout
 
 import com.eugene.lift.domain.model.WorkoutSession
+import com.eugene.lift.domain.repository.UserProfileRepository
 import com.eugene.lift.domain.repository.WorkoutRepository
 import kotlinx.coroutines.flow.first
 import java.time.Duration
@@ -8,7 +9,8 @@ import java.time.LocalDateTime
 import javax.inject.Inject
 
 class FinishWorkoutUseCase @Inject constructor(
-    private val repository: WorkoutRepository
+    private val repository: WorkoutRepository,
+    private val userProfileRepository: UserProfileRepository
 ) {
     suspend operator fun invoke(activeSession: WorkoutSession) {
         // 1. Calcular duración real
@@ -26,7 +28,6 @@ class FinishWorkoutUseCase @Inject constructor(
                 val sessionBestWeight = completedSets.maxOf { it.weight }
 
                 // C. Buscamos el récord ANTERIOR en la base de datos
-                // Usamos .first() porque el repositorio devuelve un Flow
                 val previousRecord = repository.getPersonalRecord(sessionExercise.exercise.id).first()
                 val previousRecordWeight = previousRecord?.weight ?: 0.0
 
@@ -34,7 +35,6 @@ class FinishWorkoutUseCase @Inject constructor(
                 if (sessionBestWeight > previousRecordWeight) {
                     // ¡NUEVO RÉCORD! Marcamos los sets que lograron ese peso
                     val updatedSets = sessionExercise.sets.map { set ->
-                        // Marcamos como PR si está completado y tiene el peso récord
                         if (set.completed && set.weight == sessionBestWeight) {
                             set.copy(isPr = true)
                         } else {
@@ -43,15 +43,12 @@ class FinishWorkoutUseCase @Inject constructor(
                     }
                     sessionExercise.copy(sets = updatedSets)
                 } else {
-                    // No hubo récord, devolvemos el ejercicio tal cual
                     sessionExercise
                 }
             } else {
-                // Si no hay sets completados, no hay PRs posibles
                 sessionExercise
             }
         }.filter {
-            // Regla de validación: No guardar ejercicios vacíos
             it.sets.isNotEmpty()
         }
 
@@ -68,5 +65,25 @@ class FinishWorkoutUseCase @Inject constructor(
 
         // 5. Guardar en DB
         repository.saveSession(finalSession)
+
+        // 6. Record stats to user profile
+        val totalVolume = finalSession.exercises
+            .flatMap { it.sets }
+            .filter { it.completed }
+            .sumOf { it.weight * it.reps }
+
+        val totalPRs = finalSession.exercises
+            .flatMap { it.sets }
+            .count { it.isPr }
+
+        val profile = userProfileRepository.getCurrentProfileOnce()
+        if (profile != null) {
+            userProfileRepository.recordWorkoutCompleted(
+                id = profile.id,
+                volume = totalVolume,
+                duration = duration,
+                prCount = totalPRs
+            )
+        }
     }
 }

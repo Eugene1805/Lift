@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class Converters {
@@ -45,5 +46,15 @@ class Converters {
     @TypeConverter
     fun dateToTimestamp(date: LocalDateTime?): String? {
         return date?.toString()
+    }
+
+    @TypeConverter
+    fun fromLocalDate(value: LocalDate?): String? {
+        return value?.toString()
+    }
+
+    @TypeConverter
+    fun toLocalDate(value: String?): LocalDate? {
+        return value?.let { LocalDate.parse(it) }
     }
 }

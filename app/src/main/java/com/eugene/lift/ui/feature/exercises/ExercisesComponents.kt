@@ -35,6 +35,7 @@ import com.eugene.lift.domain.model.ExerciseCategory
 fun FilterBottomSheetContent(
     selectedBodyParts: Set<BodyPart>,
     selectedCategories: Set<ExerciseCategory>,
+    totalExerciseCount: Int,
     onBodyPartToggle: (BodyPart) -> Unit,
     onCategoryToggle: (ExerciseCategory) -> Unit,
     onClearFilters: () -> Unit,
@@ -52,10 +53,17 @@ fun FilterBottomSheetContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = stringResource(R.string.title_filters),
-                style = MaterialTheme.typography.titleLarge
-            )
+            Column {
+                Text(
+                    text = stringResource(R.string.title_filters),
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Text(
+                    text = stringResource(R.string.filter_exercise_count, totalExerciseCount),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             TextButton(onClick = onClearFilters) {
                 Text(stringResource(R.string.btn_clear_filters))
             }
@@ -63,7 +71,6 @@ fun FilterBottomSheetContent(
 
         HorizontalDivider()
         Spacer(modifier = Modifier.height(16.dp))
-
 
         Text(
             text = stringResource(R.string.subtitle_body_part),

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.usecase.ExerciseFilter
+import com.eugene.lift.domain.usecase.ExerciseUsageStats
 import com.eugene.lift.domain.usecase.GetExercisesUseCase
 import com.eugene.lift.domain.usecase.SortOrder
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,12 +14,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ExercisesViewModel @Inject constructor(
-    getExercisesUseCase: GetExercisesUseCase
+    private val getExercisesUseCase: GetExercisesUseCase
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -30,8 +33,10 @@ class ExercisesViewModel @Inject constructor(
     private val _selectedCategories = MutableStateFlow<Set<ExerciseCategory>>(emptySet())
     val selectedCategories = _selectedCategories
 
-    private val _sortOrder = MutableStateFlow(SortOrder.NAME_ASC)
+    private val _sortOrder = MutableStateFlow(SortOrder.RECENT)
     val sortOrder = _sortOrder
+
+    private val _usageStats = MutableStateFlow(ExerciseUsageStats())
 
     private val filterFlow = combine(
         _searchQuery,
@@ -43,21 +48,48 @@ class ExercisesViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val exercises = filterFlow.flatMapLatest { filter ->
-        getExercisesUseCase(filter)
+    val exercises = combine(
+        filterFlow.flatMapLatest { filter -> getExercisesUseCase(filter) },
+        _sortOrder,
+        _usageStats
+    ) { filteredExercises, sort, stats ->
+        when (sort) {
+            SortOrder.RECENT, SortOrder.FREQUENCY ->
+                getExercisesUseCase.sortByStats(filteredExercises, sort, stats)
+            else -> filteredExercises
+        }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
 
+    // Total count of exercises matching current filters
+    val totalExerciseCount = exercises.map { it.size }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0
+    )
+
+    init {
+        loadUsageStats()
+    }
+
+    private fun loadUsageStats() {
+        viewModelScope.launch {
+            _usageStats.value = getExercisesUseCase.getUsageStats()
+        }
+    }
+
     fun onSearchQueryChange(newQuery: String) {
         _searchQuery.value = newQuery
     }
 
-    fun toggleSortOrder() {
-        _sortOrder.value = if (_sortOrder.value == SortOrder.NAME_ASC)
-            SortOrder.NAME_DESC else SortOrder.NAME_ASC
+    fun setSortOrder(order: SortOrder) {
+        _sortOrder.value = order
+        if (order == SortOrder.RECENT || order == SortOrder.FREQUENCY) {
+            loadUsageStats()
+        }
     }
 
     fun toggleBodyPartFilter(part: BodyPart) {

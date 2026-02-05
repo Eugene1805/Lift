@@ -117,19 +117,14 @@ class ActiveWorkoutViewModel @Inject constructor(
         return if (lastHistorySet == null) {
             sessionExercise // No history, leave as is
         } else {
-            val weightFromHistory = lastHistorySet.weight // in display units from loadHistoryFor
+            // History is already in display units (converted in loadHistoryFor)
+            val weightFromHistory = lastHistorySet.weight
             val repsFromHistory = lastHistorySet.reps
 
-            val weightInKg = if (userSettings.value.weightUnit == WeightUnit.LBS) {
-                WeightConverter.lbsToKg(weightFromHistory)
-            } else {
-                weightFromHistory
-            }
-
             val updatedSets = sessionExercise.sets.map { currentSet ->
-                // If the set is "empty" (0/0), fill with history.
+                // If the set is "empty" (0/0), fill with history (in display units)
                 if (currentSet.weight == 0.0 && currentSet.reps == 0) {
-                    currentSet.copy(weight = weightInKg, reps = repsFromHistory)
+                    currentSet.copy(weight = weightFromHistory, reps = repsFromHistory)
                 } else {
                     currentSet
                 }
@@ -184,13 +179,10 @@ class ActiveWorkoutViewModel @Inject constructor(
     }
 
     fun onWeightChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
-        val weightInDisplayUnit = newValue.toDoubleOrNull() ?: 0.0
-        val weightInKg = if (userSettings.value.weightUnit == WeightUnit.LBS) {
-            WeightConverter.lbsToKg(weightInDisplayUnit)
-        } else {
-            weightInDisplayUnit
-        }
-        updateSetState(exerciseIndex, setIndex) { it.copy(weight = weightInKg) }
+        // Store weight directly as entered (in display units)
+        // Conversion to kg happens only when finishing the workout
+        val weight = newValue.toDoubleOrNull() ?: 0.0
+        updateSetState(exerciseIndex, setIndex) { it.copy(weight = weight) }
     }
 
     fun onRepsChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
@@ -245,20 +237,33 @@ class ActiveWorkoutViewModel @Inject constructor(
         }
     }
 
-    fun finishWorkout(updateTemplate: Boolean?, onSuccess: () -> Unit) {
-        Log.d("DEBUG_LIFT", "Click en Finish detectado")
-
+fun finishWorkout(updateTemplate: Boolean?, onSuccess: () -> Unit) {
         val session = _activeSession.value
 
         if (session == null) {
-            Log.e("DEBUG_LIFT", "¡ERROR CRÍTICO! La sesión es NULL. Abortando.")
             return
         }
+
+        val currentSettings = userSettings.value
+
         viewModelScope.launch {
             try {
-                Log.d("DEBUG_LIFT", "Intentando guardar sesión...")
+                // Convert weights from display units to kg for storage
+                val convertedExercises = session.exercises.map { sessionExercise ->
+                    val convertedSets = sessionExercise.sets.map { set ->
+                        val weightInKg = if (currentSettings.weightUnit == WeightUnit.LBS) {
+                            WeightConverter.lbsToKg(set.weight)
+                        } else {
+                            set.weight
+                        }
+                        set.copy(weight = weightInKg)
+                    }
+                    sessionExercise.copy(sets = convertedSets)
+                }
+
                 val finalSession = session.copy(
-                    durationSeconds = _elapsedTimeSeconds.value
+                    durationSeconds = _elapsedTimeSeconds.value,
+                    exercises = convertedExercises
                 )
 
                 // Update existing template if requested
@@ -272,7 +277,6 @@ class ActiveWorkoutViewModel @Inject constructor(
                 }
 
                 finishWorkoutUseCase(finalSession)
-                Log.d("DEBUG_LIFT", "¡Guardado exitoso!")
                 restTimerManager.stopTimer()
                 onSuccess()
             } catch (e: Exception) {
@@ -392,14 +396,9 @@ class ActiveWorkoutViewModel @Inject constructor(
         val lastHistorySet = _historyState.value[exerciseId]?.lastOrNull()
 
         return if (lastHistorySet != null) {
-            val initialReps = lastHistorySet.reps
-            val weightFromHistory = lastHistorySet.weight
-            val initialWeightKg = if (userSettings.value.weightUnit == WeightUnit.LBS) {
-                WeightConverter.lbsToKg(weightFromHistory)
-            } else {
-                weightFromHistory
-            }
-            initialWeightKg to initialReps
+            // History is already in display units (converted in loadHistoryFor)
+            // We store in display units during the workout, so no conversion needed
+            lastHistorySet.weight to lastHistorySet.reps
         } else {
             0.0 to 0
         }

@@ -19,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -52,6 +51,7 @@ fun ExercisesRoute(
     val sortOrder by viewModel.sortOrder.collectAsStateWithLifecycle()
     val selectedBodyParts by viewModel.selectedBodyParts.collectAsStateWithLifecycle()
     val selectedCategories by viewModel.selectedCategories.collectAsStateWithLifecycle()
+    val totalExerciseCount by viewModel.totalExerciseCount.collectAsStateWithLifecycle()
 
     ExercisesScreen(
         exercises = exercises,
@@ -59,8 +59,9 @@ fun ExercisesRoute(
         sortOrder = sortOrder,
         selectedBodyParts = selectedBodyParts,
         selectedCategories = selectedCategories,
+        totalExerciseCount = totalExerciseCount,
         onSearchQueryChange = viewModel::onSearchQueryChange,
-        onSortToggle = viewModel::toggleSortOrder,
+        onSortOrderChange = viewModel::setSortOrder,
         onBodyPartToggle = viewModel::toggleBodyPartFilter,
         onCategoryToggle = viewModel::toggleCategoryFilter,
         onClearFilters = viewModel::clearFilters,
@@ -79,8 +80,9 @@ fun ExercisesScreen(
     sortOrder: SortOrder,
     selectedBodyParts: Set<BodyPart>,
     selectedCategories: Set<ExerciseCategory>,
+    totalExerciseCount: Int,
     onSearchQueryChange: (String) -> Unit,
-    onSortToggle: () -> Unit,
+    onSortOrderChange: (SortOrder) -> Unit,
     onBodyPartToggle: (BodyPart) -> Unit,
     onCategoryToggle: (ExerciseCategory) -> Unit,
     onClearFilters: () -> Unit,
@@ -91,6 +93,7 @@ fun ExercisesScreen(
     modifier: Modifier = Modifier
 ) {
     var showSheet by remember { mutableStateOf(false) }
+    var showSortMenu by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     val focusManager = LocalFocusManager.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -145,16 +148,62 @@ fun ExercisesScreen(
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         ) else IconButtonDefaults.filledTonalIconButtonColors()
                     ) {
-                        Icon(Icons.Default.FilterList, contentDescription = stringResource(R.string.sort))
+                        Icon(Icons.Default.FilterList, contentDescription = stringResource(R.string.title_filters))
                     }
 
-                    IconButton(onClick = onSortToggle) {
-                        val rotation = if (sortOrder == SortOrder.NAME_ASC) 0f else 180f
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Sort,
-                            contentDescription = stringResource(R.string.sort),
-                            modifier = Modifier.rotate(rotation)
-                        )
+                    // Sort dropdown button
+                    Box {
+                        IconButton(onClick = { showSortMenu = true }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Sort,
+                                contentDescription = stringResource(R.string.sort)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showSortMenu,
+                            onDismissRequest = { showSortMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.sort_name_asc)) },
+                                onClick = {
+                                    onSortOrderChange(SortOrder.NAME_ASC)
+                                    showSortMenu = false
+                                },
+                                leadingIcon = if (sortOrder == SortOrder.NAME_ASC) {
+                                    { Icon(Icons.Default.Check, null) }
+                                } else null
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.sort_name_desc)) },
+                                onClick = {
+                                    onSortOrderChange(SortOrder.NAME_DESC)
+                                    showSortMenu = false
+                                },
+                                leadingIcon = if (sortOrder == SortOrder.NAME_DESC) {
+                                    { Icon(Icons.Default.Check, null) }
+                                } else null
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.sort_recent)) },
+                                onClick = {
+                                    onSortOrderChange(SortOrder.RECENT)
+                                    showSortMenu = false
+                                },
+                                leadingIcon = if (sortOrder == SortOrder.RECENT) {
+                                    { Icon(Icons.Default.Check, null) }
+                                } else null
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.sort_frequency)) },
+                                onClick = {
+                                    onSortOrderChange(SortOrder.FREQUENCY)
+                                    showSortMenu = false
+                                },
+                                leadingIcon = if (sortOrder == SortOrder.FREQUENCY) {
+                                    { Icon(Icons.Default.Check, null) }
+                                } else null
+                            )
+                        }
                     }
                 }
             }
@@ -209,6 +258,7 @@ fun ExercisesScreen(
                 FilterBottomSheetContent(
                     selectedBodyParts = selectedBodyParts,
                     selectedCategories = selectedCategories,
+                    totalExerciseCount = totalExerciseCount,
                     onBodyPartToggle = onBodyPartToggle,
                     onCategoryToggle = onCategoryToggle,
                     onClearFilters = onClearFilters,

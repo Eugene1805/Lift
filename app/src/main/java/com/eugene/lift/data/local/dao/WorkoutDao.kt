@@ -94,4 +94,31 @@ interface WorkoutDao {
     @Query("DELETE FROM workout_sessions WHERE id = :id")
     suspend fun deleteSession(id: String)
 
+    // Get the count of how many times each exercise has been used
+    @Query("""
+        SELECT exerciseId, COUNT(*) as useCount
+        FROM session_exercises
+        GROUP BY exerciseId
+    """)
+    suspend fun getExerciseUsageCount(): List<ExerciseUsageCount>
+
+    // Get the most recent date each exercise was performed
+    @Query("""
+        SELECT se.exerciseId, MAX(ws.date) as lastUsedDate
+        FROM session_exercises se
+        JOIN workout_sessions ws ON se.sessionId = ws.id
+        GROUP BY se.exerciseId
+    """)
+    suspend fun getExerciseLastUsedDates(): List<ExerciseLastUsed>
+
 }
+
+data class ExerciseUsageCount(
+    val exerciseId: String,
+    val useCount: Int
+)
+
+data class ExerciseLastUsed(
+    val exerciseId: String,
+    val lastUsedDate: LocalDateTime?
+)

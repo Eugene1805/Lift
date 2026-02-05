@@ -55,8 +55,14 @@
     <string name="action_sort_asc">Sort: A-Z</string>
     <string name="action_sort_desc">Sort: Z-A</string>
     <string name="title_filters">Filters</string>
+    <string name="filter_exercise_count">%d exercises</string>
     <string name="subtitle_body_part">Muscle group</string>
     <string name="subtitle_category">Category</string>
+    <string name="subtitle_sort_order">Sort by</string>
+    <string name="sort_name_asc">A-Z</string>
+    <string name="sort_name_desc">Z-A</string>
+    <string name="sort_recent">Recent</string>
+    <string name="sort_frequency">Frequent</string>
     <string name="btn_clear_filters">Clean Filters</string>
     <string name="btn_apply">Apply</string>
     <string name="sort">Sort</string>
@@ -70,6 +76,30 @@
     <string name="title_history">Workout History</string>
     <string name="title_workout">Workouts</string>
     <string name="title_settings">Settings</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_workouts_count">%d workouts</string>
+    <string name="profile_statistics">Statistics</string>
+    <string name="profile_time_week">This Week</string>
+    <string name="profile_time_month">Last Month</string>
+    <string name="profile_time_3months">3 Months</string>
+    <string name="profile_time_6months">6 Months</string>
+    <string name="profile_time_year">1 Year</string>
+    <string name="profile_time_all">All Time</string>
+    <string name="profile_tab_duration">Duration</string>
+    <string name="profile_tab_volume">Volume</string>
+    <string name="profile_tab_reps">Reps</string>
+    <string name="profile_no_data">No data for this period</string>
+    <string name="profile_workouts_per_week">Workouts per Week</string>
+    <string name="profile_average">Average</string>
+    <string name="profile_workouts_week_format">%.1f workouts/week</string>
+    <string name="profile_exercise_progression">Exercise Progression</string>
+    <string name="profile_add_exercise_chart">Tap + to track an exercise\'s progression over time</string>
+    <string name="profile_edit_title">Edit Profile</string>
+    <string name="profile_avatar_color">Avatar Color</string>
+    <string name="profile_display_name">Display Name</string>
+    <string name="profile_bio">Bio</string>
+    <string name="profile_bio_hint">Tell us about yourself...</string>
 
     <string name="seed_bench_press">Bench Press (Barbell)</string>
     <string name="seed_bench_desc">1. Lie on the bench with your eyes under the bar.\n2. Grip the bar slightly wider than shoulder-width.\n3. Lower the bar to mid-chest.\n4. Press up explosively.</string>
@@ -474,6 +504,19 @@
     <string name="history_hours_short">h</string>
     <string name="history_minutes_short">m</string>
     <string name="history_best_set">Best set:</string>
+    <string name="history_calendar">Workout calendar</string>
+    <string name="history_calendar_title">Workout days</string>
+    <string name="history_calendar_screen_title">Calendar</string>
+    <string name="history_calendar_empty">No workout days yet</string>
+    <string name="history_calendar_streak_label">Week streak</string>
+    <string name="history_calendar_streak_weeks">%d weeks</string>
+    <string name="history_detail_title">Session</string>
+    <string name="history_detail_duration">Duration</string>
+    <string name="history_detail_volume">Volume</string>
+    <string name="history_detail_prs">PRs</string>
+    <string name="history_detail_exercises">Exercises</string>
+    <string name="history_detail_sets">%d sets</string>
+    <string name="history_detail_set">Set %d</string>
 
     <!-- Folder Components -->
     <string name="folder_back">Back</string>
@@ -520,4 +563,6 @@
     <!-- Components -->
     <string name="component_delete">Delete</string>
     <string name="component_swipe_color_label">SwipeColor</string>
+    <string name="action_start_workout">Start Workout</string>
 </resources>
+

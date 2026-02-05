@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -73,6 +74,7 @@ import com.eugene.lift.ui.feature.workout.components.MoveToFolderDialog
 fun WorkoutRoute(
     onNavigateToEdit: (String?) -> Unit,
     onTemplateClick: (String) -> Unit,
+    onStartWorkoutClick: (String) -> Unit,
     onStartEmptyClick: (String?) -> Unit,
     viewModel: WorkoutViewModel = hiltViewModel()
 ) {
@@ -95,6 +97,7 @@ fun WorkoutRoute(
         onCreateClick = { onNavigateToEdit(null) },
         onEditClick = { onNavigateToEdit(it.id) },
         onTemplateClick = { onTemplateClick(it.id) },
+        onStartWorkoutClick = { onStartWorkoutClick(it.id) },
         onArchiveClick = viewModel::archiveTemplate,
         onDeleteClick = { viewModel.deleteTemplate(it.id) },
         onDuplicateClick = { template ->
@@ -121,6 +124,7 @@ fun WorkoutScreen(
     onCreateClick: () -> Unit,
     onEditClick: (WorkoutTemplate) -> Unit,
     onTemplateClick: (WorkoutTemplate) -> Unit,
+    onStartWorkoutClick: (WorkoutTemplate) -> Unit,
     onArchiveClick: (WorkoutTemplate) -> Unit,
     onDeleteClick: (WorkoutTemplate) -> Unit,
     onDuplicateClick: (WorkoutTemplate) -> Unit,
@@ -180,9 +184,7 @@ fun WorkoutScreen(
     ) { innerPadding ->
 
         if (templates == null) {
-            Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+            WorkoutSkeletonList(modifier = Modifier.padding(innerPadding))
             return@Scaffold
         }
 
@@ -241,7 +243,8 @@ fun WorkoutScreen(
                                 onDelete = { onDeleteClick(template) },
                                 onDuplicate = { onDuplicateClick(template) },
                                 onShare = { onShareClick() },
-                                onMove = { templateToMove = template }
+                                onMove = { templateToMove = template },
+                                onStartWorkout = { onStartWorkoutClick(template) }
                             )
                         }
                     }
@@ -296,7 +299,8 @@ fun TemplateItemCard(
     onDelete: () -> Unit,
     onDuplicate: () -> Unit,
     onShare: () -> Unit,
-    onMove: () -> Unit
+    onMove: () -> Unit,
+    onStartWorkout: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val clipboardManager = LocalClipboardManager.current
@@ -394,6 +398,26 @@ fun TemplateItemCard(
                 }
             }
         }
+
+        // Start Workout Button
+        androidx.compose.material3.Button(
+            onClick = onStartWorkout,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            androidx.compose.foundation.layout.Spacer(modifier = Modifier.size(8.dp))
+            Text(stringResource(R.string.template_detail_start_routine))
+        }
     }
     }
 }
@@ -430,6 +454,41 @@ fun QuickStartCard(onClick: () -> Unit) {
                 contentDescription = null,
                 modifier = Modifier.size(32.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun WorkoutSkeletonList(modifier: Modifier = Modifier) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(6) {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            ) {
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.6f)
+                            .size(height = 18.dp, width = 1.dp)
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.4f)
+                            .size(height = 14.dp, width = 1.dp)
+                    )
+                    Spacer(modifier = Modifier.size(12.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .size(height = 36.dp, width = 1.dp)
+                    )
+                }
+            }
         }
     }
 }

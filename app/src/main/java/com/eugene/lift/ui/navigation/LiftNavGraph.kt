@@ -2,6 +2,7 @@ package com.eugene.lift.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
@@ -12,7 +13,10 @@ import com.eugene.lift.ui.feature.exercises.AddExerciseRoute
 import com.eugene.lift.ui.feature.exercises.ExercisesRoute
 import com.eugene.lift.ui.feature.exercises.detail.ExerciseDetailRoute
 import com.eugene.lift.ui.feature.history.HistoryRoute
+import com.eugene.lift.ui.feature.history.calendar.HistoryCalendarRoute as HistoryCalendarRouteScreen
+import com.eugene.lift.ui.feature.history.detail.SessionDetailRoute as SessionDetailRouteScreen
 import com.eugene.lift.ui.feature.profile.ProfileRoute
+import com.eugene.lift.ui.feature.profile.edit.EditProfileRoute as EditProfileRouteScreen
 import com.eugene.lift.ui.feature.settings.SettingsRoute
 import com.eugene.lift.ui.feature.workout.WorkoutRoute
 import com.eugene.lift.ui.feature.workout.active.ActiveWorkoutRoute
@@ -20,6 +24,8 @@ import com.eugene.lift.ui.feature.workout.active.ActiveWorkoutViewModel
 import com.eugene.lift.ui.feature.workout.detail.TemplateDetailRoute
 import com.eugene.lift.ui.feature.workout.edit.EditTemplateScreen
 import com.eugene.lift.ui.feature.workout.edit.EditTemplateViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.time.LocalDate
 
 /**
  * Main navigation graph for the Lift app.
@@ -38,7 +44,7 @@ fun LiftNavGraph(
         modifier = modifier
     ) {
         // Main bottom navigation destinations
-        profileScreen()
+        profileScreen(navController)
         historyScreen(navController)
         workoutScreen(navController)
         exerciseListScreen(navController)
@@ -51,21 +57,52 @@ fun LiftNavGraph(
         exerciseAddScreen(navController)
         exercisePickerScreen(navController)
         activeWorkoutScreen(navController)
+        sessionDetailScreen(navController)
+        historyCalendarScreen(navController)
+        editProfileScreen(navController)
     }
 }
 
 // Profile Screen
-private fun NavGraphBuilder.profileScreen() {
+private fun NavGraphBuilder.profileScreen(navController: NavHostController) {
     composable<com.eugene.lift.ui.navigation.ProfileRoute> {
-        ProfileRoute()
+        ProfileRoute(
+            onEditProfileClick = {
+                navController.navigate(EditProfileRoute)
+            }
+        )
+    }
+}
+
+// Edit Profile Screen
+private fun NavGraphBuilder.editProfileScreen(navController: NavHostController) {
+    composable<EditProfileRoute> {
+        EditProfileRouteScreen(
+            onNavigateBack = { navController.popBackStack() }
+        )
     }
 }
 
 // History Screen
 private fun NavGraphBuilder.historyScreen(navController: NavHostController) {
-    composable<com.eugene.lift.ui.navigation.HistoryRoute> {
+    composable<com.eugene.lift.ui.navigation.HistoryRoute> { backStackEntry ->
+        val savedStateHandle = backStackEntry.savedStateHandle
+        val scrollDateString by savedStateHandle
+            .getStateFlow<String?>("history_scroll_date", null)
+            .collectAsStateWithLifecycle()
+        val scrollDate = scrollDateString?.let { LocalDate.parse(it) }
+
         HistoryRoute(
-            onSessionClick = { sessionId -> /* TODO: Navigate to session detail */ }
+            onSessionClick = { sessionId ->
+                navController.navigate(SessionDetailRoute(sessionId))
+            },
+            onCalendarClick = {
+                navController.navigate(HistoryCalendarRoute)
+            },
+            scrollToDate = scrollDate,
+            onScrollConsumed = {
+                savedStateHandle.remove<String>("history_scroll_date")
+            }
         )
     }
 }
@@ -79,6 +116,9 @@ private fun NavGraphBuilder.workoutScreen(navController: NavHostController) {
             },
             onTemplateClick = { templateId ->
                 navController.navigate(TemplateDetailRoute(templateId))
+            },
+            onStartWorkoutClick = { templateId ->
+                navController.navigate(ActiveWorkoutRoute(templateId = templateId))
             },
             onStartEmptyClick = {
                 navController.navigate(ActiveWorkoutRoute(templateId = null))
@@ -215,6 +255,30 @@ private fun NavGraphBuilder.activeWorkoutScreen(navController: NavHostController
             },
             onExerciseClick = { exerciseId ->
                 navController.navigate(ExerciseDetailRoute(exerciseId))
+            }
+        )
+    }
+}
+
+// Session Detail Screen
+private fun NavGraphBuilder.sessionDetailScreen(navController: NavHostController) {
+    composable<SessionDetailRoute> {
+        SessionDetailRouteScreen(
+            onNavigateBack = { navController.popBackStack() }
+        )
+    }
+}
+
+// History Calendar Screen
+private fun NavGraphBuilder.historyCalendarScreen(navController: NavHostController) {
+    composable<HistoryCalendarRoute> {
+        HistoryCalendarRouteScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onDateClick = { date ->
+                navController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.set("history_scroll_date", date.toString())
+                navController.popBackStack()
             }
         )
     }

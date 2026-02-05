@@ -113,6 +113,12 @@ fun SettingsScreen(
             HorizontalDivider()
 
             SettingsSection(title = stringResource(R.string.section_units)) {
+                val segmentedButtonColors = SegmentedButtonDefaults.colors(
+                    activeContainerColor = MaterialTheme.colorScheme.primary,
+                    activeContentColor = MaterialTheme.colorScheme.onPrimary,
+                    inactiveContainerColor = MaterialTheme.colorScheme.surface,
+                    inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 // Weight Unit
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
@@ -131,7 +137,8 @@ fun SettingsScreen(
                                 shape = SegmentedButtonDefaults.itemShape(
                                     index = index,
                                     count = WeightUnit.entries.size
-                                )
+                                ),
+                                colors = segmentedButtonColors
                             ) {
                                 Text(unit.name)
                             }
@@ -160,6 +167,8 @@ fun SettingsScreen(
                                     index = index,
                                     count = DistanceUnit.entries.size
                                 )
+                                ,
+                                colors = segmentedButtonColors
                             ) {
                                 Text(
                                     when (unit) {
@@ -206,7 +215,7 @@ fun SettingsSection(title: String, content: @Composable () -> Unit) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.secondary,
+            color = MaterialTheme.colorScheme.background,
             fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -231,7 +240,7 @@ fun SettingsActionItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.secondary,
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(end = 16.dp)
         )
         Column {

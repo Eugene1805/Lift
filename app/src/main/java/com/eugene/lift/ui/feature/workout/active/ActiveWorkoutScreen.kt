@@ -603,7 +603,7 @@ fun SetRowItem(
                         onValueChange = onTimeChange,
                         modifier = Modifier.fillMaxWidth(0.6f).align(Alignment.CenterHorizontally)
                     )
-                    if (historySet != null) HistoryText("${historySet.timeSeconds ?: "-"} ${stringResource(R.string.active_workout_time_s)}", Modifier.align(Alignment.CenterHorizontally))
+                    if (historySet != null) HistoryText("${historySet.timeSeconds ?: "-"} ${stringResource(R.string.unit_seconds_short)}", Modifier.align(Alignment.CenterHorizontally))
                 }
             }
         }

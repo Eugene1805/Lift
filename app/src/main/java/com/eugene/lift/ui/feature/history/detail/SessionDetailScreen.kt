@@ -102,9 +102,9 @@ fun SessionDetailScreen(
         }
 
         val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
-            stringResource(R.string.history_lbs)
+            stringResource(R.string.unit_lbs)
         } else {
-            stringResource(R.string.history_kg)
+            stringResource(R.string.unit_kg)
         }
 
         val dateText = session.date.format(DateTimeFormatter.ofPattern("EEE, MMM d • HH:mm"))
@@ -255,11 +255,11 @@ private fun SetRow(
     userSettings: UserSettings
 ) {
     val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
-        stringResource(R.string.history_lbs)
+        stringResource(R.string.unit_lbs)
     } else {
-        stringResource(R.string.history_kg)
+        stringResource(R.string.unit_kg)
     }
-    val repsLabel = stringResource(R.string.history_reps)
+    val repsLabel = stringResource(R.string.unit_reps)
     val distanceLabel = stringResource(R.string.active_workout_distance_km)
 
     val text = formatSetSummary(workoutSet, userSettings, weightLabel, repsLabel, distanceLabel)

@@ -50,7 +50,7 @@ fun FolderRow(
                         .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                         .size(40.dp)
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.folder_back))
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                 }
             }
         }

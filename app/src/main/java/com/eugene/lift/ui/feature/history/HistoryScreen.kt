@@ -207,9 +207,9 @@ fun HistorySessionCard(
                 }
 
                 val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
-                    stringResource(R.string.history_lbs)
+                    stringResource(R.string.unit_lbs)
                 } else {
-                    stringResource(R.string.history_kg)
+                    stringResource(R.string.unit_kg)
                 }
 
                 if (totalVolume > 0) {
@@ -240,7 +240,7 @@ fun HistorySessionCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "$prCount ${stringResource(R.string.history_prs)}",
+                            text = "$prCount ${stringResource(R.string.history_detail_prs)}",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -329,9 +329,9 @@ fun HistorySessionCard(
                                     }
 
                                     val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
-                                        stringResource(R.string.history_lbs)
+                                        stringResource(R.string.unit_lbs)
                                     } else {
-                                        stringResource(R.string.history_kg)
+                                        stringResource(R.string.unit_kg)
                                     }
 
                                     val bestSet = sessionExercise.sets.filter { it.completed }
@@ -340,7 +340,7 @@ fun HistorySessionCard(
                                     val bestSetText = getBestSetString(
                                         sessionExercise.sets,
                                         weightLabel,
-                                        stringResource(R.string.history_reps),
+                                        stringResource(R.string.unit_reps),
                                         userSettings
                                     )
 
@@ -411,8 +411,8 @@ fun formatDurationSimple(seconds: Long): String {
 
 @Composable
 fun formatDuration(seconds: Long): String {
-    val hoursLabel = stringResource(R.string.history_hours_short)
-    val minutesLabel = stringResource(R.string.history_minutes_short)
+    val hoursLabel = stringResource(R.string.unit_hours_short)
+    val minutesLabel = stringResource(R.string.unit_minutes_short)
     val hours = seconds / 3600
     val minutes = (seconds % 3600) / 60
     return if (hours > 0) "$hours$hoursLabel $minutes$minutesLabel" else "$minutes$minutesLabel"

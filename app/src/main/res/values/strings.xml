@@ -422,12 +422,11 @@
     <string name="label_weight">Weight Unit</string>
     <string name="label_distance">Distance Unit</string>
     <string name="btn_contact_us">Contact Us</string>
-    <string name="exercise_detail_back">Atrás</string>
-    <string name="exercise_detail_edit">Editar</string>
-    <string name="exercise_detail_no_image">Sin Imagen</string>
-    <string name="exercise_detail_details">Detalles</string>
-    <string name="exercise_detail_instructions">Instrucciones</string>
-    <string name="exercise_detail_no_instructions">Sin instrucciones disponibles.</string>
+    <string name="exercise_detail_edit">Edit</string>
+    <string name="exercise_detail_no_image">No Image</string>
+    <string name="exercise_detail_details">Details</string>
+    <string name="exercise_detail_instructions">Instructions</string>
+    <string name="exercise_detail_no_instructions">No instructions available.</string>
     <string name="action_back">Back</string>
     <string name="action_save">Save</string>
     <string name="text_field_character_counter">%1$d / %2$d</string>
@@ -445,6 +444,10 @@
     <string name="unit_lbs">lbs</string>
     <string name="unit_km">km</string>
     <string name="unit_miles">miles</string>
+    <string name="unit_reps">reps</string>
+    <string name="unit_hours_short">h</string>
+    <string name="unit_minutes_short">m</string>
+    <string name="unit_seconds_short">s</string>
     <string name="tab_my_routines">My Routines</string>
     <string name="tab_archived">Archived</string>
     <string name="empty_routines">No routines here</string>
@@ -480,8 +483,6 @@
     <string name="active_workout_reps">Reps</string>
     <string name="active_workout_add_set">Add Set</string>
     <string name="active_workout_add_10s">+10s</string>
-    <string name="active_workout_kg_lowercase">kg</string>
-    <string name="active_workout_reps_lowercase">reps</string>
     <string name="active_workout_complete">Complete</string>
 
     <!-- Template Detail Screen -->
@@ -497,14 +498,8 @@
     <string name="history_empty">No completed workouts yet</string>
     <string name="history_today">Today</string>
     <string name="history_yesterday">Yesterday</string>
-    <string name="history_prs">PRs</string>
-    <string name="history_kg">kg</string>
-    <string name="history_lbs">lbs</string>
-    <string name="history_reps">reps</string>
-    <string name="history_hours_short">h</string>
-    <string name="history_minutes_short">m</string>
-    <string name="history_best_set">Best set:</string>
     <string name="history_calendar">Workout calendar</string>
+    <string name="history_best_set">Best set:</string>
     <string name="history_calendar_title">Workout days</string>
     <string name="history_calendar_screen_title">Calendar</string>
     <string name="history_calendar_empty">No workout days yet</string>
@@ -519,7 +514,6 @@
     <string name="history_detail_set">Set %d</string>
 
     <!-- Folder Components -->
-    <string name="folder_back">Back</string>
     <string name="folder_new">New</string>
     <string name="folder_new_dialog_title">New Folder</string>
     <string name="folder_name_label">Name</string>
@@ -543,7 +537,6 @@
     <string name="active_workout_auto_timer">Auto-timer when finishing set</string>
     <string name="active_workout_time_label">TIME</string>
     <string name="active_workout_distance_km">km</string>
-    <string name="active_workout_time_s">s</string>
     <string name="exit_workout_title">Exit Workout?</string>
     <string name="exit_workout_message">Are you sure you want to exit? Your progress will be lost.</string>
     <string name="exit_workout_confirm">Exit</string>
@@ -564,5 +557,7 @@
     <string name="component_delete">Delete</string>
     <string name="component_swipe_color_label">SwipeColor</string>
     <string name="action_start_workout">Start Workout</string>
+    <string name="active_workout_time_s">s</string>
+    <string name="exercise_detail_back">Back</string>
 </resources>
 

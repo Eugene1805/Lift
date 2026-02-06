@@ -117,16 +117,24 @@ fun TemplateExerciseRow(
     onRemove: () -> Unit,
     onConfigChange: (sets: String, reps: String) -> Unit
 ) {
-    Card {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(item.exercise.name, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    item.exercise.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 IconButton(onClick = onRemove) {
-                    Icon(Icons.Default.Close, null, tint = MaterialTheme.colorScheme.error)
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = stringResource(R.string.component_delete),
+                        tint = MaterialTheme.colorScheme.error
+                    )
                 }
             }
 

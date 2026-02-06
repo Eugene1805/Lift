@@ -14,7 +14,7 @@ class GetCurrentLanguageUseCase @Inject constructor() {
         Log.d(TAG, "Getting current language code")
         val currentLocales = AppCompatDelegate.getApplicationLocales()
         val languageCode = if (!currentLocales.isEmpty) {
-            currentLocales.get(0)?.language ?: "en"
+            currentLocales[0]?.language ?: "en"
         } else {
             Locale.getDefault().language
         }

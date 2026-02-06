@@ -123,7 +123,12 @@ fun ExerciseDetailScreen(
             Column(modifier = Modifier.padding(16.dp)) {
 
                 // 2. CHIPS DE INFO (Categoría y Músculos)
-                Text(stringResource(R.string.exercise_detail_details), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    stringResource(R.string.exercise_detail_details),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
                 Spacer(modifier = Modifier.height(8.dp))
 
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -132,7 +137,8 @@ fun ExerciseDetailScreen(
                         onClick = {},
                         label = { Text(stringResource(state.category.labelRes)) },
                         colors = SuggestionChipDefaults.suggestionChipColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            labelColor = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     )
                     // Chips de Músculos
@@ -147,7 +153,12 @@ fun ExerciseDetailScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
 
-                Text(stringResource(R.string.exercise_detail_instructions), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    stringResource(R.string.exercise_detail_instructions),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(

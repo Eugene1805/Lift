@@ -1,6 +1,8 @@
 package com.eugene.lift.domain.usecase.workout
 
+import com.eugene.lift.domain.model.SessionExercise
 import com.eugene.lift.domain.model.WorkoutSession
+import com.eugene.lift.domain.model.WorkoutSet
 import com.eugene.lift.domain.repository.UserProfileRepository
 import com.eugene.lift.domain.repository.WorkoutRepository
 import kotlinx.coroutines.flow.first
@@ -13,77 +15,95 @@ class FinishWorkoutUseCase @Inject constructor(
     private val userProfileRepository: UserProfileRepository
 ) {
     suspend operator fun invoke(activeSession: WorkoutSession) {
-        // 1. Calcular duración real
-        val endTime = LocalDateTime.now()
-        val duration = Duration.between(activeSession.date, endTime).seconds
+        val duration = calculateDuration(activeSession)
+        val processedExercises = processExercises(activeSession.exercises)
 
-        // 2. Procesar ejercicios: Limpieza y CÁLCULO DE PRs
-        val processedExercises = activeSession.exercises.map { sessionExercise ->
+        validateSession(processedExercises)
 
-            // A. Filtramos solo los sets completados para el cálculo
-            val completedSets = sessionExercise.sets.filter { it.completed }
-
-            if (completedSets.isNotEmpty()) {
-                // B. Buscamos el peso máximo levantado HOY
-                val sessionBestWeight = completedSets.maxOf { it.weight }
-
-                // C. Buscamos el récord ANTERIOR en la base de datos
-                val previousRecord = repository.getPersonalRecord(sessionExercise.exercise.id).first()
-                val previousRecordWeight = previousRecord?.weight ?: 0.0
-
-                // D. Comparamos
-                if (sessionBestWeight > previousRecordWeight) {
-                    // ¡NUEVO RÉCORD! Marcamos los sets que lograron ese peso
-                    val updatedSets = sessionExercise.sets.map { set ->
-                        if (set.completed && set.weight == sessionBestWeight) {
-                            set.copy(isPr = true)
-                        } else {
-                            set
-                        }
-                    }
-                    sessionExercise.copy(sets = updatedSets)
-                } else {
-                    sessionExercise
-                }
-            } else {
-                sessionExercise
-            }
-        }.filter {
-            it.sets.isNotEmpty()
-        }
-
-        // 3. Validación final
-        if (processedExercises.isEmpty()) {
-            throw IllegalStateException("No se puede guardar un entrenamiento vacío")
-        }
-
-        // 4. Crear la sesión final con los datos procesados (PRs marcados)
         val finalSession = activeSession.copy(
             durationSeconds = duration,
             exercises = processedExercises
         )
 
-        // 5. Guardar en DB
         repository.saveSession(finalSession)
+        recordUserStats(finalSession, duration)
+    }
 
-        // 6. Record stats to user profile
-        val totalVolume = finalSession.exercises
-            .flatMap { it.sets }
-            .filter { it.completed }
-            .sumOf { it.weight * it.reps }
+    private fun calculateDuration(session: WorkoutSession): Long {
+        val endTime = LocalDateTime.now()
+        return Duration.between(session.date, endTime).seconds
+    }
 
-        val totalPRs = finalSession.exercises
-            .flatMap { it.sets }
-            .count { it.isPr }
+    private suspend fun processExercises(
+        exercises: List<SessionExercise>
+    ): List<SessionExercise> {
+        return exercises
+            .map { processExercise(it) }
+            .filter { it.sets.isNotEmpty() }
+    }
 
-        val profile = userProfileRepository.getCurrentProfileOnce()
-        if (profile != null) {
-            userProfileRepository.recordWorkoutCompleted(
-                id = profile.id,
-                volume = totalVolume,
-                duration = duration,
-                prCount = totalPRs
-            )
+    private suspend fun processExercise(
+        exercise: SessionExercise
+    ): SessionExercise {
+        val completedSets = exercise.sets.filter { it.completed }
+        if (completedSets.isEmpty()) return exercise
+
+        val sessionBestWeight = completedSets.maxOf { it.weight }
+        val previousRecordWeight = getPreviousRecordWeight(exercise)
+
+        if (sessionBestWeight <= previousRecordWeight) return exercise
+
+        return exercise.copy(
+            sets = markPrSets(exercise.sets, sessionBestWeight)
+        )
+    }
+
+    private suspend fun getPreviousRecordWeight(
+        exercise: SessionExercise
+    ): Double {
+        return repository
+            .getPersonalRecord(exercise.exercise.id)
+            .first()
+            ?.weight ?: 0.0
+    }
+
+    private fun markPrSets(
+        sets: List<WorkoutSet>,
+        prWeight: Double
+    ): List<WorkoutSet> {
+        return sets.map { set ->
+            if (set.completed && set.weight == prWeight) {
+                set.copy(isPr = true)
+            } else {
+                set
+            }
         }
     }
+    private fun validateSession(exercises: List<SessionExercise>) {
+        check(exercises.isNotEmpty()) {
+            "No se puede guardar un entrenamiento vacío"
+        }
+    }
+
+    private suspend fun recordUserStats(
+        session: WorkoutSession,
+        duration: Long
+    ) {
+        val completedSets = session.exercises
+            .flatMap { it.sets }
+            .filter { it.completed }
+
+        val totalVolume = completedSets.sumOf { it.weight * it.reps }
+        val totalPRs = completedSets.count { it.isPr }
+
+        val profile = userProfileRepository.getCurrentProfileOnce() ?: return
+
+        userProfileRepository.recordWorkoutCompleted(
+            id = profile.id,
+            volume = totalVolume,
+            duration = duration,
+            prCount = totalPRs
+        )
+    }
+
 }

@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.eugene.lift.common.work.WorkInitializer
-import com.eugene.lift.domain.usecase.GetSettingsUseCase
+import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
 import com.eugene.lift.ui.LiftApp
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

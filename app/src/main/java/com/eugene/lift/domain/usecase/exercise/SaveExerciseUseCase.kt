@@ -1,4 +1,4 @@
-package com.eugene.lift.domain.usecase
+package com.eugene.lift.domain.usecase.exercise
 
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.repository.ExerciseRepository
@@ -8,7 +8,7 @@ class SaveExerciseUseCase @Inject constructor(
     private val repository: ExerciseRepository
 ) {
     suspend operator fun invoke(exercise: Exercise) {
-        if (exercise.name.isBlank()) {
+        require(!(exercise.name.isBlank())){
             throw IllegalArgumentException("Exercise name cannot be empty")
         }
         // Add more business rules here if needed (e.g. max body parts?)

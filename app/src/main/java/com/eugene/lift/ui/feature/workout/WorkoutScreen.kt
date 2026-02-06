@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Unarchive
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -146,20 +145,21 @@ fun WorkoutScreen(
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             Column {
                 TopAppBar(
                     title = { Text(stringResource(R.string.title_workout)) },
                     windowInsets = WindowInsets(0, 0, 0, 0),
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.onBackground
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface
                     )
                 )
                 TabRow(
                     selectedTabIndex = selectedTab,
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.onBackground
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary
                 ) {
                     Tab(
                         selected = selectedTab == 0,
@@ -467,25 +467,33 @@ fun WorkoutSkeletonList(modifier: Modifier = Modifier) {
     ) {
         items(6) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
             ) {
                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(0.6f)
                             .size(height = 18.dp, width = 1.dp)
+                            .fillMaxSize()
+                            .padding(0.dp)
+                            .fillMaxSize()
+                            .padding(0.dp)
                     )
                     Spacer(modifier = Modifier.size(8.dp))
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(0.4f)
                             .size(height = 14.dp, width = 1.dp)
+                            .fillMaxSize()
+                            .padding(0.dp)
                     )
                     Spacer(modifier = Modifier.size(12.dp))
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .size(height = 36.dp, width = 1.dp)
+                            .fillMaxSize()
+                            .padding(0.dp)
                     )
                 }
             }

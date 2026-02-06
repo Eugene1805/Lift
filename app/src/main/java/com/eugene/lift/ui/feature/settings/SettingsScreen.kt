@@ -40,7 +40,7 @@ import com.eugene.lift.R
 import com.eugene.lift.domain.model.AppTheme
 import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.WeightUnit
-import com.eugene.lift.ui.AppDropdown
+import com.eugene.lift.ui.components.AppDropdown
 import androidx.core.net.toUri
 
 @Composable
@@ -64,11 +64,12 @@ fun SettingsScreen(
                 title = { Text(stringResource(R.string.title_settings)) },
                 windowInsets = WindowInsets(0, 0, 0, 0),
                 colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surface
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -114,10 +115,12 @@ fun SettingsScreen(
 
             SettingsSection(title = stringResource(R.string.section_units)) {
                 val segmentedButtonColors = SegmentedButtonDefaults.colors(
-                    activeContainerColor = MaterialTheme.colorScheme.primary,
-                    activeContentColor = MaterialTheme.colorScheme.onPrimary,
-                    inactiveContainerColor = MaterialTheme.colorScheme.surface,
-                    inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    activeContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    activeContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    activeBorderColor = MaterialTheme.colorScheme.outline,
+                    inactiveContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    inactiveBorderColor = MaterialTheme.colorScheme.outline
                 )
                 // Weight Unit
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -215,7 +218,7 @@ fun SettingsSection(title: String, content: @Composable () -> Unit) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.background,
+            color = MaterialTheme.colorScheme.primary,
             fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
         )
         Spacer(modifier = Modifier.height(16.dp))

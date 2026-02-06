@@ -179,7 +179,13 @@ fun MoveToFolderDialog(
                 item {
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.folder_root)) },
-                        leadingContent = { Icon(Icons.Default.Folder, null, tint = Color.Gray) },
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.Folder,
+                                null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
                         modifier = Modifier.clickable { onSelectFolder(null) }
                     )
                 }

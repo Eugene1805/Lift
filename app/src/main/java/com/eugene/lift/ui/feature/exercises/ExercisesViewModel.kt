@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.ExerciseCategory
-import com.eugene.lift.domain.usecase.ExerciseFilter
-import com.eugene.lift.domain.usecase.ExerciseUsageStats
-import com.eugene.lift.domain.usecase.GetExercisesUseCase
-import com.eugene.lift.domain.usecase.SortOrder
+import com.eugene.lift.domain.usecase.exercise.ExerciseFilter
+import com.eugene.lift.domain.usecase.exercise.ExerciseUsageStats
+import com.eugene.lift.domain.usecase.exercise.GetExercisesUseCase
+import com.eugene.lift.domain.usecase.exercise.SortOrder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow

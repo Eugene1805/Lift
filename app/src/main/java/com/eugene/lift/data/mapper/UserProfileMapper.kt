@@ -17,7 +17,7 @@ fun UserProfileEntity.toDomain(): UserProfile {
         updatedAt = updatedAt,
         authProvider = try {
             AuthProvider.valueOf(authProvider)
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             AuthProvider.LOCAL
         },
         authProviderId = authProviderId,

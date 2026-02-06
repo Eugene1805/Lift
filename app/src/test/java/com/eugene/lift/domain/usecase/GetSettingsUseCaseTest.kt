@@ -5,6 +5,7 @@ import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.repository.SettingsRepository
+import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first

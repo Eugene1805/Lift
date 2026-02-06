@@ -7,7 +7,7 @@ import com.eugene.lift.domain.model.AppTheme
 import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
-import com.eugene.lift.domain.usecase.GetSettingsUseCase
+import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
 import com.eugene.lift.domain.usecase.settings.GetCurrentLanguageUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateDistanceUnitUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateLanguageUseCase

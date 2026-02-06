@@ -9,7 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.eugene.lift.ui.feature.exercises.AddExerciseRoute
+import com.eugene.lift.ui.feature.exercises.create.AddExerciseRoute
 import com.eugene.lift.ui.feature.exercises.ExercisesRoute
 import com.eugene.lift.ui.feature.exercises.detail.ExerciseDetailRoute
 import com.eugene.lift.ui.feature.history.HistoryRoute

@@ -11,7 +11,7 @@ fun ExerciseResult.toDomain(): Exercise {
         emptyList()
     } else {
         bodyParts.split(",").mapNotNull { raw ->
-            try { BodyPart.valueOf(raw) } catch (e: Exception) { null }
+            try { BodyPart.valueOf(raw) } catch (_: Exception) { null }
         }
     }
 

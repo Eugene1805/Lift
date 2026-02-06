@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.eugene.lift.R
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.UserSettings
-import com.eugene.lift.domain.usecase.GetSettingsUseCase
+import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
 import com.eugene.lift.domain.usecase.history.GetWorkoutHistoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext

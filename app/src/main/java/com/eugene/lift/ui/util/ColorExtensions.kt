@@ -1,11 +1,12 @@
 package com.eugene.lift.ui.util
 
 import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.toColorInt
 
 fun String.toColor(): Color {
     return try {
-        Color(android.graphics.Color.parseColor(this))
-    } catch (e: Exception) {
+        Color(this.toColorInt())
+    } catch (_: Exception) {
         Color.Gray
     }
 }

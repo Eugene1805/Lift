@@ -8,7 +8,7 @@ class SaveTemplateUseCase @Inject constructor(
     private val repository: TemplateRepository
 ) {
     suspend operator fun invoke(template: WorkoutTemplate) {
-        if (template.name.isBlank()) {
+        require(!(template.name.isBlank()))  {
             throw IllegalArgumentException("El nombre de la rutina no puede estar vacío")
         }
 

@@ -1,4 +1,4 @@
-package com.eugene.lift.domain.usecase
+package com.eugene.lift.domain.usecase.exercise
 
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.repository.ExerciseRepository

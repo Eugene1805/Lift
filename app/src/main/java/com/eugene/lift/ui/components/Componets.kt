@@ -1,4 +1,4 @@
-package com.eugene.lift.ui
+package com.eugene.lift.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenuItem
@@ -7,6 +7,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -52,7 +53,7 @@ fun <T> AppDropdown(
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = {expanded = it },
+        onExpandedChange = { expanded = it },
         modifier = modifier
     ) {
         OutlinedTextField(
@@ -61,7 +62,16 @@ fun <T> AppDropdown(
             onValueChange = {},
             label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
             modifier = Modifier
                 .menuAnchor(type = MenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth()
@@ -69,11 +79,17 @@ fun <T> AppDropdown(
 
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(text = labelProvider(option)) },
+                    text = {
+                        Text(
+                            text = labelProvider(option),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    },
                     onClick = {
                         onOptionSelected(option)
                         expanded = false
@@ -128,7 +144,7 @@ fun SwipeableSetRowWrapper(
                 if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) {
                     Icon(
                         Icons.Default.Delete,
-                        contentDescription = "Eliminar",
+                        contentDescription = stringResource(R.string.component_delete_content_description),
                         tint = MaterialTheme.colorScheme.onErrorContainer
                     )
                 }
@@ -156,7 +172,7 @@ fun DeleteConfirmationRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "¿Eliminar Serie $setNumber?",
+            text = stringResource(R.string.component_delete_set_confirmation, setNumber),
             color = MaterialTheme.colorScheme.onErrorContainer,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold
@@ -167,7 +183,7 @@ fun DeleteConfirmationRow(
             IconButton(onClick = onCancel) {
                 Icon(
                     Icons.Default.Close,
-                    contentDescription = "Cancelar",
+                    contentDescription = stringResource(R.string.component_cancel),
                     tint = MaterialTheme.colorScheme.onErrorContainer
                 )
             }
@@ -185,7 +201,7 @@ fun DeleteConfirmationRow(
             ) {
                 Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Borrar")
+                Text(stringResource(R.string.component_delete))
             }
         }
     }

@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.TemplateExercise
 import com.eugene.lift.domain.model.WorkoutTemplate
-import com.eugene.lift.domain.usecase.GetExerciseDetailUseCase
+import com.eugene.lift.domain.usecase.exercise.GetExerciseDetailUseCase
 import com.eugene.lift.domain.usecase.template.GetTemplateDetailUseCase
 import com.eugene.lift.domain.usecase.template.SaveTemplateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel

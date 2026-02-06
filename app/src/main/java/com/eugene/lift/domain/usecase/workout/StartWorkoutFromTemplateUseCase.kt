@@ -24,7 +24,7 @@ class StartWorkoutFromTemplateUseCase @Inject constructor(
         val sessionExercises = template.exercises.map { templateExercise ->
 
             // Generamos N sets vacíos según lo que pedía la plantilla
-            val initialSets = (1..templateExercise.targetSets).map { index ->
+            val initialSets = (1..templateExercise.targetSets).map { _ ->
                 WorkoutSet(
                     id = UUID.randomUUID().toString(),
                     weight = 0.0, // Opcional: Podrías buscar el peso de la última sesión aquí (Mejora futura)

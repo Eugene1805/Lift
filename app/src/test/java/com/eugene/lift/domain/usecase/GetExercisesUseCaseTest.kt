@@ -6,6 +6,9 @@ import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.repository.ExerciseRepository
 import com.eugene.lift.domain.repository.WorkoutRepository
+import com.eugene.lift.domain.usecase.exercise.ExerciseFilter
+import com.eugene.lift.domain.usecase.exercise.GetExercisesUseCase
+import com.eugene.lift.domain.usecase.exercise.SortOrder
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first

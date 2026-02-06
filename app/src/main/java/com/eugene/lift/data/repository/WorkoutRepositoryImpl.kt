@@ -72,7 +72,7 @@ class WorkoutRepositoryImpl @Inject constructor(
         dao.deleteSession(sessionId)
     }
 
-    override suspend fun getPersonalRecord(exerciseId: String): Flow<WorkoutSet?> {
+    override fun getPersonalRecord(exerciseId: String): Flow<WorkoutSet?> {
         return flow {
             val entity = dao.getPersonalRecordSet(exerciseId)
             emit(entity?.toDomain())

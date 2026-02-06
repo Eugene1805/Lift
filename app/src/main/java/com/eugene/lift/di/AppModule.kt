@@ -24,6 +24,7 @@ import com.eugene.lift.domain.repository.SettingsRepository
 import com.eugene.lift.domain.repository.TemplateRepository
 import com.eugene.lift.domain.repository.UserProfileRepository
 import com.eugene.lift.domain.repository.WorkoutRepository
+import com.eugene.lift.domain.usecase.workout.StartEmptyWorkoutUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -122,4 +123,12 @@ object AppModule {
     ): UserProfileRepository {
         return UserProfileRepositoryImpl(userProfileDao, userCredentialsDao)
     }
+    @Provides
+    @Singleton
+    fun provideStartEmptyWorkoutUseCase(
+        @ApplicationContext context: Context
+    ): StartEmptyWorkoutUseCase {
+        return StartEmptyWorkoutUseCase(context)
+    }
+
 }

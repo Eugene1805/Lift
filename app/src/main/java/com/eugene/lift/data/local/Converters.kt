@@ -15,7 +15,7 @@ class Converters {
     @TypeConverter
     fun toBodyPart(value: String): BodyPart = try {
         BodyPart.valueOf(value)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         BodyPart.OTHER
     }
 
@@ -25,7 +25,7 @@ class Converters {
     @TypeConverter
     fun toCategory(value: String): ExerciseCategory = try {
         ExerciseCategory.valueOf(value)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         ExerciseCategory.REPS_ONLY
     }
 
@@ -35,7 +35,7 @@ class Converters {
     @TypeConverter
     fun toMeasureType(value: String): MeasureType = try {
         MeasureType.valueOf(value)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         MeasureType.REPS_AND_WEIGHT
     }
     @TypeConverter

@@ -1,4 +1,4 @@
-package com.eugene.lift.domain.usecase
+package com.eugene.lift.domain.usecase.exercise
 
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
@@ -82,9 +82,8 @@ class GetExercisesUseCase @Inject constructor(
                 }
                 // Sort: exercises with dates first (most recent first), then exercises without dates alphabetically
                 exercisesWithDates.sortedWith(
-                    compareBy<Pair<Exercise, LocalDateTime?>>(
-                        { it.second == null }, // null dates go last
-                    ).thenByDescending { it.second }
+                    compareBy<Pair<Exercise, LocalDateTime?>> { it.second == null } // null dates go last
+                        .thenByDescending { it.second }
                         .thenBy { it.first.name }
                 ).map { it.first }
             }

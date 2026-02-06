@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WorkoutSession
-import com.eugene.lift.domain.usecase.GetSettingsUseCase
+import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
 import com.eugene.lift.domain.usecase.history.GetWorkoutSessionDetailsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow

@@ -10,8 +10,8 @@ import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.WorkoutSet
-import com.eugene.lift.domain.usecase.GetExerciseDetailUseCase
-import com.eugene.lift.domain.usecase.GetSettingsUseCase
+import com.eugene.lift.domain.usecase.exercise.GetExerciseDetailUseCase
+import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
 import com.eugene.lift.domain.usecase.template.CreateTemplateFromWorkoutUseCase
 import com.eugene.lift.domain.usecase.template.UpdateTemplateFromWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.StartEmptyWorkoutUseCase

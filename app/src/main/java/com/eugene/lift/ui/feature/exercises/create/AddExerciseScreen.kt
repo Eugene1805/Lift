@@ -1,4 +1,4 @@
-package com.eugene.lift.ui.feature.exercises
+package com.eugene.lift.ui.feature.exercises.create
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,7 +36,7 @@ import com.eugene.lift.R
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
-import com.eugene.lift.ui.AppDropdown
+import com.eugene.lift.ui.components.AppDropdown
 
 @Composable
 fun AddExerciseRoute(
@@ -80,6 +80,7 @@ fun AddExerciseScreen(
 ) {
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopAppBar(
                 title = {
@@ -88,7 +89,11 @@ fun AddExerciseScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 },
                 actions = {
@@ -102,9 +107,9 @@ fun AddExerciseScreen(
                 windowInsets = WindowInsets(0, 0, 0, 0),
                 scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    scrolledContainerColor = MaterialTheme.colorScheme.background
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             )
         }
@@ -128,7 +133,9 @@ fun AddExerciseScreen(
 
                 supportingText = {
                     Text(
-                        text = stringResource(id = R.string.text_field_character_counter, name.length, MAX_EXERCISE_NAME_LENGTH),
+                        text = stringResource(id = R.string.text_field_character_counter, name.length,
+                            MAX_EXERCISE_NAME_LENGTH
+                        ),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.End,
                         color = if (name.length > MAX_EXERCISE_NAME_LENGTH) {

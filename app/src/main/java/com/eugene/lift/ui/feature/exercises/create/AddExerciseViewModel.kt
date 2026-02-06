@@ -1,4 +1,4 @@
-package com.eugene.lift.ui.feature.exercises
+package com.eugene.lift.ui.feature.exercises.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,8 +8,8 @@ import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
-import com.eugene.lift.domain.usecase.GetExerciseDetailUseCase
-import com.eugene.lift.domain.usecase.SaveExerciseUseCase
+import com.eugene.lift.domain.usecase.exercise.GetExerciseDetailUseCase
+import com.eugene.lift.domain.usecase.exercise.SaveExerciseUseCase
 import com.eugene.lift.ui.navigation.ExerciseAddRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +27,7 @@ class AddExerciseViewModel @Inject constructor(
 ) : ViewModel() {
     private val routeArgs : ExerciseAddRoute? = try {
         savedStateHandle.toRoute<ExerciseAddRoute>()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         null // Handle case where route parsing fails
     }
 
@@ -102,7 +102,7 @@ class AddExerciseViewModel @Inject constructor(
                     )
                 )
                 onSuccess()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // TODO : Handle validation error (e.g., show Snackbar)
             }
         }

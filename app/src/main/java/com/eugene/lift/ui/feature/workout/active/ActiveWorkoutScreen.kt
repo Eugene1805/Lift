@@ -38,8 +38,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eugene.lift.domain.model.SessionExercise
 import com.eugene.lift.domain.model.TimerState
 import com.eugene.lift.domain.model.WorkoutSet
-import com.eugene.lift.ui.DeleteConfirmationRow
-import com.eugene.lift.ui.SwipeableSetRowWrapper
+import com.eugene.lift.ui.components.DeleteConfirmationRow
+import com.eugene.lift.ui.components.SwipeableSetRowWrapper
 import androidx.compose.ui.res.stringResource
 import com.eugene.lift.R
 import com.eugene.lift.domain.model.MeasureType
@@ -763,7 +763,7 @@ fun CompactTextInput(
         },
         modifier = modifier
             .background(containerColor, shape)
-            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), shape)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape)
             .padding(horizontal = 8.dp, vertical = 8.dp)
             .onFocusChanged { focusState ->
                 val wasFocused = isFocused

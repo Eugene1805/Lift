@@ -4,6 +4,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
@@ -22,6 +23,14 @@ import com.eugene.lift.ui.navigation.BottomNavItem
  * @param currentDestination Current navigation destination
  * @param items List of bottom navigation items to display
  */
+/**
+ * Bottom navigation bar component for the main app shell.
+ * Uses M3 surface container for proper elevation hierarchy.
+ *
+ * @param navController Navigation controller for handling navigation
+ * @param currentDestination Current navigation destination
+ * @param items List of bottom navigation items to display
+ */
 @Composable
 fun LiftBottomNavigationBar(
     navController: NavController,
@@ -29,7 +38,8 @@ fun LiftBottomNavigationBar(
     items: List<BottomNavItem<*>>
 ) {
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        contentColor = MaterialTheme.colorScheme.onSurface
     ) {
         items.forEach { item ->
             val isSelected = currentDestination?.hierarchy?.any {
@@ -40,12 +50,12 @@ fun LiftBottomNavigationBar(
 
             NavigationBarItem(
                 icon = { Icon(item.icon, contentDescription = label) },
-                label = { Text(text = label, fontWeight = FontWeight.Bold) },
+                label = { Text(text = label, fontWeight = FontWeight.Medium) },
                 selected = isSelected,
-                colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.onSurface,
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     selectedTextColor = MaterialTheme.colorScheme.onSurface,
-                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                    indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
                     unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ),

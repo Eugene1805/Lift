@@ -1,8 +1,8 @@
 package com.eugene.lift.data.repository
 
 import com.eugene.lift.data.local.dao.FolderDao
-import com.eugene.lift.data.local.entity.toEntity
-import com.eugene.lift.data.local.entity.toDomain
+import com.eugene.lift.data.mapper.toEntity
+import com.eugene.lift.data.mapper.toDomain
 import com.eugene.lift.domain.model.Folder
 import com.eugene.lift.domain.repository.FolderRepository
 import kotlinx.coroutines.flow.Flow

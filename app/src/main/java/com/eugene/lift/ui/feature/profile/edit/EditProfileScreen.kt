@@ -36,11 +36,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eugene.lift.R
 
 @Composable
 fun EditProfileRoute(
@@ -74,23 +76,32 @@ fun EditProfileScreen(
 ) {
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopAppBar(
-                title = { Text("Edit Profile") },
+                title = { Text(stringResource(R.string.profile_edit_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = onSave) {
-                        Icon(Icons.Default.Check, contentDescription = "Save")
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = stringResource(R.string.action_save),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
                 windowInsets = WindowInsets(0, 0, 0, 0),
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -125,7 +136,7 @@ fun EditProfileScreen(
                             text = uiState.displayName.take(2).uppercase(),
                             style = MaterialTheme.typography.headlineLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
 
@@ -142,9 +153,10 @@ fun EditProfileScreen(
             // Color Picker
             item {
                 Text(
-                    text = "Avatar Color",
+                    text = stringResource(R.string.profile_avatar_color),
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 FlowRow(
@@ -162,7 +174,7 @@ fun EditProfileScreen(
                                     if (isSelected) {
                                         Modifier.border(
                                             width = 3.dp,
-                                            color = MaterialTheme.colorScheme.onSurface,
+                                            color = MaterialTheme.colorScheme.primary,
                                             shape = CircleShape
                                         )
                                     } else Modifier
@@ -178,7 +190,7 @@ fun EditProfileScreen(
                 OutlinedTextField(
                     value = uiState.displayName,
                     onValueChange = onDisplayNameChange,
-                    label = { Text("Display Name") },
+                    label = { Text(stringResource(R.string.profile_display_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -189,8 +201,8 @@ fun EditProfileScreen(
                 OutlinedTextField(
                     value = uiState.bio,
                     onValueChange = onBioChange,
-                    label = { Text("Bio") },
-                    placeholder = { Text("Tell us about yourself...") },
+                    label = { Text(stringResource(R.string.profile_bio)) },
+                    placeholder = { Text(stringResource(R.string.profile_bio_hint)) },
                     minLines = 3,
                     maxLines = 5,
                     modifier = Modifier.fillMaxWidth()

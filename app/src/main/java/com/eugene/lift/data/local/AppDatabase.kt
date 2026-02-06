@@ -20,8 +20,6 @@ import com.eugene.lift.data.local.entity.FolderEntity
 import com.eugene.lift.data.local.entity.UserCredentialsEntity
 import com.eugene.lift.data.local.entity.UserProfileEntity
 
-
-
 @Database(
     entities = [
         ExerciseEntity::class,

@@ -16,7 +16,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -76,6 +75,7 @@ fun HistoryScreen(
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.history_title)) },
@@ -83,14 +83,15 @@ fun HistoryScreen(
                     IconButton(onClick = onCalendarClick) {
                         Icon(
                             imageVector = Icons.Default.CalendarMonth,
-                            contentDescription = stringResource(R.string.history_calendar)
+                            contentDescription = stringResource(R.string.history_calendar),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
                 windowInsets = WindowInsets(0, 0, 0, 0),
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -132,7 +133,7 @@ fun HistoryScreen(
 @Composable
 fun HistoryHeader(title: String) {
     Surface(
-        color = MaterialTheme.colorScheme.background,
+        color = MaterialTheme.colorScheme.surface,
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
@@ -153,7 +154,7 @@ fun HistorySessionCard(
 ) {
     Card(
         onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier
             .fillMaxWidth()
@@ -178,7 +179,10 @@ fun HistorySessionCard(
                     )
                 }
 
-                Badge(containerColor = MaterialTheme.colorScheme.secondaryContainer) {
+                Badge(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -236,7 +240,7 @@ fun HistorySessionCard(
                             imageVector = Icons.Default.EmojiEvents,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
-                            tint = Color(0xFFFFC107)
+                            tint = MaterialTheme.colorScheme.tertiary
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
@@ -274,9 +278,9 @@ fun HistorySessionCard(
                     if (completedSets > 0 || sessionExercise.sets.isNotEmpty()) {
                         Surface(
                             color = if (hasPR) {
-                                Color(0xFFFFC107).copy(alpha = 0.15f)
+                                MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)
                             } else {
-                                Color.Transparent
+                                MaterialTheme.colorScheme.surfaceContainerLowest
                             },
                             shape = MaterialTheme.shapes.small,
                             modifier = Modifier.fillMaxWidth()
@@ -322,7 +326,7 @@ fun HistorySessionCard(
                                                     imageVector = Icons.Default.EmojiEvents,
                                                     contentDescription = "PR",
                                                     modifier = Modifier.size(16.dp),
-                                                    tint = Color(0xFFFFC107)
+                                                    tint = MaterialTheme.colorScheme.tertiary
                                                 )
                                             }
                                         }

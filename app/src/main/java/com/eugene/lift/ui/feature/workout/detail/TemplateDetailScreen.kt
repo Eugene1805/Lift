@@ -131,7 +131,7 @@ fun TemplateDetailScreen(
 fun TemplateExerciseReadOnlyCard(item: TemplateExercise,onClick: () -> Unit) {
     Card(
         onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
         Row(
             modifier = Modifier
@@ -144,7 +144,8 @@ fun TemplateExerciseReadOnlyCard(item: TemplateExercise,onClick: () -> Unit) {
                 Text(
                     text = item.exercise.name,
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = stringResource(item.exercise.category.labelRes),
@@ -157,11 +158,13 @@ fun TemplateExerciseReadOnlyCard(item: TemplateExercise,onClick: () -> Unit) {
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = "${item.targetSets} ${stringResource(R.string.template_detail_series)}",
-                    style = MaterialTheme.typography.labelMedium
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "${item.targetReps} ${stringResource(R.string.label_reps)}",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

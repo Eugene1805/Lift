@@ -555,6 +555,9 @@
 
     <!-- Components -->
     <string name="component_delete">Delete</string>
+    <string name="component_delete_set_confirmation">Delete Set %d?</string>
+    <string name="component_cancel">Cancel</string>
+    <string name="component_delete_content_description">Delete</string>
     <string name="component_swipe_color_label">SwipeColor</string>
     <string name="action_start_workout">Start Workout</string>
     <string name="active_workout_time_s">s</string>

@@ -56,7 +56,8 @@ fun FilterBottomSheetContent(
             Column {
                 Text(
                     text = stringResource(R.string.title_filters),
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = stringResource(R.string.filter_exercise_count, totalExerciseCount),
@@ -100,7 +101,7 @@ fun FilterBottomSheetContent(
         Text(
             text = stringResource(R.string.subtitle_category),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(8.dp))
 

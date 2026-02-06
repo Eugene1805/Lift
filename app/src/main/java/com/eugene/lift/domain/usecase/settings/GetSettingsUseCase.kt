@@ -1,4 +1,4 @@
-package com.eugene.lift.domain.usecase
+package com.eugene.lift.domain.usecase.settings
 
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.repository.SettingsRepository

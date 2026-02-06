@@ -79,13 +79,14 @@ fun ProfileScreen(
 ) {
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.title_profile)) },
                 windowInsets = WindowInsets(0, 0, 0, 0),
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -139,7 +140,7 @@ private fun ProfileHeader(
     onEditClick: () -> Unit
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
         Row(
             modifier = Modifier
@@ -166,14 +167,14 @@ private fun ProfileHeader(
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
                         modifier = Modifier.size(40.dp),
-                        tint = Color.White
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
                     Text(
                         text = profile?.displayName?.take(2)?.uppercase() ?: "?",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
@@ -185,7 +186,8 @@ private fun ProfileHeader(
                 Text(
                     text = profile?.displayName ?: "Loading...",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "@${profile?.username ?: ""}",
@@ -204,7 +206,8 @@ private fun ProfileHeader(
                     Text(
                         text = "${profile?.totalWorkouts ?: 0} workouts",
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -222,7 +225,7 @@ private fun HistogramSection(
     val tabs = listOf("Duration", "Volume", "Reps")
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Header with dropdown
@@ -234,7 +237,8 @@ private fun HistogramSection(
                 Text(
                     text = "Statistics",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 TimeRangeDropdown(
                     selectedRange = selectedTimeRange,
@@ -411,13 +415,14 @@ private fun SimpleBarChart(
 @Composable
 private fun DashboardSection(stats: ProfileStats) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = "Workouts per Week",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -458,7 +463,7 @@ private fun DashboardSection(stats: ProfileStats) {
 @Composable
 private fun ExerciseProgressionSection() {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -469,7 +474,8 @@ private fun ExerciseProgressionSection() {
                 Text(
                     text = "Exercise Progression",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 IconButton(onClick = { /* TODO: Add exercise diagram */ }) {
                     Icon(
@@ -510,7 +516,7 @@ private fun ProfileSkeletonLoader(modifier: Modifier = Modifier) {
         // Profile card skeleton
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
             )
         ) {
             Row(
@@ -523,7 +529,7 @@ private fun ProfileSkeletonLoader(modifier: Modifier = Modifier) {
                     modifier = Modifier
                         .size(80.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
@@ -531,14 +537,14 @@ private fun ProfileSkeletonLoader(modifier: Modifier = Modifier) {
                         modifier = Modifier
                             .width(120.dp)
                             .height(20.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Box(
                         modifier = Modifier
                             .width(80.dp)
                             .height(16.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                     )
                 }
             }
@@ -548,7 +554,7 @@ private fun ProfileSkeletonLoader(modifier: Modifier = Modifier) {
         repeat(2) {
             Card(
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                 )
             ) {
                 Box(

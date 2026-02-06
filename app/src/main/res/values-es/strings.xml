@@ -541,6 +541,9 @@
 
     <!-- Components -->
     <string name="component_delete">Borrar</string>
+    <string name="component_delete_set_confirmation">¿Eliminar Serie %d?</string>
+    <string name="component_cancel">Cancelar</string>
+    <string name="component_delete_content_description">Eliminar</string>
     <string name="component_swipe_color_label">ColorDeslizar</string>
     <string name="action_start_workout">Iniciar entrenamiento</string>
     <string name="profile_workouts_count">%d entrenamientos</string>
@@ -565,3 +568,4 @@
     <string name="profile_display_name">Nombre de usuario</string>
     <string name="profile_bio">Bio</string>
 </resources>
+

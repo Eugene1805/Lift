@@ -15,7 +15,7 @@ interface WorkoutRepository {
 
     suspend fun deleteSession(sessionId: String)
 
-    suspend fun getPersonalRecord(exerciseId: String): Flow<WorkoutSet?>
+    fun getPersonalRecord(exerciseId: String): Flow<WorkoutSet?>
 
 
     fun getExerciseHistory(exerciseId: String): Flow<List<WorkoutSession>>

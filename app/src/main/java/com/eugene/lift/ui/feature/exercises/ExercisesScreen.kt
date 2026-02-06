@@ -36,7 +36,7 @@ import com.eugene.lift.R
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
-import com.eugene.lift.domain.usecase.SortOrder
+import com.eugene.lift.domain.usecase.exercise.SortOrder
 
 @Composable
 fun ExercisesRoute(
@@ -81,6 +81,7 @@ fun ExercisesScreen(
     selectedBodyParts: Set<BodyPart>,
     selectedCategories: Set<ExerciseCategory>,
     totalExerciseCount: Int,
+    modifier: Modifier = Modifier,
     onSearchQueryChange: (String) -> Unit,
     onSortOrderChange: (SortOrder) -> Unit,
     onBodyPartToggle: (BodyPart) -> Unit,
@@ -89,8 +90,7 @@ fun ExercisesScreen(
     onAddClick: () -> Unit,
     onExerciseClick: (String) -> Unit,
     onExercisesSelected: (List<String>) -> Unit,
-    isSelectionMode: Boolean = false,
-    modifier: Modifier = Modifier
+    isSelectionMode: Boolean = false
 ) {
     var showSheet by remember { mutableStateOf(false) }
     var showSortMenu by remember { mutableStateOf(false) }
@@ -103,6 +103,7 @@ fun ExercisesScreen(
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             Column {
                 TopAppBar(
@@ -115,9 +116,9 @@ fun ExercisesScreen(
                     windowInsets = WindowInsets(0, 0, 0, 0),
                     scrollBehavior = scrollBehavior,
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.onBackground,
-                        scrolledContainerColor = MaterialTheme.colorScheme.background
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer
                     )
                 )
 
@@ -132,10 +133,22 @@ fun ExercisesScreen(
                         value = searchQuery,
                         onValueChange = onSearchQueryChange,
                         placeholder = { Text(stringResource(R.string.hint_search)) },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
                         modifier = Modifier.weight(1f),
                         singleLine = true,
                         shape = MaterialTheme.shapes.extraLarge,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        ),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                         keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
                     )
@@ -144,8 +157,8 @@ fun ExercisesScreen(
                     FilledTonalIconButton(
                         onClick = { showSheet = true },
                         colors = if (hasFilters) IconButtonDefaults.filledTonalIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                         ) else IconButtonDefaults.filledTonalIconButtonColors()
                     ) {
                         Icon(Icons.Default.FilterList, contentDescription = stringResource(R.string.title_filters))
@@ -209,22 +222,21 @@ fun ExercisesScreen(
             }
         },
         floatingActionButton = {
-            if (isSelectionMode) {
-                if (selectedIds.isNotEmpty()) {
-                    ExtendedFloatingActionButton(
-                        onClick = { onExercisesSelected(selectedIds.toList()) },
-                        icon = { Icon(Icons.Default.Check, null) },
-                        text = { Text(stringResource(R.string.exercise_add_selected, selectedIds.size)) },
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
+            if (isSelectionMode && selectedIds.isNotEmpty()) {
+                ExtendedFloatingActionButton(
+                    onClick = { onExercisesSelected(selectedIds.toList()) },
+                    icon = { Icon(Icons.Default.Check, null) },
+                    text = { Text(stringResource(R.string.exercise_add_selected, selectedIds.size)) },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             }
+
             if(selectedIds.isEmpty()){
                 FloatingActionButton(
                     onClick = onAddClick,
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null)
                 }
@@ -323,7 +335,9 @@ fun ExerciseItemCard(
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     } else {
-        CardDefaults.elevatedCardColors()
+        CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
     }
 
     ElevatedCard(
@@ -361,7 +375,11 @@ fun ExerciseItemCard(
                             .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(exercise.name.take(1), style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = exercise.name.take(1),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             },

@@ -84,6 +84,7 @@ fun WorkoutRoute(
 
     val folders by viewModel.folders.collectAsStateWithLifecycle()
     val currentFolderId by viewModel.currentFolderId.collectAsStateWithLifecycle()
+    val copiedMsg = stringResource(R.string.workout_routine_copied)
     WorkoutScreen(
         templates = templates,
         selectedTab = selectedTab,
@@ -103,7 +104,7 @@ fun WorkoutRoute(
             viewModel.duplicateTemplate(template.id)
         },
         onShareClick = {
-            Toast.makeText(context, context.getString(R.string.workout_routine_copied), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, copiedMsg, Toast.LENGTH_SHORT).show()
         },
         onStartEmptyClick = { onStartEmptyClick(null) }
     )
@@ -303,8 +304,8 @@ fun TemplateItemCard(
     onStartWorkout: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    val clipboardManager = LocalClipboardManager.current
-    val context = LocalContext.current
+    val clipboard = LocalClipboardManager.current
+    val shareText = stringResource(R.string.share_routine_text, template.name, template.exercises.size)
 
     Card(
         onClick = onClick,
@@ -358,9 +359,8 @@ fun TemplateItemCard(
                             text = { Text(stringResource(R.string.action_share)) },
                             onClick = {
                                 showMenu = false
-                                val textToCopy = context.getString(R.string.share_routine_text, template.name, template.exercises.size)
-                                clipboardManager.setText(AnnotatedString(textToCopy))
-                                onShare() // Callback por si quieres mostrar un Toast/Snackbar
+                                clipboard.setText(AnnotatedString(shareText))
+                                onShare()
                             },
                             leadingIcon = { Icon(Icons.Default.Share, null) }
                         )
@@ -415,7 +415,7 @@ fun TemplateItemCard(
                 contentDescription = null,
                 modifier = Modifier.size(20.dp)
             )
-            androidx.compose.foundation.layout.Spacer(modifier = Modifier.size(8.dp))
+            Spacer(modifier = Modifier.size(8.dp))
             Text(stringResource(R.string.template_detail_start_routine))
         }
     }

@@ -8,5 +8,7 @@ data class WorkoutSession(
     val name: String,
     val date: LocalDateTime,
     val durationSeconds: Long,
-    val exercises: List<SessionExercise> = emptyList()
+    val exercises: List<SessionExercise> = emptyList(),
+    // Optional session-level notes
+    val note: String? = null
 )

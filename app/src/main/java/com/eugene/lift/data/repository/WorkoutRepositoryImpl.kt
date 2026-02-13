@@ -62,7 +62,8 @@ class WorkoutRepositoryImpl @Inject constructor(
                     id = ex.id,
                     sessionId = session.id,
                     exerciseId = ex.exercise.id,
-                    orderIndex = index
+                    orderIndex = index,
+                    note = ex.note
                 )
             )
             ex.sets.forEachIndexed { setIndex, s ->

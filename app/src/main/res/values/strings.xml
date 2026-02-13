@@ -485,6 +485,13 @@
     <string name="active_workout_add_10s">+10s</string>
     <string name="active_workout_complete">Complete</string>
 
+    <!-- Notes labels -->
+    <string name="active_workout_notes_label">Notes</string>
+    <string name="active_workout_exercise_notes_label">Exercise notes</string>
+    <string name="history_session_note_label">Session notes</string>
+    <string name="history_exercise_note_label">Exercise notes</string>
+
+
     <!-- Template Detail Screen -->
     <string name="template_detail_edit_template">Edit Template</string>
     <string name="template_detail_start_routine">Start Routine</string>
@@ -536,7 +543,6 @@
     <!-- Active Workout - Additional -->
     <string name="active_workout_auto_timer">Auto-timer when finishing set</string>
     <string name="active_workout_time_label">TIME</string>
-    <string name="active_workout_distance_km">km</string>
     <string name="exit_workout_title">Exit Workout?</string>
     <string name="exit_workout_message">Are you sure you want to exit? Your progress will be lost.</string>
     <string name="exit_workout_confirm">Exit</string>
@@ -562,5 +568,11 @@
     <string name="action_start_workout">Start Workout</string>
     <string name="active_workout_time_s">s</string>
     <string name="exercise_detail_back">Back</string>
+
+    <!-- Remove duplicate unit strings here -->
+    <!-- Add missing default-locale keys that exist in es -->
+    <string name="active_workout_kg_lowercase">kg</string>
+    <string name="active_workout_reps_lowercase">reps</string>
+    <string name="history_prs">PRs</string>
 </resources>
 

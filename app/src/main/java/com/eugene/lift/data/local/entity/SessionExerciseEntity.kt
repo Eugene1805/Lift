@@ -28,5 +28,7 @@ data class SessionExerciseEntity(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val sessionId: String,
     val exerciseId: String,
-    val orderIndex: Int
+    val orderIndex: Int,
+    // Optional per-exercise notes (nullable)
+    val note: String? = null
 )

@@ -23,5 +23,7 @@ data class WorkoutSessionEntity(
     val templateId: String?, // Null si fue "Quick Workout" o template borrado
     val name: String,
     val date: LocalDateTime,
-    val durationSeconds: Long
+    val durationSeconds: Long,
+    // Optional session-level notes (nullable)
+    val note: String? = null
 )

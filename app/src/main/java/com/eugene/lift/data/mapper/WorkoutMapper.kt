@@ -18,15 +18,12 @@ fun SessionComplete.toDomain(): WorkoutSession {
         durationSeconds = session.durationSeconds,
         exercises = exercises
             .sortedBy { it.sessionExercise.orderIndex }
-            .map { it.toDomain() }
+            .map { it.toDomain() },
+        note = session.note
     )
 }
 
 fun SessionExerciseWithSets.toDomain(): SessionExercise {
-    // Nota: Aquí también asumimos que tu ExerciseEntity tiene lo básico.
-    // Si necesitas bodyParts en el historial, deberías usar la misma lógica
-    // que en TemplateMapper (trayendo CrossRefs en el DAO).
-    // Por brevedad, usamos el mapeo simple aquí, pero idealmente sería igual al Template.
     return SessionExercise(
         id = sessionExercise.id,
         exercise = Exercise(
@@ -40,7 +37,8 @@ fun SessionExerciseWithSets.toDomain(): SessionExercise {
         ),
         sets = sets
             .sortedBy { it.orderIndex }
-            .map { it.toDomain() }
+            .map { it.toDomain() },
+        note = sessionExercise.note
     )
 }
 
@@ -58,11 +56,11 @@ fun WorkoutSetEntity.toDomain(): WorkoutSet {
     )
 }
 
-
 fun WorkoutSession.toEntity() = WorkoutSessionEntity(
     id = id,
     templateId = templateId,
     name = name,
     date = date,
-    durationSeconds = durationSeconds
+    durationSeconds = durationSeconds,
+    note = note
 )

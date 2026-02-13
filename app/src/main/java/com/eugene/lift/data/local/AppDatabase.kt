@@ -33,7 +33,7 @@ import com.eugene.lift.data.local.entity.UserProfileEntity
         UserProfileEntity::class,
         UserCredentialsEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

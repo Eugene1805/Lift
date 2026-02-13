@@ -468,6 +468,8 @@
     <string name="active_workout_kg_lowercase">kg</string>
     <string name="active_workout_reps_lowercase">reps</string>
     <string name="active_workout_complete">Completar</string>
+    <string name="active_workout_notes_label">Notas</string>
+    <string name="active_workout_exercise_notes_label">Notas del ejercicio</string>
 
     <!-- Template Detail Screen -->
     <string name="template_detail_edit_template">Editar Plantilla</string>
@@ -497,6 +499,8 @@
     <string name="history_detail_exercises">Ejercicios</string>
     <string name="history_detail_sets">%d series</string>
     <string name="history_detail_set">Serie %d</string>
+    <string name="history_exercise_note_label">Notas del ejercicio</string>
+    <string name="history_session_note_label">Notas de la sesión</string>
 
     <!-- Folder Components -->
     <string name="folder_new">Nuevo</string>

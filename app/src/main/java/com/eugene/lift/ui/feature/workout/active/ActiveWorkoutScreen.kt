@@ -40,12 +40,13 @@ import com.eugene.lift.domain.model.TimerState
 import com.eugene.lift.domain.model.WorkoutSet
 import com.eugene.lift.ui.components.DeleteConfirmationRow
 import com.eugene.lift.ui.components.SwipeableSetRowWrapper
+import com.eugene.lift.ui.components.ExerciseSnackbar
 import androidx.compose.ui.res.stringResource
 import com.eugene.lift.R
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
-import com.eugene.lift.domain.util.WeightConverter
+import com.eugene.lift.domain.model.DistanceUnit
 
 @Composable
 fun ActiveWorkoutRoute(
@@ -137,6 +138,26 @@ fun ActiveWorkoutScreen(
     var showExitDialog by remember { mutableStateOf(false) }
     var showTemplateUpdateDialog by remember { mutableStateOf(false) }
     var showSaveAsTemplateDialog by remember { mutableStateOf(false) }
+    
+    // Snackbar state
+    var showSnackbar by remember { mutableStateOf(false) }
+    var currentExerciseName by remember { mutableStateOf("") }
+    var currentWeight by remember { mutableStateOf("") }
+    
+    // Function to show exercise snackbar
+    fun showExerciseSnackbar(exerciseName: String, weight: String) {
+        currentExerciseName = exerciseName
+        currentWeight = weight
+        showSnackbar = true
+    }
+    
+    // Auto-hide snackbar after 3 seconds
+    LaunchedEffect(showSnackbar) {
+        if (showSnackbar) {
+            kotlinx.coroutines.delay(3000)
+            showSnackbar = false
+        }
+    }
 
     // Handle back button press
     BackHandler {
@@ -320,45 +341,66 @@ fun ActiveWorkoutScreen(
             }
         }
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier.padding(innerPadding).fillMaxSize(),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            itemsIndexed(exercises, key = { _, item -> item.id }) { exIndex, exercise ->
-                val exerciseHistory = history[exercise.exercise.id] ?: emptyList()
-                ActiveExerciseCard(
-                    exercise = exercise,
-                    exerciseHistory = exerciseHistory,
-                    effortMetric = effortMetric,
-                    exIndex = exIndex,
-                    userSettings = userSettings,
-                    weightUnitLabel = if (userSettings.weightUnit == WeightUnit.KG) "kg" else "lbs",
-                    onWeightChange = onWeightChange,
-                    onRepsChange = onRepsChange,
-                    onRpeChange = onRpeChange,
-                    onRirChange = onRirChange,
-                    onDistanceChange = onDistanceChange,
-                    onTimeChange = onTimeChange,
-                    onSetCompleted = onSetCompleted,
-                    onAddSet = { onAddSet(exIndex) },
-                    onRemoveSet = { setIndex -> onRemoveSet(exIndex, setIndex) },
-                    onExerciseClick = { onExerciseClick(exercise.exercise.id) }
-                )
-            }
-
-            item {
-                OutlinedButton(
-                    onClick = onAddExercise,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
-                ) {
-                    Icon(Icons.Default.Add, null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.active_workout_add_exercise))
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier.padding(innerPadding).fillMaxSize(),
+                contentPadding = PaddingValues(vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                itemsIndexed(exercises, key = { _, item -> item.id }) { exIndex, exercise ->
+                    val exerciseHistory = history[exercise.exercise.id] ?: emptyList()
+                    ActiveExerciseCard(
+                        exercise = exercise,
+                        exerciseHistory = exerciseHistory,
+                        effortMetric = effortMetric,
+                        exIndex = exIndex,
+                        userSettings = userSettings,
+                        weightUnitLabel = if (userSettings.weightUnit == WeightUnit.KG) "kg" else "lbs",
+                        onWeightChange = onWeightChange,
+                        onRepsChange = onRepsChange,
+                        onRpeChange = onRpeChange,
+                        onRirChange = onRirChange,
+                        onDistanceChange = onDistanceChange,
+                        onTimeChange = onTimeChange,
+                        onSetCompleted = { exIndex, setIndex ->
+                onSetCompleted(exIndex, setIndex)
+                // Show snackbar when set is completed
+                val exercise = exercises[exIndex]
+                val set = exercise.sets[setIndex]
+                if (set.completed && exercise.exercise.measureType == MeasureType.REPS_AND_WEIGHT) {
+                    val weightUnit = if (userSettings.weightUnit == WeightUnit.KG) "kg" else "lbs"
+                    val weightText = "${set.weight} $weightUnit"
+                    showExerciseSnackbar(exercise.exercise.name, weightText)
                 }
-            }
+            },
+                        onAddSet = { onAddSet(exIndex) },
+                        onRemoveSet = { setIndex -> onRemoveSet(exIndex, setIndex) },
+                        onExerciseClick = { onExerciseClick(exercise.exercise.id) }
+                    )
+                }
 
-            item { Spacer(modifier = Modifier.height(80.dp)) }
+                item {
+                    OutlinedButton(
+                        onClick = onAddExercise,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                    ) {
+                        Icon(Icons.Default.Add, null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.active_workout_add_exercise))
+                    }
+                }
+
+                item { Spacer(modifier = Modifier.height(80.dp)) }
+            }
+            
+            // Exercise Snackbar at the top of the screen
+            ExerciseSnackbar(
+                exerciseName = currentExerciseName,
+                weight = currentWeight,
+                isVisible = showSnackbar,
+                onDismiss = { showSnackbar = false },
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
     }
 }
@@ -421,7 +463,7 @@ fun ActiveExerciseCard(
                         Text(stringResource(R.string.active_workout_reps), modifier = Modifier.weight(2f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
                     }
                     MeasureType.DISTANCE_TIME -> {
-                        val distUnit = if (userSettings.weightUnit == WeightUnit.KG) "KM" else "MI"
+                        val distUnit = if (userSettings.distanceUnit == DistanceUnit.KM) "KM" else "MI"
                         Text(distUnit, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
                         Text(stringResource(R.string.active_workout_time_label), modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelMedium)
                     }
@@ -519,12 +561,8 @@ fun SetRowItem(
     val displayWeight = set.weight
 
     val historyDisplayWeight = historySet?.let {
-        // History is stored in kg, so convert to display units
-        if (userSettings.weightUnit == WeightUnit.LBS) {
-            WeightConverter.kgToLbs(it.weight)
-        } else {
-            it.weight
-        }
+        // History weights are already provided in the user’s preferred unit by the repository
+        it.weight
     }
 
     // Format weight: show as integer if whole number, otherwise show decimal
@@ -584,7 +622,8 @@ fun SetRowItem(
                     )
                     if (historySet != null) {
                         val histDist = historySet.distance
-                        HistoryText("${if (histDist != null) formatWeight(histDist) else "-"} km")
+                        val distUnitLabel = if (userSettings.distanceUnit == DistanceUnit.KM) "km" else "mi"
+                        HistoryText("${if (histDist != null) formatWeight(histDist) else "-"} $distUnitLabel")
                     }
                 }
                 Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {

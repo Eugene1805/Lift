@@ -22,6 +22,7 @@ data class WorkoutSetEntity(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val sessionExerciseId: String,
     val orderIndex: Int,
+    // Peso almacenado SIEMPRE en kilogramos (KG) como unidad canónica
     val weight: Double,
     val reps: Int,
     val completed: Boolean,

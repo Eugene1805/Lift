@@ -28,6 +28,7 @@ import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.util.WeightConverter
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun HistoryRoute(
@@ -377,7 +378,7 @@ fun formatWeight(weight: Double): String {
     return if (weight % 1.0 == 0.0) {
         weight.toInt().toString()
     } else {
-        weight.toString()
+        String.format(Locale.ENGLISH,"%.1f", weight)
     }
 }
 

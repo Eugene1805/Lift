@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.LocalCafe
 import androidx.compose.material3.*
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -37,6 +38,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.sp
 import com.eugene.lift.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,6 +106,117 @@ fun <T> AppDropdown(
                         expanded = false
                     }
                 )
+            }
+        }
+    }
+}
+
+/**
+ * Exercise Snackbar - Shows exercise info at the top of the screen during workout
+ * 
+ * Usage:
+ * ```kotlin
+ * var showSnackbar by remember { mutableStateOf(false) }
+ * var currentExerciseName by remember { mutableStateOf("") }
+ * var currentWeight by remember { mutableStateOf("") }
+ * 
+ * // Show snackbar when set is completed
+ * fun showExerciseSnackbar(exerciseName: String, weight: String) {
+ *     currentExerciseName = exerciseName
+ *     currentWeight = weight
+ *     showSnackbar = true
+ * }
+ * 
+ * // Auto-hide after 3 seconds
+ * LaunchedEffect(showSnackbar) {
+ *     if (showSnackbar) {
+ *         delay(3000)
+ *         showSnackbar = false
+ *     }
+ * }
+ * 
+ * // In your UI
+ * ExerciseSnackbar(
+ *     exerciseName = currentExerciseName,
+ *     weight = currentWeight,
+ *     isVisible = showSnackbar,
+ *     onDismiss = { showSnackbar = false },
+ *     modifier = Modifier.align(Alignment.TopCenter)
+ * )
+ * ```
+ */
+@Composable
+fun ExerciseSnackbar(
+    exerciseName: String,
+    weight: String,
+    isVisible: Boolean,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    
+    val alpha by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f,
+        animationSpec = tween(durationMillis = 300),
+        label = "snackbar_alpha"
+    )
+    
+    DisposableEffect(isVisible) {
+        if (isVisible) {
+            onDismiss()
+        }
+        onDispose { }
+    }
+    
+    if (isVisible) {
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .alpha(alpha)
+        ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 8.dp
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = exerciseName,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = weight,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                    }
+                    
+                    Icon(
+                        imageVector = Icons.Default.LocalCafe,
+                        contentDescription = "Cup Icon",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
             }
         }
     }

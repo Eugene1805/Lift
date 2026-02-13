@@ -210,9 +210,9 @@ private fun CalendarGrid(
 ) {
     val firstDay = month.atDay(1)
     val daysInMonth = month.lengthOfMonth()
-    val startOffset = firstDay.dayOfWeek.value - 1 // Monday=1
+    val startOffset = firstDay.dayOfWeek.value // Rest one so Monday=1, otherwise it stars on Sunday
 
-    val cells = buildList<LocalDate?>(daysInMonth + startOffset) {
+    val cells = buildList(daysInMonth + startOffset) {
         repeat(startOffset) { add(null) }
         for (day in 1..daysInMonth) {
             add(month.atDay(day))

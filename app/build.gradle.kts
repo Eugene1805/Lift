@@ -60,7 +60,6 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
-    androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
@@ -71,15 +70,15 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
-    // Room
+
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler) // Usamos ksp en vez de kapt o annotationProcessor
-    // Hilt
+    ksp(libs.androidx.room.compiler)
+
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     ksp(libs.androidx.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose) // Para usar hiltViewModel() en Compose
+    implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)

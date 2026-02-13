@@ -88,8 +88,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideWorkoutRepository(dao: WorkoutDao): WorkoutRepository {
-        return WorkoutRepositoryImpl(dao)
+    fun provideWorkoutRepository(
+        dao: WorkoutDao,
+        settingsRepository: SettingsRepository
+    ): WorkoutRepository {
+        return WorkoutRepositoryImpl(dao, settingsRepository)
     }
 
     @Provides

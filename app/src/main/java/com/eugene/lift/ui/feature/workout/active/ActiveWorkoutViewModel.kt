@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.eugene.lift.domain.manager.RestTimerManager
 import com.eugene.lift.domain.model.SessionExercise
 import com.eugene.lift.domain.model.UserSettings
-import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.WorkoutSet
 import com.eugene.lift.domain.usecase.exercise.GetExerciseDetailUseCase
@@ -18,7 +17,6 @@ import com.eugene.lift.domain.usecase.workout.StartEmptyWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.StartWorkoutFromTemplateUseCase
 import com.eugene.lift.domain.usecase.workout.FinishWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.GetLastHistoryForExerciseUseCase
-import com.eugene.lift.domain.util.WeightConverter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -147,18 +145,11 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private suspend fun loadHistoryFor(exerciseId: String) {
         val lastSession = getLastHistoryForExerciseUseCase(exerciseId)
-        val unit = userSettings.value.weightUnit
-
+        // Los pesos de lastSession YA vienen en la unidad de preferencia desde el repositorio
         if (lastSession != null) {
             val oldExercise = lastSession.exercises.find { it.exercise.id == exerciseId }
             if (oldExercise != null) {
-                val displaySets = oldExercise.sets.map { set ->
-                    if (unit == WeightUnit.LBS) {
-                        set.copy(weight = WeightConverter.kgToLbs(set.weight))
-                    } else {
-                        set
-                    }
-                }
+                val displaySets = oldExercise.sets
                 val currentMap = _historyState.value.toMutableMap()
                 currentMap[exerciseId] = displaySets
                 _historyState.value = currentMap
@@ -237,33 +228,18 @@ class ActiveWorkoutViewModel @Inject constructor(
         }
     }
 
-fun finishWorkout(updateTemplate: Boolean?, onSuccess: () -> Unit) {
+    fun finishWorkout(updateTemplate: Boolean?, onSuccess: () -> Unit) {
         val session = _activeSession.value
 
         if (session == null) {
             return
         }
 
-        val currentSettings = userSettings.value
-
         viewModelScope.launch {
             try {
-                // Convert weights from display units to kg for storage
-                val convertedExercises = session.exercises.map { sessionExercise ->
-                    val convertedSets = sessionExercise.sets.map { set ->
-                        val weightInKg = if (currentSettings.weightUnit == WeightUnit.LBS) {
-                            WeightConverter.lbsToKg(set.weight)
-                        } else {
-                            set.weight
-                        }
-                        set.copy(weight = weightInKg)
-                    }
-                    sessionExercise.copy(sets = convertedSets)
-                }
-
+                // No convertir aquí; el repositorio se encarga de guardar en KG
                 val finalSession = session.copy(
-                    durationSeconds = _elapsedTimeSeconds.value,
-                    exercises = convertedExercises
+                    durationSeconds = _elapsedTimeSeconds.value
                 )
 
                 // Update existing template if requested
@@ -396,8 +372,7 @@ fun finishWorkout(updateTemplate: Boolean?, onSuccess: () -> Unit) {
         val lastHistorySet = _historyState.value[exerciseId]?.lastOrNull()
 
         return if (lastHistorySet != null) {
-            // History is already in display units (converted in loadHistoryFor)
-            // We store in display units during the workout, so no conversion needed
+            // History ya está en unidades de presentación; mantener tal cual
             lastHistorySet.weight to lastHistorySet.reps
         } else {
             0.0 to 0

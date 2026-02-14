@@ -16,21 +16,6 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.eugene.lift.ui.navigation.BottomNavItem
 
-/**
- * Bottom navigation bar component for the main app shell.
- *
- * @param navController Navigation controller for handling navigation
- * @param currentDestination Current navigation destination
- * @param items List of bottom navigation items to display
- */
-/**
- * Bottom navigation bar component for the main app shell.
- * Uses M3 surface container for proper elevation hierarchy.
- *
- * @param navController Navigation controller for handling navigation
- * @param currentDestination Current navigation destination
- * @param items List of bottom navigation items to display
- */
 @Composable
 fun LiftBottomNavigationBar(
     navController: NavController,

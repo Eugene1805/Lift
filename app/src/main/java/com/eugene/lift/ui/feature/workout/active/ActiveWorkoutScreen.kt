@@ -94,7 +94,10 @@ fun ActiveWorkoutRoute(
             onRemoveSet = viewModel::removeSet,
             onAddExercise = onAddExerciseClick,
             onExerciseClick = onExerciseClick,
-            onMetricChange = viewModel::setEffortMetric
+            onMetricChange = viewModel::setEffortMetric,
+            sessionNote = activeSession!!.note,
+            onSessionNoteChange = viewModel::onSessionNoteChange,
+            onExerciseNoteChange = viewModel::onExerciseNoteChange
         )
     } else {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -132,7 +135,10 @@ fun ActiveWorkoutScreen(
     onRemoveSet: (Int, Int) -> Unit,
     onAddExercise: () -> Unit,
     onExerciseClick: (String) -> Unit,
-    onMetricChange: (String?) -> Unit
+    onMetricChange: (String?) -> Unit,
+    sessionNote: String?,
+    onSessionNoteChange: (String) -> Unit,
+    onExerciseNoteChange: (Int, String) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
     var showExitDialog by remember { mutableStateOf(false) }
@@ -347,6 +353,20 @@ fun ActiveWorkoutScreen(
                 contentPadding = PaddingValues(vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // Session-level notes input at the top
+                item {
+                    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                        Text(stringResource(R.string.active_workout_notes_label), style = MaterialTheme.typography.labelMedium)
+                        CompactTextInput(
+                            value = sessionNote ?: "",
+                            onValueChange = onSessionNoteChange,
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardType = KeyboardType.Text,
+                            filterInput = { it }
+                        )
+                    }
+                }
+
                 itemsIndexed(exercises, key = { _, item -> item.id }) { exIndex, exercise ->
                     val exerciseHistory = history[exercise.exercise.id] ?: emptyList()
                     ActiveExerciseCard(
@@ -375,7 +395,8 @@ fun ActiveWorkoutScreen(
             },
                         onAddSet = { onAddSet(exIndex) },
                         onRemoveSet = { setIndex -> onRemoveSet(exIndex, setIndex) },
-                        onExerciseClick = { onExerciseClick(exercise.exercise.id) }
+                        onExerciseClick = { onExerciseClick(exercise.exercise.id) },
+                        onExerciseNoteChange = { onExerciseNoteChange(exIndex, it) }
                     )
                 }
 
@@ -422,7 +443,8 @@ fun ActiveExerciseCard(
     onSetCompleted: (Int, Int) -> Unit,
     onAddSet: () -> Unit,
     onRemoveSet: (Int) -> Unit,
-    onExerciseClick: () -> Unit
+    onExerciseClick: () -> Unit,
+    onExerciseNoteChange: (String) -> Unit
 ) {
     val setsInDeleteMode = remember { mutableStateListOf<String>() }
 
@@ -531,6 +553,16 @@ fun ActiveExerciseCard(
                 Spacer(Modifier.width(4.dp))
                 Text(stringResource(R.string.active_workout_add_set))
             }
+
+            // At the bottom of card, add per-exercise notes input
+            Text(stringResource(R.string.active_workout_exercise_notes_label), modifier = Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.labelMedium)
+            CompactTextInput(
+                value = exercise.note ?: "",
+                onValueChange = onExerciseNoteChange,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                keyboardType = KeyboardType.Text,
+                filterInput = { it }
+            )
         }
     }
 }

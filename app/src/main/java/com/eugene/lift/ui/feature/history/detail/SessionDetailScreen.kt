@@ -140,6 +140,27 @@ fun SessionDetailScreen(
                     exercisesCount = session.exercises.size
                 )
             }
+            // Render session note if present
+            item {
+                val note = session.note
+                if (!note.isNullOrBlank()) {
+                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = stringResource(R.string.history_session_note_label),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.size(6.dp))
+                            Text(
+                                text = note,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
 
             items(session.exercises, key = { it.id }) { sessionExercise ->
                 SessionExerciseCard(
@@ -253,6 +274,22 @@ private fun SessionExerciseCard(
                 )
             }
 
+            // Exercise note if present
+            val exNote = sessionExercise.note
+            if (!exNote.isNullOrBlank()) {
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = stringResource(R.string.history_exercise_note_label),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = exNote,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
             Spacer(modifier = Modifier.size(8.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -280,7 +317,7 @@ private fun SetRow(
         stringResource(R.string.unit_kg)
     }
     val repsLabel = stringResource(R.string.unit_reps)
-    val distanceLabel = stringResource(R.string.active_workout_distance_km)
+    val distanceLabel = stringResource(R.string.unit_km)
 
     val text = formatSetSummary(workoutSet, userSettings, weightLabel, repsLabel, distanceLabel)
     val textColor = if (workoutSet.completed) {

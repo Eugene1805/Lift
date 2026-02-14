@@ -261,6 +261,23 @@ class ActiveWorkoutViewModel @Inject constructor(
         }
     }
 
+    private fun updateExerciseNote(exerciseIndex: Int, note: String?) {
+        val currentSession = _activeSession.value ?: return
+        val exercises = currentSession.exercises.toMutableList()
+        val targetExercise = exercises[exerciseIndex]
+        exercises[exerciseIndex] = targetExercise.copy(note = note)
+        _activeSession.value = currentSession.copy(exercises = exercises)
+    }
+
+    fun onExerciseNoteChange(exerciseIndex: Int, newValue: String) {
+        updateExerciseNote(exerciseIndex, newValue.ifEmpty { null })
+    }
+
+    fun onSessionNoteChange(newValue: String) {
+        val currentSession = _activeSession.value ?: return
+        _activeSession.value = currentSession.copy(note = newValue.ifEmpty { null })
+    }
+
     fun hasTemplate(): Boolean {
         return _activeSession.value?.templateId != null
     }

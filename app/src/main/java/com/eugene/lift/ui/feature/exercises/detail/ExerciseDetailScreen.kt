@@ -42,7 +42,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.eugene.lift.R
-import com.eugene.lift.domain.model.Exercise
 
 @Composable
 fun ExerciseDetailRoute(
@@ -50,35 +49,39 @@ fun ExerciseDetailRoute(
     onEditClick: (String) -> Unit,
     viewModel: ExerciseDetailViewModel = hiltViewModel()
 ) {
-    val exercise by viewModel.exercise.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     ExerciseDetailScreen(
-        exercise = exercise,
-        onNavigateBack = onNavigateBack,
-        onEditClick = { exercise?.let { onEditClick(it.id) } }
+        uiState = uiState,
+        onEvent = { event ->
+            when (event) {
+                ExerciseDetailUiEvent.BackClicked -> onNavigateBack()
+                ExerciseDetailUiEvent.EditClicked -> uiState.exercise?.let { onEditClick(it.id) }
+            }
+            viewModel.onEvent(event)
+        }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ExerciseDetailScreen(
-    exercise: Exercise?,
-    onNavigateBack: () -> Unit,
-    onEditClick: (String) -> Unit
+    uiState: ExerciseDetailUiState,
+    onEvent: (ExerciseDetailUiEvent) -> Unit
 ) {
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                title = { Text(exercise?.name ?: "") },
+                title = { Text(uiState.exercise?.name ?: "") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(onClick = { onEvent(ExerciseDetailUiEvent.BackClicked) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
                 actions = {
-                    IconButton(onClick = { exercise?.id?.let(onEditClick) }) {
+                    IconButton(onClick = { onEvent(ExerciseDetailUiEvent.EditClicked) }) {
                         Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.exercise_detail_edit))
                     }
                 },
@@ -90,7 +93,29 @@ fun ExerciseDetailScreen(
             )
         }
     ) { innerPadding ->
-        val state = exercise ?: return@Scaffold // Loading state si es null
+        val state = uiState.exercise
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(stringResource(R.string.loading))
+            }
+            return@Scaffold
+        }
+        if (state == null) {
+            Box(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(stringResource(R.string.exercise_detail_no_data))
+            }
+            return@Scaffold
+        }
 
         Column(
             modifier = Modifier
@@ -122,7 +147,6 @@ fun ExerciseDetailScreen(
 
             Column(modifier = Modifier.padding(16.dp)) {
 
-                // 2. CHIPS DE INFO (Categoría y Músculos)
                 Text(
                     stringResource(R.string.exercise_detail_details),
                     style = MaterialTheme.typography.titleMedium,
@@ -141,7 +165,6 @@ fun ExerciseDetailScreen(
                             labelColor = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     )
-                    // Chips de Músculos
                     state.bodyParts.forEach { part ->
                         SuggestionChip(
                             onClick = {},

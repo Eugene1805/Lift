@@ -19,12 +19,13 @@ import com.eugene.lift.ui.feature.profile.ProfileRoute
 import com.eugene.lift.ui.feature.profile.edit.EditProfileRoute as EditProfileRouteScreen
 import com.eugene.lift.ui.feature.settings.SettingsRoute
 import com.eugene.lift.ui.feature.workout.WorkoutRoute
-import com.eugene.lift.ui.feature.workout.active.ActiveWorkoutRoute
 import com.eugene.lift.ui.feature.workout.active.ActiveWorkoutViewModel
 import com.eugene.lift.ui.feature.workout.detail.TemplateDetailRoute
-import com.eugene.lift.ui.feature.workout.edit.EditTemplateScreen
+import com.eugene.lift.ui.feature.workout.edit.EditTemplateRoute
+import com.eugene.lift.ui.feature.workout.edit.EditTemplateUiEvent
 import com.eugene.lift.ui.feature.workout.edit.EditTemplateViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.eugene.lift.ui.feature.workout.active.ActiveWorkoutScreenRoute
 import java.time.LocalDate
 
 /**
@@ -156,16 +157,15 @@ private fun NavGraphBuilder.templateEditScreen(navController: NavHostController)
 
         LaunchedEffect(selectedExerciseIds) {
             selectedExerciseIds?.let { ids ->
-                viewModel.onExercisesSelected(ids)
+                viewModel.onEvent(EditTemplateUiEvent.ExercisesSelected(ids))
                 savedStateHandle.remove<List<String>>("selected_exercise_ids")
             }
         }
 
-        EditTemplateScreen(
+        EditTemplateRoute(
             onNavigateBack = { navController.popBackStack() },
-            onAddExerciseClick = {
-                navController.navigate(ExercisePickerRoute)
-            }
+            onAddExerciseClick = { navController.navigate(ExercisePickerRoute) },
+            viewModel = viewModel
         )
     }
 }
@@ -248,7 +248,7 @@ private fun NavGraphBuilder.activeWorkoutScreen(navController: NavHostController
             }
         }
 
-        ActiveWorkoutRoute(
+        ActiveWorkoutScreenRoute(
             onNavigateBack = { navController.popBackStack() },
             onAddExerciseClick = {
                 navController.navigate(ExercisePickerRoute)

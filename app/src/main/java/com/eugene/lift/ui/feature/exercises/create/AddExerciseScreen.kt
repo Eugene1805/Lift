@@ -25,13 +25,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eugene.lift.R
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.ExerciseCategory
@@ -43,40 +44,32 @@ fun AddExerciseRoute(
     onNavigateBack: () -> Unit,
     viewModel: AddExerciseViewModel = hiltViewModel()
 ) {
-    val name by viewModel.name.collectAsStateWithLifecycle()
-    val selectedBodyParts by viewModel.selectedBodyParts.collectAsStateWithLifecycle()
-    val category by viewModel.selectedCategory.collectAsStateWithLifecycle()
-    val measureType by viewModel.selectedMeasureType.collectAsStateWithLifecycle()
-    val isEditing = viewModel.isEditing
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(uiState.isSaveCompleted) {
+        if (uiState.isSaveCompleted) {
+            onNavigateBack()
+            viewModel.onEvent(AddExerciseUiEvent.NavigationHandled)
+        }
+    }
+
     AddExerciseScreen(
-        name = name,
-        selectedBodyParts = selectedBodyParts,
-        category = category,
-        isEditing = isEditing,
-        onNameChange = viewModel::onNameChange,
-        onBodyPartToggle = viewModel::toggleBodyPart,
-        onCategoryChange = viewModel::onCategoryChange,
-        measureType = measureType,
-        onMeasureTypeChange = viewModel::onMeasureTypeChange,
-        onSaveClick = { viewModel.saveExercise(onSuccess = onNavigateBack) },
-        onBackClick = onNavigateBack
+        uiState = uiState,
+        onEvent = { event ->
+            when (event) {
+                AddExerciseUiEvent.BackClicked -> onNavigateBack()
+                else -> viewModel.onEvent(event)
+            }
+        }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Suppress("LongParameterList")
 @Composable
 fun AddExerciseScreen(
-    name: String,
-    selectedBodyParts: Set<BodyPart>,
-    category: ExerciseCategory,
-    isEditing: Boolean,
-    onNameChange: (String) -> Unit,
-    onBodyPartToggle: (BodyPart) -> Unit,
-    onCategoryChange: (ExerciseCategory) -> Unit,
-    measureType: MeasureType,
-    onMeasureTypeChange: (MeasureType) -> Unit,
-    onSaveClick: () -> Unit,
-    onBackClick: () -> Unit
+    uiState: AddExerciseUiState,
+    onEvent: (AddExerciseUiEvent) -> Unit
 ) {
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -84,11 +77,11 @@ fun AddExerciseScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(if (isEditing) stringResource(R.string.screen_edit_title) else stringResource(R.string.screen_add_title))
+                    Text(if (uiState.isEditing) stringResource(R.string.screen_edit_title) else stringResource(R.string.screen_add_title))
 
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = { onEvent(AddExerciseUiEvent.BackClicked) }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.action_back),
@@ -98,8 +91,8 @@ fun AddExerciseScreen(
                 },
                 actions = {
                     Button(
-                        onClick = onSaveClick,
-                        enabled = name.isNotBlank()
+                        onClick = { onEvent(AddExerciseUiEvent.SaveClicked) },
+                        enabled = uiState.isSaveEnabled && !uiState.isSaving
                     ) {
                         Text(stringResource(R.string.btn_save))
                     }
@@ -121,24 +114,22 @@ fun AddExerciseScreen(
                 .padding(16.dp)
         ) {
 
-            val isNameError = name.isBlank() || name.length > MAX_EXERCISE_NAME_LENGTH
-
             OutlinedTextField(
-                value = name,
-                onValueChange = onNameChange,
+                value = uiState.name,
+                onValueChange = { onEvent(AddExerciseUiEvent.NameChanged(it)) },
                 label = { Text(stringResource(R.string.label_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                isError = isNameError,
+                isError = uiState.isNameError,
 
                 supportingText = {
                     Text(
-                        text = stringResource(id = R.string.text_field_character_counter, name.length,
+                        text = stringResource(id = R.string.text_field_character_counter, uiState.name.length,
                             MAX_EXERCISE_NAME_LENGTH
                         ),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.End,
-                        color = if (name.length > MAX_EXERCISE_NAME_LENGTH) {
+                        color = if (uiState.name.length > MAX_EXERCISE_NAME_LENGTH) {
                             MaterialTheme.colorScheme.error
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant
@@ -162,10 +153,10 @@ fun AddExerciseScreen(
             ) {
                 BodyPart.entries.forEach { part ->
                     FilterChip(
-                        selected = part in selectedBodyParts,
-                        onClick = { onBodyPartToggle(part) },
+                        selected = part in uiState.selectedBodyParts,
+                        onClick = { onEvent(AddExerciseUiEvent.BodyPartToggled(part)) },
                         label = { Text(stringResource(part.labelRes)) },
-                        leadingIcon = if (part in selectedBodyParts) {
+                        leadingIcon = if (part in uiState.selectedBodyParts) {
                             { Icon(Icons.Default.Check, null) }
                         } else null
                     )
@@ -177,8 +168,8 @@ fun AddExerciseScreen(
             AppDropdown(
                 label = stringResource(R.string.label_category),
                 options = ExerciseCategory.entries,
-                selectedOption = category,
-                onOptionSelected = onCategoryChange,
+                selectedOption = uiState.category,
+                onOptionSelected = { onEvent(AddExerciseUiEvent.CategoryChanged(it)) },
                 labelProvider = { cat -> stringResource(cat.labelRes) }
             )
 
@@ -187,8 +178,8 @@ fun AddExerciseScreen(
             AppDropdown(
                 label = stringResource(R.string.label_measure_type),
                 options = MeasureType.entries,
-                selectedOption = measureType,
-                onOptionSelected = onMeasureTypeChange,
+                selectedOption = uiState.measureType,
+                onOptionSelected = { onEvent(AddExerciseUiEvent.MeasureTypeChanged(it)) },
                 labelProvider = { type -> stringResource(type.labelRes) }
             )
         }

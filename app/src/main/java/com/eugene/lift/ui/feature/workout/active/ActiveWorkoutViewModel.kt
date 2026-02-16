@@ -18,10 +18,16 @@ import com.eugene.lift.domain.usecase.workout.StartWorkoutFromTemplateUseCase
 import com.eugene.lift.domain.usecase.workout.FinishWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.GetLastHistoryForExerciseUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -40,38 +46,94 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val restTimerManager: RestTimerManager,
     private val getExerciseDetailUseCase: GetExerciseDetailUseCase,
     private val getLastHistoryForExerciseUseCase: GetLastHistoryForExerciseUseCase,
-    private val getSettingsUseCase: GetSettingsUseCase
+    getSettingsUseCase: GetSettingsUseCase
 ) : ViewModel() {
 
     private val templateId: String? = savedStateHandle["templateId"]
 
     private val _activeSession = MutableStateFlow<WorkoutSession?>(null)
-    val activeSession = _activeSession.asStateFlow()
 
     // Store original template exercises for comparison
     private var originalTemplateExercises: List<SessionExercise> = emptyList()
 
-    val timerState = restTimerManager.timerState
+    private val timerState = restTimerManager.timerState
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), restTimerManager.timerState.value)
 
     private val _historyState = MutableStateFlow<Map<String, List<WorkoutSet>>>(emptyMap())
-    val historyState = _historyState.asStateFlow()
-
     private val _effortMetric = MutableStateFlow<String?>("RIR") // "RPE", "RIR" o null
-    val effortMetric = _effortMetric.asStateFlow()
-
     private val _elapsedTimeSeconds = MutableStateFlow(0L)
-    val elapsedTimeSeconds = _elapsedTimeSeconds.asStateFlow()
 
-    val userSettings = getSettingsUseCase()
+    private val userSettings: StateFlow<UserSettings> = getSettingsUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UserSettings())
 
     private val _isAutoTimerEnabled = MutableStateFlow(true)
-    val isAutoTimerEnabled = _isAutoTimerEnabled.asStateFlow()
+
+    private val _uiState = MutableStateFlow(ActiveWorkoutUiState())
+    val uiState: StateFlow<ActiveWorkoutUiState> = _uiState.asStateFlow()
+
+    private val _effects = MutableSharedFlow<ActiveWorkoutEffect>()
+    val effects: SharedFlow<ActiveWorkoutEffect> = _effects
 
     init {
+
         initializeSession()
         startSessionTicker()
+
+        val sessionSnapshot = combine(
+            _activeSession,
+            _historyState,
+            _effortMetric,
+            timerState,
+            _elapsedTimeSeconds
+        ) { session, history, effort, timer, elapsed ->
+            SessionSnapshot(session, history, effort, timer, elapsed)
+        }
+
+        combine(sessionSnapshot, userSettings, _isAutoTimerEnabled) { snapshot, settings, autoTimer ->
+            val session = snapshot.session
+            if (session == null) {
+                ActiveWorkoutUiState(isLoading = true)
+            } else {
+                ActiveWorkoutUiState(
+                    isLoading = false,
+                    sessionName = session.name,
+                    exercises = session.exercises,
+                    history = snapshot.history,
+                    effortMetric = snapshot.effortMetric,
+                    timerState = snapshot.timerState,
+                    elapsedTime = snapshot.elapsedTime,
+                    userSettings = settings,
+                    isAutoTimerEnabled = autoTimer,
+                    hasTemplate = session.templateId != null,
+                    hasWorkoutBeenModified = hasWorkoutBeenModified(session),
+                    sessionNote = session.note
+                )
+            }
+        }.onEach { _uiState.value = it }.launchIn(viewModelScope)
+    }
+
+    fun onEvent(event: ActiveWorkoutUiEvent) {
+        when (event) {
+            is ActiveWorkoutUiEvent.WeightChanged -> onWeightChange(event.exerciseIndex, event.setIndex, event.value)
+            is ActiveWorkoutUiEvent.RepsChanged -> onRepsChange(event.exerciseIndex, event.setIndex, event.value)
+            is ActiveWorkoutUiEvent.DistanceChanged -> onDistanceChange(event.exerciseIndex, event.setIndex, event.value)
+            is ActiveWorkoutUiEvent.TimeChanged -> onTimeChange(event.exerciseIndex, event.setIndex, event.value)
+            is ActiveWorkoutUiEvent.RpeChanged -> onRpeChange(event.exerciseIndex, event.setIndex, event.value)
+            is ActiveWorkoutUiEvent.RirChanged -> onRirChange(event.exerciseIndex, event.setIndex, event.value)
+            is ActiveWorkoutUiEvent.SetCompleted -> toggleSetCompleted(event.exerciseIndex, event.setIndex)
+            is ActiveWorkoutUiEvent.AddSet -> addSet(event.exerciseIndex)
+            is ActiveWorkoutUiEvent.RemoveSet -> removeSet(event.exerciseIndex, event.setIndex)
+            is ActiveWorkoutUiEvent.MetricChanged -> setEffortMetric(event.metric)
+            is ActiveWorkoutUiEvent.TimerAdded -> addTime(event.seconds)
+            ActiveWorkoutUiEvent.TimerStopped -> stopTimer()
+            ActiveWorkoutUiEvent.ToggleAutoTimer -> toggleAutoTimer()
+            is ActiveWorkoutUiEvent.FinishClicked -> finishWorkout(event.updateTemplate)
+            ActiveWorkoutUiEvent.CancelClicked -> cancelWorkout()
+            is ActiveWorkoutUiEvent.AddExerciseClicked -> Unit
+            is ActiveWorkoutUiEvent.ExerciseClicked -> Unit
+            is ActiveWorkoutUiEvent.SessionNoteChanged -> onSessionNoteChange(event.value)
+            is ActiveWorkoutUiEvent.ExerciseNoteChanged -> onExerciseNoteChange(event.exerciseIndex, event.value)
+        }
     }
 
     private fun initializeSession() {
@@ -169,30 +231,30 @@ class ActiveWorkoutViewModel @Inject constructor(
         _activeSession.value = currentSession.copy(exercises = exercises)
     }
 
-    fun onWeightChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
+    private fun onWeightChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
         // Store weight directly as entered (in display units)
         // Conversion to kg happens only when finishing the workout
         val weight = newValue.toDoubleOrNull() ?: 0.0
         updateSetState(exerciseIndex, setIndex) { it.copy(weight = weight) }
     }
 
-    fun onRepsChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
+    private fun onRepsChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
         val reps = newValue.toIntOrNull() ?: 0
         updateSetState(exerciseIndex, setIndex) { it.copy(reps = reps) }
     }
 
-    fun onDistanceChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
+    private fun onDistanceChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
         val dist = newValue.toDoubleOrNull()
         updateSetState(exerciseIndex, setIndex) { it.copy(distance = dist) }
     }
 
-    fun onTimeChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
+    private fun onTimeChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
         val seconds = newValue.toLongOrNull()
         updateSetState(exerciseIndex, setIndex) { it.copy(timeSeconds = seconds) }
     }
 
 
-    fun onRpeChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
+    private fun onRpeChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
         if (newValue.isEmpty()) {
             updateSetState(exerciseIndex, setIndex) { it.copy(rpe = null) }
             return
@@ -204,7 +266,7 @@ class ActiveWorkoutViewModel @Inject constructor(
         }
     }
 
-    fun onRirChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
+    private fun onRirChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
         if (newValue.isEmpty()) {
             updateSetState(exerciseIndex, setIndex) { it.copy(rir = null) }
             return
@@ -216,7 +278,7 @@ class ActiveWorkoutViewModel @Inject constructor(
         }
     }
 
-    fun toggleSetCompleted(exerciseIndex: Int, setIndex: Int) {
+    private fun toggleSetCompleted(exerciseIndex: Int, setIndex: Int) {
         var isNowCompleted = false
         updateSetState(exerciseIndex, setIndex) {
             isNowCompleted = !it.completed
@@ -228,36 +290,36 @@ class ActiveWorkoutViewModel @Inject constructor(
         }
     }
 
-    fun finishWorkout(updateTemplate: Boolean?, onSuccess: () -> Unit) {
-        val session = _activeSession.value
-
-        if (session == null) {
-            return
-        }
+    private fun finishWorkout(updateTemplate: Boolean?) {
+        val session = _activeSession.value ?: return
 
         viewModelScope.launch {
             try {
-                // No convertir aquí; el repositorio se encarga de guardar en KG
                 val finalSession = session.copy(
                     durationSeconds = _elapsedTimeSeconds.value
                 )
 
-                // Update existing template if requested
                 if (updateTemplate == true && finalSession.templateId != null) {
                     updateTemplateFromWorkoutUseCase(finalSession)
                 }
 
-                // Create new template from Quick Start workout if requested
                 if (updateTemplate == true && finalSession.templateId == null) {
                     createTemplateFromWorkoutUseCase(finalSession)
                 }
 
                 finishWorkoutUseCase(finalSession)
                 restTimerManager.stopTimer()
-                onSuccess()
+                _effects.emit(ActiveWorkoutEffect.NavigateBack)
             } catch (e: Exception) {
                 Log.e("ActiveWorkoutVM", "Error al guardar", e)
             }
+        }
+    }
+
+    private fun cancelWorkout() {
+        viewModelScope.launch {
+            restTimerManager.stopTimer()
+            _effects.emit(ActiveWorkoutEffect.NavigateBack)
         }
     }
 
@@ -269,40 +331,26 @@ class ActiveWorkoutViewModel @Inject constructor(
         _activeSession.value = currentSession.copy(exercises = exercises)
     }
 
-    fun onExerciseNoteChange(exerciseIndex: Int, newValue: String) {
+    private fun onExerciseNoteChange(exerciseIndex: Int, newValue: String) {
         updateExerciseNote(exerciseIndex, newValue.ifEmpty { null })
     }
 
-    fun onSessionNoteChange(newValue: String) {
+    private fun onSessionNoteChange(newValue: String) {
         val currentSession = _activeSession.value ?: return
         _activeSession.value = currentSession.copy(note = newValue.ifEmpty { null })
     }
 
-    fun hasTemplate(): Boolean {
-        return _activeSession.value?.templateId != null
-    }
+    private fun hasWorkoutBeenModified(session: WorkoutSession): Boolean {
+        if (session.templateId == null) return false
 
-    fun hasWorkoutBeenModified(): Boolean {
-        val currentSession = _activeSession.value ?: return false
-
-        // If there's no template, no modification to check
-        if (currentSession.templateId == null) return false
-
-        // Get current exercises
-        val currentExercises = currentSession.exercises
-
-        // Check if number of exercises changed
+        val currentExercises = session.exercises
         if (originalTemplateExercises.size != currentExercises.size) return true
 
-        // Check if exercise order or exercises changed
         for (i in originalTemplateExercises.indices) {
             val originalEx = originalTemplateExercises[i]
             val currentEx = currentExercises.getOrNull(i) ?: return true
 
-            // Check if exercise ID changed (different exercise in this position)
             if (originalEx.exercise.id != currentEx.exercise.id) return true
-
-            // Check if number of sets changed
             if (originalEx.sets.size != currentEx.sets.size) return true
         }
 
@@ -312,7 +360,7 @@ class ActiveWorkoutViewModel @Inject constructor(
     fun addTime(seconds: Long) = restTimerManager.addTime(seconds)
     fun stopTimer() = restTimerManager.stopTimer()
 
-    fun addSet(exerciseIndex: Int) {
+    private fun addSet(exerciseIndex: Int) {
         val currentSession = _activeSession.value ?: return
         val exercises = currentSession.exercises.toMutableList()
         val targetExercise = exercises[exerciseIndex]
@@ -330,7 +378,7 @@ class ActiveWorkoutViewModel @Inject constructor(
         _activeSession.value = currentSession.copy(exercises = exercises)
     }
 
-    fun removeSet(exerciseIndex: Int, setIndex: Int) {
+    private fun removeSet(exerciseIndex: Int, setIndex: Int) {
         val currentSession = _activeSession.value ?: return
         val exercises = currentSession.exercises.toMutableList()
         val targetExercise = exercises[exerciseIndex]
@@ -396,11 +444,19 @@ class ActiveWorkoutViewModel @Inject constructor(
         }
     }
 
-    fun toggleAutoTimer() {
+    private fun toggleAutoTimer() {
         _isAutoTimerEnabled.value = !_isAutoTimerEnabled.value
     }
 
-    fun setEffortMetric(metric: String?) {
+    private fun setEffortMetric(metric: String?) {
         _effortMetric.value = metric
     }
 }
+
+private data class SessionSnapshot(
+    val session: WorkoutSession?,
+    val history: Map<String, List<WorkoutSet>>,
+    val effortMetric: String?,
+    val timerState: com.eugene.lift.domain.model.TimerState,
+    val elapsedTime: Long
+)

@@ -2,8 +2,7 @@ package com.eugene.lift.ui.feature.workout.detail
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
@@ -30,38 +29,40 @@ fun TemplateDetailRoute(
     onExerciseClick: (String) -> Unit,
     viewModel: TemplateDetailViewModel = hiltViewModel()
 ) {
-    val template by viewModel.template.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     TemplateDetailScreen(
-        template = template,
-        onNavigateBack = onNavigateBack,
-        onStartWorkout = { template?.let { onStartWorkout(it.id) } },
-        onEditTemplate = { template?.let { onEditTemplate(it.id) } },
-        onExerciseClick = onExerciseClick
+        uiState = uiState,
+        onEvent = { event ->
+            when (event) {
+                TemplateDetailUiEvent.BackClicked -> onNavigateBack()
+                TemplateDetailUiEvent.StartWorkoutClicked -> uiState.template?.let { onStartWorkout(it.id) }
+                TemplateDetailUiEvent.EditTemplateClicked -> uiState.template?.let { onEditTemplate(it.id) }
+                is TemplateDetailUiEvent.ExerciseClicked -> onExerciseClick(event.exerciseId)
+            }
+            viewModel.onEvent(event)
+        }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TemplateDetailScreen(
-    template: WorkoutTemplate?,
-    onNavigateBack: () -> Unit,
-    onStartWorkout: () -> Unit,
-    onEditTemplate: () -> Unit,
-    onExerciseClick: (String) -> Unit
+    uiState: TemplateDetailUiState,
+    onEvent: (TemplateDetailUiEvent) -> Unit
 ) {
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                title = { Text(template?.name ?: "") },
+                title = { Text(uiState.template?.name ?: "") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(onClick = { onEvent(TemplateDetailUiEvent.BackClicked) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
                 },
                 actions = {
-                    IconButton(onClick = onEditTemplate) {
+                    IconButton(onClick = { onEvent(TemplateDetailUiEvent.EditTemplateClicked) }) {
                         Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.template_detail_edit_template))
                     }
                 },
@@ -74,7 +75,7 @@ fun TemplateDetailScreen(
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = onStartWorkout,
+                onClick = { onEvent(TemplateDetailUiEvent.StartWorkoutClicked) },
                 icon = { Icon(Icons.Default.PlayArrow, null) },
                 text = { Text(stringResource(R.string.template_detail_start_routine)) },
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -82,53 +83,73 @@ fun TemplateDetailScreen(
             )
         }
     ) { innerPadding ->
-        if (template == null) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+        when {
+            uiState.isLoading -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
-        } else {
-            Column(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .padding(16.dp)
-            ) {
-                if (template.notes.isNotBlank()) {
-                    Text(
-                        text = stringResource(R.string.template_detail_notes),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = template.notes,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
+            uiState.template == null -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(stringResource(R.string.template_detail_no_data))
                 }
-
-                Text(
-                    text = stringResource(R.string.template_detail_exercises_count, template.exercises.size),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+            }
+            else -> {
+                TemplateDetailContent(
+                    template = uiState.template,
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .padding(16.dp),
+                    onExerciseClick = { onEvent(TemplateDetailUiEvent.ExerciseClicked(it)) }
                 )
-
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(bottom = 80.dp)
-                ) {
-                    items(template.exercises) { item ->
-                        TemplateExerciseReadOnlyCard(
-                            item = item,
-                            onClick = { onExerciseClick(item.exercise.id) }
-                        )                    }
-                }
             }
         }
     }
 }
 
 @Composable
-fun TemplateExerciseReadOnlyCard(item: TemplateExercise,onClick: () -> Unit) {
+private fun TemplateDetailContent(
+    template: WorkoutTemplate,
+    modifier: Modifier = Modifier,
+    onExerciseClick: (String) -> Unit
+) {
+    Column(modifier = modifier) {
+        if (template.notes.isNotBlank()) {
+            Text(
+                text = stringResource(R.string.template_detail_notes),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = template.notes,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
+
+        Text(
+            text = stringResource(R.string.template_detail_exercises_count, template.exercises.size),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(bottom = 80.dp)
+        ) {
+            items(template.exercises) { item ->
+                TemplateExerciseReadOnlyCard(
+                    item = item,
+                    onClick = { onExerciseClick(item.exercise.id) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TemplateExerciseReadOnlyCard(item: TemplateExercise,onClick: () -> Unit) {
     Card(
         onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
@@ -154,7 +175,6 @@ fun TemplateExerciseReadOnlyCard(item: TemplateExercise,onClick: () -> Unit) {
                 )
             }
 
-            // Resumen de la configuración (Ej: "3 x 10-12")
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = "${item.targetSets} ${stringResource(R.string.template_detail_series)}",

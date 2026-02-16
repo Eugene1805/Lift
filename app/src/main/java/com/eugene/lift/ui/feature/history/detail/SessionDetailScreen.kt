@@ -11,8 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccessTime
@@ -106,23 +105,7 @@ fun SessionDetailScreen(
             return@Scaffold
         }
 
-        val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
-            stringResource(R.string.unit_lbs)
-        } else {
-            stringResource(R.string.unit_kg)
-        }
-
-        val dateText = session.date.format(DateTimeFormatter.ofPattern("EEE, MMM d • HH:mm"))
-        val durationText = formatDurationSimple(session.durationSeconds)
-        val prCount = session.exercises.flatMap { it.sets }.count { it.isPr }
-        val totalVolumeKg = session.exercises.flatMap { it.sets }
-            .filter { it.completed }
-            .sumOf { it.weight * it.reps }
-        val totalVolume = if (userSettings.weightUnit == WeightUnit.LBS) {
-            WeightConverter.kgToLbs(totalVolumeKg)
-        } else {
-            totalVolumeKg
-        }
+        val summary = buildSessionSummary(session, userSettings)
 
         LazyColumn(
             modifier = Modifier
@@ -133,34 +116,15 @@ fun SessionDetailScreen(
         ) {
             item {
                 SessionSummaryCard(
-                    dateText = dateText,
-                    durationText = durationText,
-                    volumeText = if (totalVolume > 0) "${formatWeight(totalVolume)} $weightLabel" else "-",
-                    prCount = prCount,
-                    exercisesCount = session.exercises.size
+                    dateText = summary.dateText,
+                    durationText = summary.durationText,
+                    volumeText = summary.volumeText,
+                    prCount = summary.prCount,
+                    exercisesCount = summary.exercisesCount
                 )
             }
-            // Render session note if present
-            item {
-                val note = session.note
-                if (!note.isNullOrBlank()) {
-                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = stringResource(R.string.history_session_note_label),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.size(6.dp))
-                            Text(
-                                text = note,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-            }
+
+            item { SessionNoteCard(summary.note) }
 
             items(session.exercises, key = { it.id }) { sessionExercise ->
                 SessionExerciseCard(
@@ -168,6 +132,27 @@ fun SessionDetailScreen(
                     userSettings = userSettings
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun SessionNoteCard(note: String?) {
+    if (note.isNullOrBlank()) return
+
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.history_session_note_label),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.size(6.dp))
+            Text(
+                text = note,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }
@@ -375,4 +360,43 @@ private fun formatSetSummary(
 
     val core = if (extraParts.isEmpty()) base else listOf(base, extraParts.joinToString(" • ")).joinToString(" • ")
     return "$core$effortText$prText"
+}
+
+private data class SessionDetailSummary(
+    val dateText: String,
+    val durationText: String,
+    val volumeText: String,
+    val prCount: Int,
+    val exercisesCount: Int,
+    val note: String?
+)
+
+@Composable
+private fun buildSessionSummary(session: WorkoutSession, userSettings: UserSettings): SessionDetailSummary {
+    val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
+        stringResource(R.string.unit_lbs)
+    } else {
+        stringResource(R.string.unit_kg)
+    }
+    val dateText = session.date.format(DateTimeFormatter.ofPattern("EEE, MMM d • HH:mm"))
+    val durationText = formatDurationSimple(session.durationSeconds)
+    val prCount = session.exercises.flatMap { it.sets }.count { it.isPr }
+    val totalVolumeKg = session.exercises.flatMap { it.sets }
+        .filter { it.completed }
+        .sumOf { it.weight * it.reps }
+    val totalVolume = if (userSettings.weightUnit == WeightUnit.LBS) {
+        WeightConverter.kgToLbs(totalVolumeKg)
+    } else {
+        totalVolumeKg
+    }
+    val volumeText = if (totalVolume > 0) "${formatWeight(totalVolume)} $weightLabel" else "-"
+
+    return SessionDetailSummary(
+        dateText = dateText,
+        durationText = durationText,
+        volumeText = volumeText,
+        prCount = prCount,
+        exercisesCount = session.exercises.size,
+        note = session.note
+    )
 }

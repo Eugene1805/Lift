@@ -11,8 +11,11 @@ import com.eugene.lift.domain.usecase.template.GetTemplateDetailUseCase
 import com.eugene.lift.domain.usecase.template.SaveTemplateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -30,15 +33,32 @@ class EditTemplateViewModel @Inject constructor(
 
     private val templateId: String? = savedStateHandle["templateId"]
 
-    // Estado del Formulario
     private val _name = MutableStateFlow("")
-    val name = _name.asStateFlow()
-
     private val _exercises = MutableStateFlow<List<TemplateExercise>>(emptyList())
-    val exercises = _exercises.asStateFlow()
+    private val _isSaving = MutableStateFlow(false)
+    private val _isSaveCompleted = MutableStateFlow(false)
+
+    val uiState: StateFlow<EditTemplateUiState> = combine(
+        _name,
+        _exercises,
+        _isSaving,
+        _isSaveCompleted
+    ) { name, exercises, isSaving, isSaveCompleted ->
+        val isNameError = name.isBlank() || name.length > MAX_TEMPLATE_NAME_LENGTH
+        EditTemplateUiState(
+            name = name,
+            exercises = exercises,
+            isNameError = isNameError,
+            isSaving = isSaving,
+            isSaveCompleted = isSaveCompleted
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = EditTemplateUiState()
+    )
 
     init {
-        // Si hay ID, cargamos los datos existentes
         if (templateId != null) {
             viewModelScope.launch {
                 getTemplateDetailUseCase(templateId).collect { template ->
@@ -51,43 +71,53 @@ class EditTemplateViewModel @Inject constructor(
         }
     }
 
-    fun onNameChange(newName: String) {
+    fun onEvent(event: EditTemplateUiEvent) {
+        when (event) {
+            is EditTemplateUiEvent.NameChanged -> updateName(event.value)
+            is EditTemplateUiEvent.ExerciseRemoved -> removeExercise(event.exerciseId)
+            is EditTemplateUiEvent.ExerciseConfigChanged -> updateExerciseConfig(event.exerciseId, event.sets, event.reps)
+            is EditTemplateUiEvent.ExercisesSelected -> onExercisesSelected(event.exerciseIds)
+            EditTemplateUiEvent.SaveClicked -> saveTemplate()
+            EditTemplateUiEvent.AddExerciseClicked -> Unit
+            EditTemplateUiEvent.NavigationHandled -> _isSaveCompleted.value = false
+        }
+    }
+
+    private fun updateName(newName: String) {
         if (newName.length <= MAX_TEMPLATE_NAME_LENGTH) {
             _name.value = newName
         }
     }
 
-    // Llamado cuando el usuario selecciona un ejercicio en el Picker
-    fun addExercise(exercise: Exercise) {
+    private fun addExercise(exercise: Exercise) {
         val newTemplateExercise = TemplateExercise(
             id = UUID.randomUUID().toString(),
             exercise = exercise,
-            orderIndex = _exercises.value.size, // Al final
-            targetSets = 3, // Default
+            orderIndex = _exercises.value.size,
+            targetSets = 3,
             targetReps = "8-12",
             restTimerSeconds = 60
         )
         _exercises.update { it + newTemplateExercise }
     }
 
-    fun removeExercise(item: TemplateExercise) {
-        _exercises.update { list -> list.filter { it.id != item.id } }
+    private fun removeExercise(id: String) {
+        _exercises.update { list -> list.filterNot { it.id == id } }
     }
 
-    fun updateExerciseConfig(item: TemplateExercise, sets: String, reps: String) {
+    private fun updateExerciseConfig(id: String, sets: String, reps: String) {
         _exercises.update { list ->
-            list.map {
-                if (it.id == item.id) it.copy(
-                    targetSets = sets.toIntOrNull() ?: it.targetSets,
+            list.map { item ->
+                if (item.id == id) item.copy(
+                    targetSets = sets.toIntOrNull() ?: item.targetSets,
                     targetReps = reps
-                ) else it
+                ) else item
             }
         }
     }
 
-    fun onExercisesSelected(exerciseIds: List<String>) {
+    private fun onExercisesSelected(exerciseIds: List<String>) {
         if (exerciseIds.isEmpty()) return
-
         viewModelScope.launch {
             exerciseIds.forEach { id ->
                 val exercise = getExerciseDetailUseCase(id).firstOrNull()
@@ -98,19 +128,20 @@ class EditTemplateViewModel @Inject constructor(
         }
     }
 
-    fun saveTemplate(onSuccess: () -> Unit) {
-        if (_name.value.isBlank()) return
+    private fun saveTemplate() {
+        val currentName = _name.value
+        if (currentName.isBlank() || _isSaving.value) return
 
         viewModelScope.launch {
+            _isSaving.value = true
             val template = WorkoutTemplate(
                 id = templateId ?: UUID.randomUUID().toString(),
-                name = _name.value,
-                exercises = _exercises.value.mapIndexed { index, ex ->
-                    ex.copy(orderIndex = index) // Re-indexamos por seguridad
-                }
+                name = currentName,
+                exercises = _exercises.value.mapIndexed { index, ex -> ex.copy(orderIndex = index) }
             )
             saveTemplateUseCase(template)
-            onSuccess()
+            _isSaving.value = false
+            _isSaveCompleted.value = true
         }
     }
 }

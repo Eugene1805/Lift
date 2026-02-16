@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.eugene.lift.domain.usecase.exercise.GetExerciseDetailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -15,6 +17,19 @@ class ExerciseDetailViewModel @Inject constructor(
     getExerciseDetailUseCase: GetExerciseDetailUseCase
 ) : ViewModel() {
     private val exerciseId: String = checkNotNull(savedStateHandle["exerciseId"])
-    val exercise = getExerciseDetailUseCase(exerciseId)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val uiState: StateFlow<ExerciseDetailUiState> = getExerciseDetailUseCase(exerciseId)
+        .map { exercise -> ExerciseDetailUiState(exercise = exercise, isLoading = false) }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            ExerciseDetailUiState()
+        )
+
+    fun onEvent(event: ExerciseDetailUiEvent) {
+        when (event) {
+            ExerciseDetailUiEvent.BackClicked,
+            ExerciseDetailUiEvent.EditClicked -> Unit
+        }
+    }
 }

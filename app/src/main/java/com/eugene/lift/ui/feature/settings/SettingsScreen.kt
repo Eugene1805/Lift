@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eugene.lift.R
@@ -41,20 +42,40 @@ import com.eugene.lift.domain.model.AppTheme
 import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.ui.components.AppDropdown
-import androidx.core.net.toUri
 
 @Composable
-fun SettingsRoute() {
-    SettingsScreen()
+fun SettingsRoute(
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val contactEmail = stringResource(R.string.setting_contact_email)
+    val contactSubject = stringResource(R.string.setting_email_subject)
+    val contactChooserTitle = stringResource(R.string.setting_email_chooser_title)
+
+    SettingsScreen(
+        uiState = uiState,
+        onEvent = { event ->
+            when (event) {
+                SettingsUiEvent.ContactUsClicked -> {
+                    val intent = Intent(Intent.ACTION_SENDTO).apply {
+                        data = "mailto:$contactEmail".toUri()
+                        putExtra(Intent.EXTRA_SUBJECT, contactSubject)
+                    }
+                    context.startActivity(Intent.createChooser(intent, contactChooserTitle))
+                }
+                else -> viewModel.onEvent(event)
+            }
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    viewModel: SettingsViewModel = hiltViewModel()
+    uiState: SettingsUiState,
+    onEvent: (SettingsUiEvent) -> Unit
 ) {
-    val settings by viewModel.settings.collectAsStateWithLifecycle()
-    val context = LocalContext.current
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -81,12 +102,12 @@ fun SettingsScreen(
         ) {
 
             SettingsSection(title = stringResource(R.string.section_appearance)) {
-                
+
                 AppDropdown(
                     label = stringResource(R.string.label_theme),
                     options = AppTheme.entries,
-                    selectedOption = settings.theme,
-                    onOptionSelected = { viewModel.updateTheme(it) },
+                    selectedOption = uiState.theme,
+                    onOptionSelected = { onEvent(SettingsUiEvent.ThemeChanged(it)) },
                     labelProvider = { theme ->
                         when (theme) {
                             AppTheme.LIGHT -> stringResource(R.string.theme_light)
@@ -97,16 +118,18 @@ fun SettingsScreen(
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-                
-                val languages = listOf("en" to stringResource(R.string.language_english), "es" to stringResource(R.string.language_spanish))
-                val currentLangCode = viewModel.getCurrentLanguageCode()
-                val currentLangPair = languages.find { it.first == currentLangCode } ?: languages.first()
+
+                val languages = listOf(
+                    "en" to stringResource(R.string.language_english),
+                    "es" to stringResource(R.string.language_spanish)
+                )
+                val currentLangPair = languages.find { it.first == uiState.languageCode } ?: languages.first()
 
                 AppDropdown(
                     label = stringResource(R.string.label_language),
                     options = languages,
                     selectedOption = currentLangPair,
-                    onOptionSelected = { pair -> viewModel.updateLanguage(pair.first) },
+                    onOptionSelected = { pair -> onEvent(SettingsUiEvent.LanguageChanged(pair.first)) },
                     labelProvider = { it.second }
                 )
             }
@@ -135,8 +158,8 @@ fun SettingsScreen(
                     ) {
                         WeightUnit.entries.forEachIndexed { index, unit ->
                             SegmentedButton(
-                                selected = settings.weightUnit == unit,
-                                onClick = { viewModel.updateWeightUnit(unit) },
+                                selected = uiState.weightUnit == unit,
+                                onClick = { onEvent(SettingsUiEvent.WeightUnitChanged(unit)) },
                                 shape = SegmentedButtonDefaults.itemShape(
                                     index = index,
                                     count = WeightUnit.entries.size
@@ -164,8 +187,8 @@ fun SettingsScreen(
                     ) {
                         DistanceUnit.entries.forEachIndexed { index, unit ->
                             SegmentedButton(
-                                selected = settings.distanceUnit == unit,
-                                onClick = { viewModel.updateDistanceUnit(unit) },
+                                selected = uiState.distanceUnit == unit,
+                                onClick = { onEvent(SettingsUiEvent.DistanceUnitChanged(unit)) },
                                 shape = SegmentedButtonDefaults.itemShape(
                                     index = index,
                                     count = DistanceUnit.entries.size
@@ -199,13 +222,7 @@ fun SettingsScreen(
                     icon = Icons.Default.Mail,
                     title = stringResource(R.string.btn_contact_us),
                     subtitle = stringResource(R.string.setting_contact_email),
-                    onClick = {
-                        val intent = Intent(Intent.ACTION_SENDTO).apply {
-                            data = "mailto:${context.getString(R.string.setting_contact_email)}".toUri()
-                            putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.setting_email_subject))
-                        }
-                        context.startActivity(Intent.createChooser(intent, context.getString(R.string.setting_email_chooser_title)))
-                    }
+                    onClick = { onEvent(SettingsUiEvent.ContactUsClicked) }
                 )
             }
         }

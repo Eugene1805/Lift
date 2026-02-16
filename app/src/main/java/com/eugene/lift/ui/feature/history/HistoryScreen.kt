@@ -153,6 +153,22 @@ fun HistorySessionCard(
     userSettings: UserSettings,
     onClick: () -> Unit
 ) {
+    val totalVolumeKg = session.exercises.flatMap { it.sets }
+        .filter { it.completed }
+        .sumOf { it.weight * it.reps }
+    val totalVolume = if (userSettings.weightUnit == WeightUnit.LBS) {
+        WeightConverter.kgToLbs(totalVolumeKg)
+    } else {
+        totalVolumeKg
+    }
+    val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
+        stringResource(R.string.unit_lbs)
+    } else {
+        stringResource(R.string.unit_kg)
+    }
+    val prCount = session.exercises.flatMap { it.sets }.count { it.isPr }
+    val repsLabel = stringResource(R.string.unit_reps)
+
     Card(
         onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
@@ -162,249 +178,311 @@ fun HistorySessionCard(
             .padding(horizontal = 16.dp, vertical = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top,
-                modifier = Modifier.fillMaxWidth()
+            SessionHeaderRow(session)
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            SessionStatsRow(totalVolume = totalVolume, weightLabel = weightLabel, prCount = prCount)
+
+            BestSetsSection(
+                exercises = session.exercises,
+                userSettings = userSettings,
+                weightLabel = weightLabel,
+                repsLabel = repsLabel
+            )
+
+            SessionNoteSection(note = session.note)
+        }
+    }
+}
+
+@Composable
+private fun SessionHeaderRow(session: WorkoutSession) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = session.name,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = session.date.format(DateTimeFormatter.ofPattern("HH:mm")),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        DurationBadge(durationSeconds = session.durationSeconds)
+    }
+}
+
+@Composable
+private fun DurationBadge(durationSeconds: Long) {
+    Badge(
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(Icons.Default.AccessTime, null, modifier = Modifier.size(12.dp))
+            Spacer(Modifier.width(4.dp))
+            Text(formatDuration(durationSeconds))
+        }
+    }
+}
+
+@Composable
+private fun SessionStatsRow(totalVolume: Double, weightLabel: String, prCount: Int) {
+    if (totalVolume <= 0 && prCount <= 0) return
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        if (totalVolume > 0) VolumeStat(totalVolume = totalVolume, weightLabel = weightLabel)
+        if (prCount > 0) PrStat(prCount = prCount)
+    }
+}
+
+@Composable
+private fun VolumeStat(totalVolume: Double, weightLabel: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = Icons.Default.FitnessCenter,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = "${formatWeight(totalVolume)} $weightLabel",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
+private fun PrStat(prCount: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = Icons.Default.EmojiEvents,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = MaterialTheme.colorScheme.tertiary
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = "$prCount ${stringResource(R.string.history_detail_prs)}",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+private fun BestSetsSection(
+    exercises: List<com.eugene.lift.domain.model.SessionExercise>,
+    userSettings: UserSettings,
+    weightLabel: String,
+    repsLabel: String
+) {
+    if (exercises.isEmpty()) return
+
+    Spacer(modifier = Modifier.height(12.dp))
+    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End
+    ) {
+        Text(
+            text = stringResource(R.string.history_best_set),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+
+    Spacer(modifier = Modifier.height(4.dp))
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        exercises.forEach { sessionExercise ->
+            ExerciseSummaryCard(
+                sessionExercise = sessionExercise,
+                userSettings = userSettings,
+                weightLabel = weightLabel,
+                repsLabel = repsLabel
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExerciseSummaryCard(
+    sessionExercise: com.eugene.lift.domain.model.SessionExercise,
+    userSettings: UserSettings,
+    weightLabel: String,
+    repsLabel: String
+) {
+    if (sessionExercise.sets.isEmpty()) return
+
+    val completedSets = sessionExercise.sets.count { it.completed }
+    val hasPR = sessionExercise.sets.any { it.isPr }
+    val bestSet = sessionExercise.sets
+        .filter { it.completed }
+        .maxWithOrNull(compareBy({ it.weight }, { it.reps }))
+    val bestSetText = getBestSetString(
+        sessionExercise.sets,
+        weightLabel,
+        repsLabel,
+        userSettings
+    )
+    val effortText = bestSet.toEffortSuffix()
+
+    Surface(
+        color = if (hasPR) {
+            MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerLowest
+        },
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)) {
+            ExerciseSummaryHeader(
+                completedSets = completedSets,
+                hasPR = hasPR,
+                exerciseName = sessionExercise.exercise.name,
+                bestSetLabel = bestSetText + effortText
+            )
+
+            ExerciseNote(note = sessionExercise.note)
+        }
+    }
+}
+
+@Composable
+private fun ExerciseSummaryHeader(
+    completedSets: Int,
+    hasPR: Boolean,
+    exerciseName: String,
+    bestSetLabel: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f)
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                modifier = Modifier.size(24.dp)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
+                Box(contentAlignment = Alignment.Center) {
                     Text(
-                        text = session.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = session.date.format(DateTimeFormatter.ofPattern("HH:mm")),
-                        style = MaterialTheme.typography.bodySmall,
+                        text = "$completedSets",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
-                Badge(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.AccessTime, null, modifier = Modifier.size(12.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text(formatDuration(session.durationSeconds))
-                    }
-                }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                val totalVolumeKg = session.exercises.flatMap { it.sets }
-                    .filter { it.completed }
-                    .sumOf { it.weight * it.reps }
-
-                val totalVolume = if (userSettings.weightUnit == WeightUnit.LBS) {
-                    WeightConverter.kgToLbs(totalVolumeKg)
-                } else {
-                    totalVolumeKg
-                }
-
-                val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
-                    stringResource(R.string.unit_lbs)
-                } else {
-                    stringResource(R.string.unit_kg)
-                }
-
-                if (totalVolume > 0) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.FitnessCenter,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "${formatWeight(totalVolume)} $weightLabel",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-
-                val prCount = session.exercises.flatMap { it.sets }.count { it.isPr }
-                if (prCount > 0) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.EmojiEvents,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.tertiary
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "$prCount ${stringResource(R.string.history_detail_prs)}",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = stringResource(R.string.history_best_set),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                session.exercises.forEach { sessionExercise ->
-                    val completedSets = sessionExercise.sets.count { it.completed }
-                    val hasPR = sessionExercise.sets.any { it.isPr }
-
-                    if (completedSets > 0 || sessionExercise.sets.isNotEmpty()) {
-                        Surface(
-                            color = if (hasPR) {
-                                MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)
-                            } else {
-                                MaterialTheme.colorScheme.surfaceContainerLowest
-                            },
-                            shape = MaterialTheme.shapes.small,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Surface(
-                                            shape = CircleShape,
-                                            color = MaterialTheme.colorScheme.surfaceVariant,
-                                            modifier = Modifier.size(24.dp)
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center) {
-                                                Text(
-                                                    text = "$completedSets",
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            }
-                                        }
-
-                                        Spacer(modifier = Modifier.width(12.dp))
-
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text(
-                                                text = sessionExercise.exercise.name,
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-
-                                            if (hasPR) {
-                                                Spacer(modifier = Modifier.width(6.dp))
-                                                Icon(
-                                                    imageVector = Icons.Default.EmojiEvents,
-                                                    contentDescription = "PR",
-                                                    modifier = Modifier.size(16.dp),
-                                                    tint = MaterialTheme.colorScheme.tertiary
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
-                                        stringResource(R.string.unit_lbs)
-                                    } else {
-                                        stringResource(R.string.unit_kg)
-                                    }
-
-                                    val bestSet = sessionExercise.sets.filter { it.completed }
-                                        .maxWithOrNull(compareBy({ it.weight }, { it.reps }))
-
-                                    val bestSetText = getBestSetString(
-                                        sessionExercise.sets,
-                                        weightLabel,
-                                        stringResource(R.string.unit_reps),
-                                        userSettings
-                                    )
-
-                                    // Show effort metric for the best set only
-                                    val effortText = bestSet?.let { set ->
-                                        when {
-                                            set.rpe != null -> " RPE ${set.rpe}"
-                                            set.rir != null -> " @${set.rir}"
-                                            else -> ""
-                                        }
-                                    } ?: ""
-
-                                    Text(
-                                        text = "$bestSetText$effortText",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-
-                                // Render exercise note if present
-                                val exNote = sessionExercise.note
-                                if (!exNote.isNullOrBlank()) {
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = stringResource(R.string.history_exercise_note_label),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Text(
-                                        text = exNote,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // After exercise summaries, render session note if present
-            val note = session.note
-            if (!note.isNullOrBlank()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = stringResource(R.string.history_session_note_label),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = note,
+                    text = exerciseName,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
+
+                if (hasPR) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(
+                        imageVector = Icons.Default.EmojiEvents,
+                        contentDescription = "PR",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.tertiary
+                    )
+                }
             }
         }
+
+        Text(
+            text = bestSetLabel,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
+}
+
+@Composable
+private fun SessionNoteSection(note: String?) {
+    if (note.isNullOrBlank()) return
+
+    Spacer(modifier = Modifier.height(12.dp))
+    Text(
+        text = stringResource(R.string.history_session_note_label),
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Spacer(modifier = Modifier.height(4.dp))
+    Text(
+        text = note,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurface
+    )
+}
+
+@Composable
+private fun ExerciseNote(note: String?) {
+    if (note.isNullOrBlank()) return
+
+    Spacer(modifier = Modifier.height(4.dp))
+    Text(
+        text = stringResource(R.string.history_exercise_note_label),
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Text(
+        text = note,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurface
+    )
+}
+
+private fun com.eugene.lift.domain.model.WorkoutSet?.toEffortSuffix(): String {
+    return this?.let { set ->
+        when {
+            set.rpe != null -> " RPE ${set.rpe}"
+            set.rir != null -> " @${set.rir}"
+            else -> ""
+        }
+    } ?: ""
+}
+
+@Composable
+fun formatDuration(seconds: Long): String {
+    val hoursLabel = stringResource(R.string.unit_hours_short)
+    val minutesLabel = stringResource(R.string.unit_minutes_short)
+    val hours = seconds / 3600
+    val minutes = (seconds % 3600) / 60
+    return if (hours > 0) "$hours$hoursLabel $minutes$minutesLabel" else "$minutes$minutesLabel"
 }
 
 fun formatWeight(weight: Double): String {
@@ -444,14 +522,4 @@ fun formatDurationSimple(seconds: Long): String {
     val hours = seconds / 3600
     val minutes = (seconds % 3600) / 60
     return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
-}
-
-
-@Composable
-fun formatDuration(seconds: Long): String {
-    val hoursLabel = stringResource(R.string.unit_hours_short)
-    val minutesLabel = stringResource(R.string.unit_minutes_short)
-    val hours = seconds / 3600
-    val minutes = (seconds % 3600) / 60
-    return if (hours > 0) "$hours$hoursLabel $minutes$minutesLabel" else "$minutes$minutesLabel"
 }

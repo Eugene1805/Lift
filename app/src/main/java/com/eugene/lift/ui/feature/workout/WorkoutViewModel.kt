@@ -2,7 +2,6 @@ package com.eugene.lift.ui.feature.workout
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eugene.lift.domain.model.WorkoutTemplate
 import com.eugene.lift.domain.usecase.folder.CreateFolderUseCase
 import com.eugene.lift.domain.usecase.folder.DeleteFolderUseCase
 import com.eugene.lift.domain.usecase.folder.GetFoldersUseCase
@@ -14,8 +13,10 @@ import com.eugene.lift.domain.usecase.template.ToggleTemplateArchiveUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -26,80 +27,99 @@ class WorkoutViewModel @Inject constructor(
     private val toggleArchiveUseCase: ToggleTemplateArchiveUseCase,
     private val deleteTemplateUseCase: DeleteTemplateUseCase,
     private val duplicateTemplateUseCase: DuplicateTemplateUseCase,
-    private val getFoldersUseCase: GetFoldersUseCase,
+    getFoldersUseCase: GetFoldersUseCase,
     private val createFolderUseCase: CreateFolderUseCase,
     private val moveTemplateToFolderUseCase: MoveTemplateToFolderUseCase,
     private val deleteFolderUseCase: DeleteFolderUseCase
 ) : ViewModel() {
 
     private val _selectedTab = MutableStateFlow(0)
-    val selectedTab = _selectedTab
-
     private val _currentFolderId = MutableStateFlow<String?>(null)
-    val currentFolderId = _currentFolderId.asStateFlow()
+    private val _isLoading = MutableStateFlow(true)
 
-    // 2. Lista de carpetas disponibles
-    val folders = getFoldersUseCase()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val templates = combine(
+    private val templatesFlow = combine(
         getAllTemplatesUseCase(),
         _currentFolderId
     ) { allTemplates, folderId ->
-        // Si estamos en raíz (folderId == null), mostramos las que NO tienen folderId
-        // OJO: Esto depende de cómo quieras la UX.
-        // Opción A (Carpetas como filtro estricto): Solo muestras las sueltas en raíz.
-        // Opción B (Carpetas como etiquetas): Muestras todas, pero arriba las carpetas.
-
-        // Vamos con la Opción A (Estilo explorador de archivos)
         allTemplates.filter { it.folderId == folderId }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
+    )
 
-    fun onTabSelected(index: Int) {
-        _selectedTab.value = index
+    private val foldersFlow = getFoldersUseCase()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val uiState: StateFlow<WorkoutUiState> = combine(
+        templatesFlow,
+        foldersFlow,
+        _selectedTab,
+        _currentFolderId,
+        _isLoading
+    ) { templates, folders, tab, folderId, isLoading ->
+        WorkoutUiState(
+            templates = templates,
+            isLoading = isLoading,
+            selectedTab = tab,
+            folders = folders,
+            currentFolderId = folderId
+        )
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        WorkoutUiState()
+    )
+
+    init {
+        templatesFlow.onEach { _isLoading.value = false }.launchIn(viewModelScope)
     }
 
-    fun archiveTemplate(template: WorkoutTemplate) {
-        viewModelScope.launch {
-            toggleArchiveUseCase(template.id, !template.isArchived)
+    fun onEvent(event: WorkoutUiEvent) {
+        when (event) {
+            is WorkoutUiEvent.TabSelected -> _selectedTab.value = event.index
+            is WorkoutUiEvent.FolderSelected -> _currentFolderId.value = event.folderId
+            is WorkoutUiEvent.FolderCreated -> createFolder(event.name, event.color)
+            is WorkoutUiEvent.FolderDeleted -> deleteFolder(event.folderId)
+            is WorkoutUiEvent.TemplateMoved -> moveTemplate(event.templateId, event.folderId)
+            is WorkoutUiEvent.TemplateArchiveToggled -> archiveTemplate(event.templateId, event.archive)
+            is WorkoutUiEvent.TemplateDeleted -> deleteTemplate(event.templateId)
+            is WorkoutUiEvent.TemplateDuplicated -> duplicateTemplate(event.templateId)
+            WorkoutUiEvent.AddTemplateClicked,
+            is WorkoutUiEvent.TemplateClicked,
+            is WorkoutUiEvent.TemplateEditClicked,
+            is WorkoutUiEvent.TemplateStartClicked,
+            is WorkoutUiEvent.TemplateShared,
+            WorkoutUiEvent.StartEmptyClicked -> Unit
         }
     }
 
-    fun deleteTemplate(templateId: String) {
-        viewModelScope.launch {
-            deleteTemplateUseCase(templateId)
-        }
-    }
-
-    fun duplicateTemplate(templateId: String) {
-        viewModelScope.launch {
-            duplicateTemplateUseCase(templateId)
-        }
-    }
-
-    fun selectFolder(folderId: String?) {
-        _currentFolderId.value = folderId
-    }
-
-    fun createFolder(name: String, color: String) {
-        viewModelScope.launch {
-            createFolderUseCase(name, color)
-        }
-    }
-
-    fun deleteFolder(folderId: String) {
+    private fun deleteFolder(folderId: String) {
         viewModelScope.launch {
             deleteFolderUseCase(folderId)
-            // Si borramos la carpeta actual, volvemos a la raíz
             if (_currentFolderId.value == folderId) {
                 _currentFolderId.value = null
             }
         }
     }
 
-    fun moveTemplate(workOutTemplate: WorkoutTemplate, folderId: String?) {
-        viewModelScope.launch {
-            moveTemplateToFolderUseCase(workOutTemplate.id, folderId)
-        }
+    private fun archiveTemplate(templateId: String, archive: Boolean) {
+        viewModelScope.launch { toggleArchiveUseCase(templateId, archive) }
+    }
+
+    private fun deleteTemplate(templateId: String) {
+        viewModelScope.launch { deleteTemplateUseCase(templateId) }
+    }
+
+    private fun duplicateTemplate(templateId: String) {
+        viewModelScope.launch { duplicateTemplateUseCase(templateId) }
+    }
+
+    private fun createFolder(name: String, color: String) {
+        viewModelScope.launch { createFolderUseCase(name, color) }
+    }
+
+    private fun moveTemplate(templateId: String, folderId: String?) {
+        viewModelScope.launch { moveTemplateToFolderUseCase(templateId, folderId) }
     }
 }

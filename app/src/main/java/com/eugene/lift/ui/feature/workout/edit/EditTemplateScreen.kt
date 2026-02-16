@@ -2,9 +2,7 @@ package com.eugene.lift.ui.feature.workout.edit
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
@@ -23,14 +21,39 @@ import com.eugene.lift.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditTemplateScreen(
+fun EditTemplateRoute(
     onNavigateBack: () -> Unit,
     onAddExerciseClick: () -> Unit,
     viewModel: EditTemplateViewModel = hiltViewModel()
 ) {
-    val name by viewModel.name.collectAsStateWithLifecycle()
-    val exercises by viewModel.exercises.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(uiState.isSaveCompleted) {
+        if (uiState.isSaveCompleted) {
+            onNavigateBack()
+            viewModel.onEvent(EditTemplateUiEvent.NavigationHandled)
+        }
+    }
+
+    EditTemplateScreen(
+        uiState = uiState,
+        onNavigateBack = onNavigateBack,
+        onEvent = { event ->
+            when (event) {
+                EditTemplateUiEvent.AddExerciseClicked -> onAddExerciseClick()
+                else -> viewModel.onEvent(event)
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditTemplateScreen(
+    uiState: EditTemplateUiState,
+    onNavigateBack: () -> Unit,
+    onEvent: (EditTemplateUiEvent) -> Unit
+) {
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
@@ -38,11 +61,14 @@ fun EditTemplateScreen(
                 title = { Text(stringResource(R.string.title_edit_routine)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.Close, contentDescription = null)
+                        Icon(androidx.compose.material.icons.Icons.Filled.Close, contentDescription = null)
                     }
                 },
                 actions = {
-                    Button(onClick = { viewModel.saveTemplate(onSuccess = onNavigateBack) }) {
+                    Button(
+                        onClick = { onEvent(EditTemplateUiEvent.SaveClicked) },
+                        enabled = !uiState.isSaving && !uiState.isNameError
+                    ) {
                         Text(stringResource(R.string.action_save))
                     }
                 },
@@ -55,29 +81,28 @@ fun EditTemplateScreen(
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = onAddExerciseClick,
-                icon = { Icon(Icons.Default.Add, null) },
+                onClick = { onEvent(EditTemplateUiEvent.AddExerciseClicked) },
+                icon = { Icon(androidx.compose.material.icons.Icons.Filled.Add, null) },
                 text = { Text(stringResource(R.string.btn_add_exercise)) }
             )
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
-            // Nombre de la Rutina
-            val isNameError = name.isBlank() || name.length > MAX_TEMPLATE_NAME_LENGTH
+            val isNameError = uiState.isNameError
 
             OutlinedTextField(
-                value = name,
-                onValueChange = viewModel::onNameChange,
+                value = uiState.name,
+                onValueChange = { onEvent(EditTemplateUiEvent.NameChanged(it)) },
                 label = { Text(stringResource(R.string.label_routine_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 isError = isNameError,
                 supportingText = {
                     Text(
-                        text = stringResource(id = R.string.text_field_character_counter, name.length, MAX_TEMPLATE_NAME_LENGTH),
+                        text = stringResource(id = R.string.text_field_character_counter, uiState.name.length, MAX_TEMPLATE_NAME_LENGTH),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.End,
-                        color = if (name.length > MAX_TEMPLATE_NAME_LENGTH) {
+                        color = if (uiState.name.length > MAX_TEMPLATE_NAME_LENGTH) {
                             MaterialTheme.colorScheme.error
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant
@@ -97,11 +122,11 @@ fun EditTemplateScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.weight(1f) // Ocupa el espacio restante
             ) {
-                items(exercises, key = { it.id }) { item ->
+                items(uiState.exercises, key = { it.id }) { item ->
                     TemplateExerciseRow(
                         item = item,
-                        onRemove = { viewModel.removeExercise(item) },
-                        onConfigChange = { s, r -> viewModel.updateExerciseConfig(item, s, r) }
+                        onRemove = { onEvent(EditTemplateUiEvent.ExerciseRemoved(item.id)) },
+                        onConfigChange = { s, r -> onEvent(EditTemplateUiEvent.ExerciseConfigChanged(item.id, s, r)) }
                     )
                 }
                 // Espacio extra para que el FAB no tape el último item
@@ -131,7 +156,7 @@ fun TemplateExerciseRow(
                 )
                 IconButton(onClick = onRemove) {
                     Icon(
-                        Icons.Default.Close,
+                        androidx.compose.material.icons.Icons.Filled.Close,
                         contentDescription = stringResource(R.string.component_delete),
                         tint = MaterialTheme.colorScheme.error
                     )

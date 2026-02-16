@@ -574,5 +574,10 @@
     <string name="active_workout_kg_lowercase">kg</string>
     <string name="active_workout_reps_lowercase">reps</string>
     <string name="history_prs">PRs</string>
+    <string name="loading">loading</string>
+    <string name="exercise_detail_no_data">No data</string>
+    <string name="template_detail_no_data">No data</string>
+    <string name="folder_delete_title">Delete folder</string>
+    <string name="folder_delete_message">The folder will be deleted</string>
 </resources>
 

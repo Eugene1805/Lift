@@ -1,6 +1,5 @@
 package com.eugene.lift.ui.feature.workout
 
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,8 +12,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -23,10 +23,12 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Unarchive
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -35,13 +37,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -49,14 +50,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -64,10 +63,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eugene.lift.R
 import com.eugene.lift.domain.model.Folder
 import com.eugene.lift.domain.model.WorkoutTemplate
-import kotlinx.coroutines.launch
-import com.eugene.lift.ui.feature.workout.components.FolderRow
 import com.eugene.lift.ui.feature.workout.components.CreateFolderDialog
+import com.eugene.lift.ui.feature.workout.components.FolderRow
 import com.eugene.lift.ui.feature.workout.components.MoveToFolderDialog
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun WorkoutRoute(
@@ -77,216 +76,284 @@ fun WorkoutRoute(
     onStartEmptyClick: (String?) -> Unit,
     viewModel: WorkoutViewModel = hiltViewModel()
 ) {
-    val templates by viewModel.templates.collectAsStateWithLifecycle()
-    val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val context = LocalContext.current
+    val onEventUpdated by rememberUpdatedState(newValue = { event: WorkoutUiEvent ->
+        when (event) {
+            WorkoutUiEvent.AddTemplateClicked -> onNavigateToEdit(null)
+            is WorkoutUiEvent.TemplateEditClicked -> onNavigateToEdit(event.templateId)
+            is WorkoutUiEvent.TemplateClicked -> onTemplateClick(event.templateId)
+            is WorkoutUiEvent.TemplateStartClicked -> onStartWorkoutClick(event.templateId)
+            WorkoutUiEvent.StartEmptyClicked -> onStartEmptyClick(null)
+            else -> viewModel.onEvent(event)
+        }
+    })
 
-    val folders by viewModel.folders.collectAsStateWithLifecycle()
-    val currentFolderId by viewModel.currentFolderId.collectAsStateWithLifecycle()
-    val copiedMsg = stringResource(R.string.workout_routine_copied)
     WorkoutScreen(
-        templates = templates,
-        selectedTab = selectedTab,
-        folders = folders,
-        currentFolderId = currentFolderId,
-        onTabSelected = viewModel::onTabSelected,
-        onSelectFolder = viewModel::selectFolder,
-        onCreateFolder = viewModel::createFolder,
-        onMoveTemplate = viewModel::moveTemplate,
-        onCreateClick = { onNavigateToEdit(null) },
-        onEditClick = { onNavigateToEdit(it.id) },
-        onTemplateClick = { onTemplateClick(it.id) },
-        onStartWorkoutClick = { onStartWorkoutClick(it.id) },
-        onArchiveClick = viewModel::archiveTemplate,
-        onDeleteClick = { viewModel.deleteTemplate(it.id) },
-        onDuplicateClick = { template ->
-            viewModel.duplicateTemplate(template.id)
-        },
-        onShareClick = {
-            Toast.makeText(context, copiedMsg, Toast.LENGTH_SHORT).show()
-        },
-        onStartEmptyClick = { onStartEmptyClick(null) }
+        uiState = uiState,
+        onEvent = onEventUpdated
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutScreen(
-    templates: List<WorkoutTemplate>?,
-    selectedTab: Int,
-    folders: List<Folder>,
-    currentFolderId: String?,
-    onSelectFolder: (String?) -> Unit,
-    onCreateFolder: (String, String) -> Unit,
-    onMoveTemplate: (WorkoutTemplate, String?) -> Unit,
-    onTabSelected: (Int) -> Unit,
-    onCreateClick: () -> Unit,
-    onEditClick: (WorkoutTemplate) -> Unit,
-    onTemplateClick: (WorkoutTemplate) -> Unit,
-    onStartWorkoutClick: (WorkoutTemplate) -> Unit,
-    onArchiveClick: (WorkoutTemplate) -> Unit,
-    onDeleteClick: (WorkoutTemplate) -> Unit,
-    onDuplicateClick: (WorkoutTemplate) -> Unit,
-    onShareClick: () -> Unit,
-    onStartEmptyClick: () -> Unit
+    uiState: WorkoutUiState,
+    onEvent: (WorkoutUiEvent) -> Unit
 ) {
-    val pagerState = rememberPagerState(pageCount = { 2 })
-    val scope = rememberCoroutineScope()
+    var showCreateFolderDialog by remember { mutableStateOf(false) }
+    var templateToMove by remember { mutableStateOf<WorkoutTemplate?>(null) }
+    var folderToDelete by remember { mutableStateOf<Folder?>(null) }
 
-    LaunchedEffect(pagerState.currentPage) { onTabSelected(pagerState.currentPage) }
-    LaunchedEffect(selectedTab) {
-        if (pagerState.currentPage != selectedTab) {
-            pagerState.animateScrollToPage(selectedTab)
+    val pagerState = rememberPagerState(initialPage = uiState.selectedTab, pageCount = { 2 })
+
+    LaunchedEffect(uiState.selectedTab) {
+        if (pagerState.currentPage != uiState.selectedTab) {
+            pagerState.animateScrollToPage(uiState.selectedTab)
         }
     }
 
-    var showCreateFolderDialog by remember { mutableStateOf(false) }
-    var templateToMove by remember { mutableStateOf<WorkoutTemplate?>(null) }
-
-    Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        containerColor = MaterialTheme.colorScheme.surface,
-        topBar = {
-            Column {
-                TopAppBar(
-                    title = { Text(stringResource(R.string.title_workout)) },
-                    windowInsets = WindowInsets(0, 0, 0, 0),
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                )
-                TabRow(
-                    selectedTabIndex = selectedTab,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.primary
-                ) {
-                    Tab(
-                        selected = selectedTab == 0,
-                        onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
-                        text = { Text(stringResource(R.string.tab_my_routines)) }
-                    )
-                    Tab(
-                        selected = selectedTab == 1,
-                        onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
-                        text = { Text(stringResource(R.string.tab_archived)) }
-                    )
-                }
-            }
-        },
-        floatingActionButton = {
-            if (selectedTab == 0) {
-                FloatingActionButton(onClick = onCreateClick) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                }
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collectLatest { page ->
+            if (page != uiState.selectedTab) {
+                onEvent(WorkoutUiEvent.TabSelected(page))
             }
         }
-    ) { innerPadding ->
+    }
 
-        if (templates == null) {
-            WorkoutSkeletonList(modifier = Modifier.padding(innerPadding))
-            return@Scaffold
-        }
+    WorkoutContent(
+        uiState = uiState,
+        pagerState = pagerState,
+        onEvent = onEvent,
+        onCreateFolderClick = { showCreateFolderDialog = true },
+        onMoveRequest = { templateToMove = it },
+        onFolderDeleteRequest = { folderId -> folderToDelete = uiState.folders.find { it.id == folderId } }
+    )
 
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) { page ->
+    val overlayState = remember(showCreateFolderDialog, templateToMove, pagerState.currentPage) {
+        WorkoutOverlayState(
+            showCreateFolderDialog = showCreateFolderDialog,
+            templateToMove = templateToMove,
+            showFab = pagerState.currentPage == 0
+        )
+    }
 
-            val currentTemplates = if (page == 0) {
-                templates.filter { !it.isArchived }
-            } else {
-                templates.filter { it.isArchived }
-            }
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (page == 0) {
-                    item {
-                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                            FolderRow(
-                                folders = folders,
-                                currentFolderId = currentFolderId,
-                                onFolderClick = { onSelectFolder(it) },
-                                onBackToRoot = { onSelectFolder(null) }, // Null = Ir a raíz
-                                onCreateFolderClick = { showCreateFolderDialog = true },
-                                onDeleteFolder = { /* TODO: Implementar borrado si quieres */ }
-                            )
-                        }
-                    }
-                    item {
-                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                            QuickStartCard(onClick = onStartEmptyClick)
-                        }
-                    }
-                    if (currentTemplates.isNotEmpty()) {
-                        item {
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                        }
-                    }
-                }
-
-                if (currentTemplates.isNotEmpty()) {
-                    items(count = currentTemplates.size, key = { currentTemplates[it].id }) { index ->
-                        val template = currentTemplates[index]
-                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                            TemplateItemCard(
-                                template = template,
-                                onClick = { onTemplateClick(template) },
-                                onEdit = { onEditClick(template) },
-                                onArchive = { onArchiveClick(template) },
-                                onDelete = { onDeleteClick(template) },
-                                onDuplicate = { onDuplicateClick(template) },
-                                onShare = { onShareClick() },
-                                onMove = { templateToMove = template },
-                                onStartWorkout = { onStartWorkoutClick(template) }
-                            )
-                        }
-                    }
-                } else {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 16.dp, end = 16.dp, top = 32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = if (page == 0) stringResource(R.string.empty_routines)
-                                else stringResource(R.string.empty_archived),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        if (showCreateFolderDialog) {
-            CreateFolderDialog(
-                onDismiss = { showCreateFolderDialog = false },
-                onCreate = { name, color ->
-                    onCreateFolder(name, color)
+    WorkoutOverlays(
+        overlayState = overlayState,
+        folders = uiState.folders,
+        onAction = { action ->
+            when (action) {
+                WorkoutOverlayAction.AddTemplate -> onEvent(WorkoutUiEvent.AddTemplateClicked)
+                WorkoutOverlayAction.DismissCreateFolder -> showCreateFolderDialog = false
+                is WorkoutOverlayAction.CreateFolder -> {
+                    onEvent(WorkoutUiEvent.FolderCreated(action.name, action.color))
                     showCreateFolderDialog = false
                 }
+                WorkoutOverlayAction.ClearMove -> templateToMove = null
+                is WorkoutOverlayAction.SelectFolder -> {
+                    templateToMove?.let { template -> onEvent(WorkoutUiEvent.TemplateMoved(template.id, action.folderId)) }
+                    templateToMove = null
+                }
+                WorkoutOverlayAction.ShowCreateFolder -> showCreateFolderDialog = true
+            }
+        }
+    )
+
+    if (folderToDelete != null) {
+        val folder = folderToDelete!!
+        AlertDialog(
+            onDismissRequest = { folderToDelete = null },
+            confirmButton = {
+                TextButton(onClick = {
+                    onEvent(WorkoutUiEvent.FolderDeleted(folder.id))
+                    folderToDelete = null
+                }) { Text(stringResource(R.string.action_delete)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { folderToDelete = null }) { Text(stringResource(R.string.folder_cancel)) }
+            },
+            title = { Text(stringResource(R.string.folder_delete_title, folder.name)) },
+            text = { Text(stringResource(R.string.folder_delete_message)) }
+        )
+    }
+}
+
+@Composable
+private fun WorkoutContent(
+    uiState: WorkoutUiState,
+    pagerState: PagerState,
+    onEvent: (WorkoutUiEvent) -> Unit,
+    onCreateFolderClick: () -> Unit,
+    onMoveRequest: (WorkoutTemplate) -> Unit,
+    onFolderDeleteRequest: (String) -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            WorkoutTopBar(
+                selectedTab = pagerState.currentPage,
+                onTabSelected = { index ->
+                    if (index != pagerState.currentPage) {
+                        // reflect tab click immediately
+                        onEvent(WorkoutUiEvent.TabSelected(index))
+                    }
+                }
+            )
+
+            if (uiState.isLoading) {
+                WorkoutSkeletonList()
+            } else {
+                HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+                    val pageTemplates = remember(uiState.templates, page) {
+                        if (page == 0) uiState.templates.filter { !it.isArchived } else uiState.templates.filter { it.isArchived }
+                    }
+
+                    WorkoutTemplatesSection(
+                        selectedPage = page,
+                        currentTemplates = pageTemplates,
+                        uiState = uiState,
+                        onEvent = onEvent,
+                        onCreateFolderClick = onCreateFolderClick,
+                        onMoveRequest = onMoveRequest,
+                        onFolderDeleteRequest = onFolderDeleteRequest
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WorkoutOverlays(
+    overlayState: WorkoutOverlayState,
+    folders: List<Folder>,
+    onAction: (WorkoutOverlayAction) -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (overlayState.showFab) {
+            FloatingActionButton(
+                onClick = { onAction(WorkoutOverlayAction.AddTemplate) },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+            }
+        }
+
+        if (overlayState.showCreateFolderDialog) {
+            CreateFolderDialog(
+                onDismiss = { onAction(WorkoutOverlayAction.DismissCreateFolder) },
+                onCreate = { name, color ->
+                    onAction(WorkoutOverlayAction.CreateFolder(name, color))
+                }
             )
         }
 
-        if (templateToMove != null) {
+        if (overlayState.templateToMove != null) {
             MoveToFolderDialog(
                 folders = folders,
-                onDismiss = { templateToMove = null },
-                onSelectFolder = { folderId ->
-                    onMoveTemplate(templateToMove!!, folderId)
-                    templateToMove = null
-                }
+                onDismiss = { onAction(WorkoutOverlayAction.ClearMove) },
+                onSelectFolder = { folderId -> onAction(WorkoutOverlayAction.SelectFolder(folderId)) }
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WorkoutTopBar(selectedTab: Int, onTabSelected: (Int) -> Unit) {
+    TopAppBar(
+        title = { Text(stringResource(R.string.title_workout)) },
+        windowInsets = WindowInsets(0, 0, 0, 0),
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface
+        )
+    )
+    TabRow(
+        selectedTabIndex = selectedTab,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.primary
+    ) {
+        Tab(
+            selected = selectedTab == 0,
+            onClick = { onTabSelected(0) },
+            text = { Text(stringResource(R.string.tab_my_routines)) }
+        )
+        Tab(
+            selected = selectedTab == 1,
+            onClick = { onTabSelected(1) },
+            text = { Text(stringResource(R.string.tab_archived)) }
+        )
+    }
+}
+
+@Composable
+private fun WorkoutTemplatesSection(
+    selectedPage: Int,
+    currentTemplates: List<WorkoutTemplate>,
+    uiState: WorkoutUiState,
+    onEvent: (WorkoutUiEvent) -> Unit,
+    onCreateFolderClick: () -> Unit,
+    onMoveRequest: (WorkoutTemplate) -> Unit,
+    onFolderDeleteRequest: (String) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        if (selectedPage == 0) {
+            item {
+                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    FolderRow(
+                        folders = uiState.folders,
+                        currentFolderId = uiState.currentFolderId,
+                        onFolderClick = { onEvent(WorkoutUiEvent.FolderSelected(it)) },
+                        onBackToRoot = { onEvent(WorkoutUiEvent.FolderSelected(null)) },
+                        onCreateFolderClick = onCreateFolderClick,
+                        onDeleteFolder = onFolderDeleteRequest
+                    )
+                }
+            }
+            item {
+                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    QuickStartCard(onClick = { onEvent(WorkoutUiEvent.StartEmptyClicked) })
+                }
+            }
+            if (currentTemplates.isNotEmpty()) {
+                item {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                }
+            }
+        }
+
+        if (currentTemplates.isNotEmpty()) {
+            items(currentTemplates, key = { it.id }) { template ->
+                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    TemplateItemCard(
+                        template = template,
+                        onEvent = onEvent,
+                        onMoveRequest = { onMoveRequest(template) }
+                    )
+                }
+            }
+        } else {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 16.dp, top = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (selectedPage == 0) stringResource(R.string.empty_routines)
+                        else stringResource(R.string.empty_archived),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
 }
@@ -294,21 +361,13 @@ fun WorkoutScreen(
 @Composable
 fun TemplateItemCard(
     template: WorkoutTemplate,
-    onClick: () -> Unit,
-    onEdit: () -> Unit,
-    onArchive: () -> Unit,
-    onDelete: () -> Unit,
-    onDuplicate: () -> Unit,
-    onShare: () -> Unit,
-    onMove: () -> Unit,
-    onStartWorkout: () -> Unit
+    onEvent: (WorkoutUiEvent) -> Unit,
+    onMoveRequest: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    val clipboard = LocalClipboardManager.current
-    val shareText = stringResource(R.string.share_routine_text, template.name, template.exercises.size)
 
     Card(
-        onClick = onClick,
+        onClick = { onEvent(WorkoutUiEvent.TemplateClicked(template.id)) },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -323,53 +382,17 @@ fun TemplateItemCard(
                     Text(stringResource(R.string.exercise_count, count))
                 },
                 trailingContent = {
-                    Box {
-                        IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = null)
-                        }
-                        DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.action_edit)) },
-                            onClick = { showMenu = false; onEdit() },
-                            leadingIcon = { Icon(Icons.Default.Edit, null) }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(if (template.isArchived) R.string.action_unarchive else R.string.action_archive)) },
-                            onClick = { showMenu = false; onArchive() },
-                            leadingIcon = { Icon(if(template.isArchived) Icons.Default.Unarchive else Icons.Default.Archive, null) }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.action_move_to_folder)) },
-                            onClick = { showMenu = false; onMove() },
-                            leadingIcon = { Icon(Icons.Default.Folder, null) }
-                        )
-                        HorizontalDivider()
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error) },
-                            onClick = { showMenu = false; onDelete() },
-                            leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.action_duplicate)) },
-                            onClick = { showMenu = false; onDuplicate() },
-                            leadingIcon = { Icon(Icons.Default.ContentCopy, null) }
-                        )
-
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.action_share)) },
-                            onClick = {
-                                showMenu = false
-                                clipboard.setText(AnnotatedString(shareText))
-                                onShare()
-                            },
-                            leadingIcon = { Icon(Icons.Default.Share, null) }
-                        )
-                    }
+                    TemplateActionsMenu(
+                        showMenu = showMenu,
+                        onShowMenuChange = { showMenu = it },
+                        template = template,
+                        onMoveRequest = onMoveRequest,
+                        onEvent = onEvent
+                    )
                 }
-            }
-        )
+            )
+        }
 
-        // Exercise list with set counts
         if (template.exercises.isNotEmpty()) {
             Column(
                 modifier = Modifier
@@ -399,13 +422,12 @@ fun TemplateItemCard(
             }
         }
 
-        // Start Workout Button
-        androidx.compose.material3.Button(
-            onClick = onStartWorkout,
+        Button(
+            onClick = { onEvent(WorkoutUiEvent.TemplateStartClicked(template.id)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+            colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             )
@@ -418,7 +440,6 @@ fun TemplateItemCard(
             Spacer(modifier = Modifier.size(8.dp))
             Text(stringResource(R.string.template_detail_start_routine))
         }
-    }
     }
 }
 
@@ -499,4 +520,65 @@ fun WorkoutSkeletonList(modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+@Composable
+fun TemplateActionsMenu(
+    showMenu: Boolean,
+    onShowMenuChange: (Boolean) -> Unit,
+    template: WorkoutTemplate,
+    onMoveRequest: () -> Unit,
+    onEvent: (WorkoutUiEvent) -> Unit
+) {
+    DropdownMenu(expanded = showMenu, onDismissRequest = { onShowMenuChange(false) }) {
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.action_edit)) },
+            onClick = { onShowMenuChange(false); onEvent(WorkoutUiEvent.TemplateEditClicked(template.id)) },
+            leadingIcon = { Icon(Icons.Default.Edit, null) }
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(if (template.isArchived) R.string.action_unarchive else R.string.action_archive)) },
+            onClick = { onShowMenuChange(false); onEvent(WorkoutUiEvent.TemplateArchiveToggled(template.id, !template.isArchived)) },
+            leadingIcon = { Icon(if(template.isArchived) Icons.Default.Unarchive else Icons.Default.Archive, null) }
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.action_move_to_folder)) },
+            onClick = { onShowMenuChange(false); onMoveRequest() },
+            leadingIcon = { Icon(Icons.Default.Folder, null) }
+        )
+        HorizontalDivider()
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error) },
+            onClick = { onShowMenuChange(false); onEvent(WorkoutUiEvent.TemplateDeleted(template.id)) },
+            leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) }
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.action_duplicate)) },
+            onClick = { onShowMenuChange(false); onEvent(WorkoutUiEvent.TemplateDuplicated(template.id)) },
+            leadingIcon = { Icon(Icons.Default.ContentCopy, null) }
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.action_share)) },
+            onClick = {
+                onShowMenuChange(false)
+                onEvent(WorkoutUiEvent.TemplateShared(template.id))
+            },
+            leadingIcon = { Icon(Icons.Default.Share, null) }
+        )
+    }
+}
+
+private data class WorkoutOverlayState(
+    val showCreateFolderDialog: Boolean,
+    val templateToMove: WorkoutTemplate?,
+    val showFab: Boolean
+)
+
+private sealed interface WorkoutOverlayAction {
+    data object AddTemplate : WorkoutOverlayAction
+    data object ShowCreateFolder : WorkoutOverlayAction
+    data object DismissCreateFolder : WorkoutOverlayAction
+    data class CreateFolder(val name: String, val color: String) : WorkoutOverlayAction
+    data object ClearMove : WorkoutOverlayAction
+    data class SelectFolder(val folderId: String?) : WorkoutOverlayAction
 }

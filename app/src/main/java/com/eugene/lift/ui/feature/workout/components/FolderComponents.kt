@@ -4,15 +4,15 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CreateNewFolder
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,8 +35,9 @@ fun FolderRow(
     onFolderClick: (String) -> Unit,
     onBackToRoot: () -> Unit,
     onCreateFolderClick: () -> Unit,
-    onDeleteFolder: (String) -> Unit // Opcional: Para borrar con long press
+    onDeleteFolder: (String) -> Unit
 ) {
+
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -59,18 +60,19 @@ fun FolderRow(
             FolderChip(
                 folder = folder,
                 isSelected = folder.id == currentFolderId,
-                onClick = { onFolderClick(folder.id) }
+                onClick = { onFolderClick(folder.id) },
+                onLongClick = { onDeleteFolder(folder.id) },
+                showDelete = false,
+                onDelete = { onDeleteFolder(folder.id) }
             )
         }
 
-        if (currentFolderId == null) {
-            item {
-                AssistChip(
-                    onClick = onCreateFolderClick,
-                    label = { Text(stringResource(R.string.folder_new)) },
-                    leadingIcon = { Icon(Icons.Default.CreateNewFolder, null, modifier = Modifier.size(16.dp)) }
-                )
-            }
+        item {
+            AssistChip(
+                onClick = onCreateFolderClick,
+                label = { Text(stringResource(R.string.folder_new)) },
+                leadingIcon = { Icon(Icons.Default.CreateNewFolder, null, modifier = Modifier.size(16.dp)) }
+            )
         }
     }
 }
@@ -79,17 +81,21 @@ fun FolderRow(
 fun FolderChip(
     folder: Folder,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
+    showDelete: Boolean = false,
+    onDelete: () -> Unit = {}
 ) {
     val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
     val borderColor = folder.color.toColor()
 
     Surface(
-        onClick = onClick,
+        modifier = Modifier
+            .height(40.dp)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         shape = RoundedCornerShape(12.dp),
         color = backgroundColor,
-        border = BorderStroke(1.dp, borderColor.copy(alpha = 0.5f)),
-        modifier = Modifier.height(40.dp)
+        border = BorderStroke(1.dp, borderColor.copy(alpha = 0.5f))
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -108,6 +114,12 @@ fun FolderChip(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            if (showDelete) {
+                Spacer(modifier = Modifier.width(4.dp))
+                IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.action_delete))
+                }
+            }
         }
     }
 }

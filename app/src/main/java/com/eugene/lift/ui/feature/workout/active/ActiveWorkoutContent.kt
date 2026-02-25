@@ -44,7 +44,6 @@ fun WorkoutContent(
     uiState: ActiveWorkoutUiState,
     weightUnitLabel: String,
     onEvent: (ActiveWorkoutUiEvent) -> Unit,
-    onShowExerciseSnackbar: (name: String, weight: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val lazyListState = rememberLazyListState()
@@ -84,11 +83,6 @@ fun WorkoutContent(
                     onRirChange = { setIdx, value -> onEvent(ActiveWorkoutUiEvent.RirChanged(exIndex, setIdx, value)) },
                     onSetCompleted = { setIdx ->
                         onEvent(ActiveWorkoutUiEvent.SetCompleted(exIndex, setIdx))
-                        val set = exercise.sets.getOrNull(setIdx)
-                        if (set?.completed == true && exercise.exercise.measureType == MeasureType.REPS_AND_WEIGHT) {
-                            val weightText = "${set.weight} $weightUnitLabel"
-                            onShowExerciseSnackbar(exercise.exercise.name, weightText)
-                        }
                     },
                     onAddSet = { onEvent(ActiveWorkoutUiEvent.AddSet(exIndex)) },
                     onRemoveSet = { setIdx -> onEvent(ActiveWorkoutUiEvent.RemoveSet(exIndex, setIdx)) },

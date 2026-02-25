@@ -66,6 +66,7 @@ fun ActiveWorkoutScreenRoute(
     } else {
         ActiveWorkoutScreen(
             uiState = uiState,
+            effects = viewModel.effects,
             onEvent = onEvent
         )
     }

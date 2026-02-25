@@ -16,13 +16,21 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.LinearProgressIndicator
 import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.ui.components.ExerciseSnackbar
 import kotlinx.coroutines.delay
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+
 @Composable
 fun ActiveWorkoutScreen(
     uiState: ActiveWorkoutUiState,
+    effects: Flow<ActiveWorkoutEffect>,
     onEvent: (ActiveWorkoutUiEvent) -> Unit
 ) {
     val screenState = rememberWorkoutScreenState()
@@ -30,6 +38,14 @@ fun ActiveWorkoutScreen(
     val showExerciseSnackbar: (String, String) -> Unit = rememberUpdatedState<(String, String) -> Unit> { name, weight ->
         screenState.showSnackbar(name, weight)
     }.value
+
+    LaunchedEffect(effects) {
+        effects.collectLatest { effect ->
+            if (effect is ActiveWorkoutEffect.ShowExerciseSnackbar) {
+                screenState.showSnackbar(effect.name, effect.weightText, effect.isPr)
+            }
+        }
+    }
 
     LaunchedEffect(screenState.isSnackbarVisible) {
         if (screenState.isSnackbarVisible) {
@@ -87,21 +103,33 @@ fun ActiveWorkoutScreen(
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            WorkoutTopBar(
-                uiState = uiState,
-                formattedTime = formattedTime,
-                onExit = { screenState.requestExit() },
-                onMetricChange = { onEvent(ActiveWorkoutUiEvent.MetricChanged(it)) },
-                onToggleAutoTimer = { onEvent(ActiveWorkoutUiEvent.ToggleAutoTimer) },
-                onToggleReorderMode = { onEvent(ActiveWorkoutUiEvent.ToggleReorderMode) },
-                onFinish = { updateTemplate ->
-                    when {
-                        uiState.hasTemplate && uiState.hasWorkoutBeenModified -> screenState.showTemplateUpdate()
-                        !uiState.hasTemplate -> screenState.showSaveAsTemplate()
-                        else -> onEvent(ActiveWorkoutUiEvent.FinishClicked(updateTemplate))
+            Column(modifier = Modifier.fillMaxWidth()) {
+                WorkoutTopBar(
+                    uiState = uiState,
+                    formattedTime = formattedTime,
+                    onExit = { screenState.requestExit() },
+                    onMetricChange = { onEvent(ActiveWorkoutUiEvent.MetricChanged(it)) },
+                    onToggleAutoTimer = { onEvent(ActiveWorkoutUiEvent.ToggleAutoTimer) },
+                    onToggleReorderMode = { onEvent(ActiveWorkoutUiEvent.ToggleReorderMode) },
+                    onFinish = { updateTemplate ->
+                        when {
+                            uiState.hasTemplate && uiState.hasWorkoutBeenModified -> screenState.showTemplateUpdate()
+                            !uiState.hasTemplate -> screenState.showSaveAsTemplate()
+                            else -> onEvent(ActiveWorkoutUiEvent.FinishClicked(updateTemplate))
+                        }
                     }
-                }
-            )
+                )
+                
+                val totalSets = remember(uiState.exercises) { uiState.exercises.sumOf { it.sets.size } }
+                val completedSets = remember(uiState.exercises) { uiState.exercises.sumOf { it.sets.count { set -> set.completed } } }
+                val progress = if (totalSets > 0) completedSets.toFloat() / totalSets.toFloat() else 0f
+                val animatedProgress by animateFloatAsState(targetValue = progress, label = "workout_progress")
+                
+                LinearProgressIndicator(
+                    progress = { animatedProgress },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         },
         bottomBar = {
             AnimatedVisibility(visible = uiState.timerState.isRunning) {
@@ -118,7 +146,6 @@ fun ActiveWorkoutScreen(
                 uiState = uiState,
                 weightUnitLabel = weightUnitLabel,
                 onEvent = onEvent,
-                onShowExerciseSnackbar = showExerciseSnackbar,
                 modifier = Modifier.padding(innerPadding)
             )
 
@@ -127,6 +154,7 @@ fun ActiveWorkoutScreen(
                 weight = screenState.snackbarWeight,
                 isVisible = screenState.isSnackbarVisible,
                 onDismiss = { screenState.hideSnackbar() },
+                isPr = screenState.snackbarIsPr,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
         }
@@ -141,6 +169,7 @@ class WorkoutScreenState {
     var isSnackbarVisible by mutableStateOf(false)
     var snackbarExerciseName by mutableStateOf("")
     var snackbarWeight by mutableStateOf("")
+    var snackbarIsPr by mutableStateOf(false)
 
     fun requestExit() { showExitDialog = true }
     fun hideExit() { showExitDialog = false }
@@ -151,9 +180,10 @@ class WorkoutScreenState {
     fun showSaveAsTemplate() { showSaveAsTemplateDialog = true }
     fun hideSaveAsTemplate() { showSaveAsTemplateDialog = false }
 
-    fun showSnackbar(exerciseName: String, weight: String) {
+    fun showSnackbar(exerciseName: String, weight: String, isPr: Boolean = false) {
         snackbarExerciseName = exerciseName
         snackbarWeight = weight
+        snackbarIsPr = isPr
         isSnackbarVisible = true
     }
 

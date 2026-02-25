@@ -55,7 +55,9 @@ fun WorkoutTopBar(
                     Text(
                         text = uiState.sessionName,
                         style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.weight(1f, fill = false)
+                        modifier = Modifier.weight(1f, fill = false),
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Surface(

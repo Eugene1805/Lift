@@ -1,5 +1,6 @@
 package com.eugene.lift.ui.feature.workout.active
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -30,10 +32,13 @@ fun SetRowItem(
     context: SetRowContext,
     callbacks: SetRowCallbacks
 ) {
-    val rowBackground = if (set.completed)
-        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-    else
-        MaterialTheme.colorScheme.surface
+    val rowBackground by animateColorAsState(
+        targetValue = if (set.completed)
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+        else
+            MaterialTheme.colorScheme.surface,
+        label = "set_row_background"
+    )
 
     Row(
         modifier = Modifier

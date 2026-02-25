@@ -54,5 +54,6 @@ sealed interface ActiveWorkoutUiEvent {
 sealed interface ActiveWorkoutEffect {
     data object NavigateBack : ActiveWorkoutEffect
     data class ShowSnackbar(val error: AppError) : ActiveWorkoutEffect
+    data class ShowExerciseSnackbar(val name: String, val weightText: String, val isPr: Boolean) : ActiveWorkoutEffect
 }
 

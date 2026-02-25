@@ -26,6 +26,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.eugene.lift.R
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.material.icons.filled.EmojiEvents
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,14 +100,9 @@ fun ExerciseSnackbar(
     weight: String,
     isVisible: Boolean,
     onDismiss: () -> Unit,
+    isPr: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val alpha by animateFloatAsState(
-        targetValue = if (isVisible) 1f else 0f,
-        animationSpec = tween(durationMillis = 300),
-        label = "snackbar_alpha"
-    )
-
     DisposableEffect(isVisible) {
         if (isVisible) {
             onDismiss()
@@ -109,54 +110,60 @@ fun ExerciseSnackbar(
         onDispose { }
     }
 
-    if (isVisible) {
-        Box(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .alpha(alpha)
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+        exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        val containerColor = if (isPr) Color(0xFFFFD700) else MaterialTheme.colorScheme.primaryContainer
+        val contentColor = if (isPr) Color.Black else MaterialTheme.colorScheme.onPrimaryContainer
+        val icon = if (isPr) Icons.Default.EmojiEvents else Icons.Default.LocalCafe
+        
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = containerColor),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 8.dp
-                )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    if (isPr) {
                         Text(
-                            text = exerciseName,
-                            style = MaterialTheme.typography.titleMedium,
+                            text = "New Personal Record!",
+                            style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = weight,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            color = contentColor.copy(alpha = 0.7f)
                         )
                     }
-
-                    Icon(
-                        imageVector = Icons.Default.LocalCafe,
-                        contentDescription = "Cup Icon",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(32.dp)
+                    Text(
+                        text = exerciseName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = contentColor
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = weight,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = contentColor.copy(alpha = 0.8f)
                     )
                 }
+
+                Icon(
+                    imageVector = icon,
+                    contentDescription = if (isPr) "Trophy Icon" else "Cup Icon",
+                    tint = contentColor,
+                    modifier = Modifier.size(32.dp)
+                )
             }
         }
     }

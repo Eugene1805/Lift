@@ -22,6 +22,7 @@ import com.eugene.lift.domain.usecase.workout.StartEmptyWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.StartWorkoutFromTemplateUseCase
 import com.eugene.lift.domain.usecase.workout.FinishWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.GetLastHistoryForExerciseUseCase
+import com.eugene.lift.domain.usecase.workout.GetPersonalRecordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +52,7 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val restTimerManager: RestTimerManager,
     private val getExerciseDetailUseCase: GetExerciseDetailUseCase,
     private val getLastHistoryForExerciseUseCase: GetLastHistoryForExerciseUseCase,
+    private val getPersonalRecordUseCase: GetPersonalRecordUseCase,
     getSettingsUseCase: GetSettingsUseCase,
     private val serviceManager: ActiveWorkoutServiceManager
 ) : ViewModel() {
@@ -360,9 +362,26 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private fun toggleSetCompleted(exerciseIndex: Int, setIndex: Int) {
         var isNowCompleted = false
+        var currentSetWeight = 0.0
         updateSetState(exerciseIndex, setIndex) {
             isNowCompleted = !it.completed
+            currentSetWeight = it.weight
             it.copy(completed = isNowCompleted)
+        }
+
+        if (isNowCompleted) {
+            val session = _activeSession.value
+            val exercise = session?.exercises?.getOrNull(exerciseIndex)
+            if (exercise != null && exercise.exercise.measureType == com.eugene.lift.domain.model.MeasureType.REPS_AND_WEIGHT && currentSetWeight > 0) {
+                viewModelScope.launch {
+                    val prSet = getPersonalRecordUseCase(exercise.exercise.id).firstOrNull()
+                    val prWeight = prSet?.weight ?: 0.0
+                    val isPr = currentSetWeight >= prWeight && currentSetWeight > 0
+                    val weightUnitLabel = if (userSettings.value.weightUnit == WeightUnit.KG) "kg" else "lbs"
+                    val weightText = "$currentSetWeight $weightUnitLabel"
+                    _effects.emit(ActiveWorkoutEffect.ShowExerciseSnackbar(exercise.exercise.name, weightText, isPr))
+                }
+            }
         }
 
         if (isNowCompleted && _isAutoTimerEnabled.value) {

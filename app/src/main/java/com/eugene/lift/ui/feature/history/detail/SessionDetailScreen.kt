@@ -250,7 +250,8 @@ private fun SessionExerciseCard(
                     text = sessionExercise.exercise.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = stringResource(R.string.history_detail_sets, sessionExercise.sets.size),

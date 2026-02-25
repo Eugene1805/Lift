@@ -1,5 +1,6 @@
 package com.eugene.lift.domain.usecase.folder
 
+import com.eugene.lift.core.util.SafeExecutor
 import com.eugene.lift.domain.model.Folder
 import com.eugene.lift.domain.repository.FolderRepository
 import io.mockk.coVerify
@@ -23,7 +24,7 @@ class CreateFolderUseCaseTest {
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
-        useCase = CreateFolderUseCase(repository)
+        useCase = CreateFolderUseCase(repository, SafeExecutor(logger = null))
     }
 
     @Test

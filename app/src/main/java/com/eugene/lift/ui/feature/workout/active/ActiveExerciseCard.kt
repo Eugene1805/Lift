@@ -37,7 +37,10 @@ fun ActiveExerciseCard(
 
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            ExerciseHeader(title = exercise.exercise.name, onClick = callbacks.onExerciseClick)
+            ExerciseHeader(
+                title = exercise.exercise.name,
+                onClick = callbacks.onExerciseClick
+            )
             SetHeaders(measureType = exercise.exercise.measureType, weightUnitLabel = weightUnitLabel, effortMetric = effortMetric, userSettings = userSettings)
 
             exercise.sets.forEachIndexed { setIndex, set ->
@@ -81,7 +84,10 @@ fun ActiveExerciseCard(
 }
 
 @Composable
-private fun ExerciseHeader(title: String, onClick: () -> Unit) {
+private fun ExerciseHeader(
+    title: String,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

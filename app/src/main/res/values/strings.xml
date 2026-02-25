@@ -579,5 +579,21 @@
     <string name="template_detail_no_data">No data</string>
     <string name="folder_delete_title">Delete folder</string>
     <string name="folder_delete_message">The folder will be deleted</string>
+
+    <!-- Template Actions -->
+    <string name="template_delete_title">Delete Routine?</string>
+    <string name="template_delete_message">This routine will be permanently deleted.</string>
+    <string name="template_actions_menu">Routine options</string>
+
+    <!-- Drag and Drop -->
+    <string name="folder_drop_hint">Drop to move to folder</string>
+    <string name="exercise_drag_handle">Drag to reorder</string>
+    <string name="exercise_reorder_hint">Long press to reorder</string>
+
+    <!-- Active Workout Notification -->
+    <string name="notification_channel_workout">Active Workout</string>
+    <string name="notification_channel_workout_desc">Controls for your ongoing workout session</string>
+    <string name="action_complete_set">Complete Set</string>
+    <string name="active_workout_summary">Workout in progress</string>
 </resources>
 

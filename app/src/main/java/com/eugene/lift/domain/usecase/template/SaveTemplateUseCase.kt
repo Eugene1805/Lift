@@ -1,23 +1,23 @@
 package com.eugene.lift.domain.usecase.template
 
+import com.eugene.lift.core.util.SafeExecutor
+import com.eugene.lift.domain.error.AppError
+import com.eugene.lift.domain.error.AppResult
 import com.eugene.lift.domain.model.WorkoutTemplate
 import com.eugene.lift.domain.repository.TemplateRepository
 import javax.inject.Inject
 
 class SaveTemplateUseCase @Inject constructor(
-    private val repository: TemplateRepository
+    private val repository: TemplateRepository,
+    private val safeExecutor: SafeExecutor
 ) {
-    suspend operator fun invoke(template: WorkoutTemplate) {
-        require(!(template.name.isBlank()))  {
-            throw IllegalArgumentException("El nombre de la rutina no puede estar vacío")
+    suspend operator fun invoke(template: WorkoutTemplate): AppResult<Unit> {
+        if (template.name.isBlank()) {
+            return AppResult.Error(AppError.Validation)
         }
 
-        // Validación opcional: ¿Permitimos rutinas sin ejercicios?
-        // Generalmente sí (drafts), pero si quisieras evitarlo, descomenta esto:
-        // if (template.exercises.isEmpty()) {
-        //     throw IllegalArgumentException("La rutina debe tener al menos un ejercicio")
-        // }
-
-        repository.saveTemplate(template)
+        return safeExecutor.execute {
+            repository.saveTemplate(template)
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.eugene.lift.domain.usecase.template
 
+import com.eugene.lift.core.util.SafeExecutor
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
@@ -72,7 +73,7 @@ class DuplicateTemplateUseCaseTest {
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
-        useCase = DuplicateTemplateUseCase(repository)
+        useCase = DuplicateTemplateUseCase(repository, SafeExecutor(logger = null))
     }
 
     @Test

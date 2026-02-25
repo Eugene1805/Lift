@@ -4,14 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.toRoute
+import com.eugene.lift.domain.error.AppResult
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.usecase.exercise.GetExerciseDetailUseCase
 import com.eugene.lift.domain.usecase.exercise.SaveExerciseUseCase
+import com.eugene.lift.ui.event.UiEvent
 import com.eugene.lift.ui.navigation.ExerciseAddRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -37,6 +41,9 @@ class AddExerciseViewModel @Inject constructor(
         )
     )
     val uiState: StateFlow<AddExerciseUiState> = _uiState
+
+    private val _events = Channel<UiEvent>()
+    val events = _events.receiveAsFlow()
 
     init {
         if (exerciseId != null) {
@@ -105,22 +112,25 @@ class AddExerciseViewModel @Inject constructor(
 
         _uiState.update { it.copy(isSaving = true, isSaveCompleted = false) }
         viewModelScope.launch {
-            try {
-                val idToSave = exerciseId ?: UUID.randomUUID().toString()
-                saveExerciseUseCase(
-                    Exercise(
-                        id = idToSave,
-                        name = state.name,
-                        bodyParts = state.selectedBodyParts.toList(),
-                        category = state.category,
-                        measureType = state.measureType,
-                        instructions = "",
-                        imagePath = null
-                    )
+            val idToSave = exerciseId ?: UUID.randomUUID().toString()
+            when (val result = saveExerciseUseCase(
+                Exercise(
+                    id = idToSave,
+                    name = state.name,
+                    bodyParts = state.selectedBodyParts.toList(),
+                    category = state.category,
+                    measureType = state.measureType,
+                    instructions = "",
+                    imagePath = null
                 )
-                _uiState.update { it.copy(isSaving = false, isSaveCompleted = true) }
-            } catch (_: Exception) {
-                _uiState.update { it.copy(isSaving = false) }
+            )) {
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(isSaving = false, isSaveCompleted = true) }
+                }
+                is AppResult.Error -> {
+                    _uiState.update { it.copy(isSaving = false) }
+                    _events.send(UiEvent.ShowSnackbar(result.error))
+                }
             }
         }
     }

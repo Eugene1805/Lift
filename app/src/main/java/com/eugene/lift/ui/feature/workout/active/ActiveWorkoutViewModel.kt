@@ -1,16 +1,21 @@
 package com.eugene.lift.ui.feature.workout.active
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eugene.lift.domain.error.AppResult
 import com.eugene.lift.domain.manager.RestTimerManager
 import com.eugene.lift.domain.model.SessionExercise
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WorkoutSession
+import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.WorkoutSet
 import com.eugene.lift.domain.usecase.exercise.GetExerciseDetailUseCase
 import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
+import com.eugene.lift.domain.model.WeightUnit
+import com.eugene.lift.ui.feature.workout.active.service.ActiveWorkoutServiceManager
+import com.eugene.lift.ui.feature.workout.active.service.WorkoutNotificationAction
+import com.eugene.lift.ui.feature.workout.active.service.WorkoutNotificationState
 import com.eugene.lift.domain.usecase.template.CreateTemplateFromWorkoutUseCase
 import com.eugene.lift.domain.usecase.template.UpdateTemplateFromWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.StartEmptyWorkoutUseCase
@@ -46,7 +51,8 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val restTimerManager: RestTimerManager,
     private val getExerciseDetailUseCase: GetExerciseDetailUseCase,
     private val getLastHistoryForExerciseUseCase: GetLastHistoryForExerciseUseCase,
-    getSettingsUseCase: GetSettingsUseCase
+    getSettingsUseCase: GetSettingsUseCase,
+    private val serviceManager: ActiveWorkoutServiceManager
 ) : ViewModel() {
 
     private val templateId: String? = savedStateHandle["templateId"]
@@ -62,6 +68,7 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val _historyState = MutableStateFlow<Map<String, List<WorkoutSet>>>(emptyMap())
     private val _effortMetric = MutableStateFlow<String?>("RIR") // "RPE", "RIR" o null
     private val _elapsedTimeSeconds = MutableStateFlow(0L)
+    private val _reorderState = MutableStateFlow(ReorderUiState())
 
     private val userSettings: StateFlow<UserSettings> = getSettingsUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UserSettings())
@@ -89,11 +96,14 @@ class ActiveWorkoutViewModel @Inject constructor(
             SessionSnapshot(session, history, effort, timer, elapsed)
         }
 
-        combine(sessionSnapshot, userSettings, _isAutoTimerEnabled) { snapshot, settings, autoTimer ->
+        combine(sessionSnapshot, userSettings, _isAutoTimerEnabled, _reorderState) { snapshot, settings, autoTimer, reorder ->
             val session = snapshot.session
             if (session == null) {
+                serviceManager.updateState(null)
                 ActiveWorkoutUiState(isLoading = true)
             } else {
+                updateNotificationState(session, settings)
+                
                 ActiveWorkoutUiState(
                     isLoading = false,
                     sessionName = session.name,
@@ -106,10 +116,17 @@ class ActiveWorkoutViewModel @Inject constructor(
                     isAutoTimerEnabled = autoTimer,
                     hasTemplate = session.templateId != null,
                     hasWorkoutBeenModified = hasWorkoutBeenModified(session),
-                    sessionNote = session.note
+                    sessionNote = session.note,
+                    reorderState = reorder
                 )
             }
         }.onEach { _uiState.value = it }.launchIn(viewModelScope)
+
+        serviceManager.actions.onEach { action ->
+            when (action) {
+                is WorkoutNotificationAction.CompleteCurrentSet -> completeNextAvailableSet()
+            }
+        }.launchIn(viewModelScope)
     }
 
     fun onEvent(event: ActiveWorkoutUiEvent) {
@@ -133,6 +150,69 @@ class ActiveWorkoutViewModel @Inject constructor(
             is ActiveWorkoutUiEvent.ExerciseClicked -> Unit
             is ActiveWorkoutUiEvent.SessionNoteChanged -> onSessionNoteChange(event.value)
             is ActiveWorkoutUiEvent.ExerciseNoteChanged -> onExerciseNoteChange(event.exerciseIndex, event.value)
+            is ActiveWorkoutUiEvent.ExercisesReordered -> reorderExercise(event.fromIndex, event.toIndex)
+            is ActiveWorkoutUiEvent.ToggleReorderMode -> toggleReorderMode()
+        }
+    }
+
+    private fun toggleReorderMode() {
+        val current = _reorderState.value
+        _reorderState.value = current.copy(isReorderMode = !current.isReorderMode)
+    }
+
+    private fun reorderExercise(fromIndex: Int, toIndex: Int) {
+        val session = _activeSession.value ?: return
+        val exercises = session.exercises.toMutableList()
+        if (fromIndex !in exercises.indices || toIndex !in exercises.indices) return
+        exercises.add(toIndex, exercises.removeAt(fromIndex))
+        _activeSession.value = session.copy(exercises = exercises)
+    }
+
+    private fun completeNextAvailableSet() {
+        val currentSession = _activeSession.value ?: return
+        for ((exerciseIndex, exercise) in currentSession.exercises.withIndex()) {
+            for ((setIndex, set) in exercise.sets.withIndex()) {
+                if (!set.completed) {
+                    toggleSetCompleted(exerciseIndex, setIndex)
+                    return
+                }
+            }
+        }
+    }
+
+    private fun updateNotificationState(session: WorkoutSession, settings: UserSettings) {
+        var currentExercise: SessionExercise? = null
+        var currentSetNum = 1
+        var currentSet: WorkoutSet? = null
+
+        for (exercise in session.exercises) {
+            val uncompletedIndex = exercise.sets.indexOfFirst { !it.completed }
+            if (uncompletedIndex != -1) {
+                currentExercise = exercise
+                currentSetNum = uncompletedIndex + 1
+                currentSet = exercise.sets[uncompletedIndex]
+                break
+            }
+        }
+
+        if (currentExercise != null && currentSet != null) {
+            val isBodyWeight = currentExercise.exercise.category in listOf(
+                ExerciseCategory.BODYWEIGHT,
+                ExerciseCategory.ASSISTED_BODYWEIGHT,
+                ExerciseCategory.WEIGHTED_BODYWEIGHT
+            )
+            serviceManager.updateState(
+                WorkoutNotificationState(
+                    exerciseName = currentExercise.exercise.name,
+                    setNumber = currentSetNum,
+                    weight = currentSet.weight,
+                    reps = currentSet.reps,
+                    isBodyweight = isBodyWeight,
+                    weightUnitLabel = if (settings.weightUnit == WeightUnit.KG) "kg" else "lbs"
+                )
+            )
+        } else {
+            serviceManager.updateState(null)
         }
     }
 
@@ -294,24 +374,26 @@ class ActiveWorkoutViewModel @Inject constructor(
         val session = _activeSession.value ?: return
 
         viewModelScope.launch {
-            try {
-                val finalSession = session.copy(
-                    durationSeconds = _elapsedTimeSeconds.value
-                )
+            val finalSession = session.copy(
+                durationSeconds = _elapsedTimeSeconds.value
+            )
 
-                if (updateTemplate == true && finalSession.templateId != null) {
-                    updateTemplateFromWorkoutUseCase(finalSession)
+            if (updateTemplate == true && finalSession.templateId != null) {
+                updateTemplateFromWorkoutUseCase(finalSession)
+            }
+
+            if (updateTemplate == true && finalSession.templateId == null) {
+                createTemplateFromWorkoutUseCase(finalSession)
+            }
+
+            when (val result = finishWorkoutUseCase(finalSession)) {
+                is AppResult.Success -> {
+                    restTimerManager.stopTimer()
+                    _effects.emit(ActiveWorkoutEffect.NavigateBack)
                 }
-
-                if (updateTemplate == true && finalSession.templateId == null) {
-                    createTemplateFromWorkoutUseCase(finalSession)
+                is AppResult.Error -> {
+                    _effects.emit(ActiveWorkoutEffect.ShowSnackbar(result.error))
                 }
-
-                finishWorkoutUseCase(finalSession)
-                restTimerManager.stopTimer()
-                _effects.emit(ActiveWorkoutEffect.NavigateBack)
-            } catch (e: Exception) {
-                Log.e("ActiveWorkoutVM", "Error al guardar", e)
             }
         }
     }

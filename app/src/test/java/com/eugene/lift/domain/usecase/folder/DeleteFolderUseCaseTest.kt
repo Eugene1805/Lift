@@ -1,5 +1,6 @@
 package com.eugene.lift.domain.usecase.folder
 
+import com.eugene.lift.core.util.SafeExecutor
 import com.eugene.lift.domain.repository.FolderRepository
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -19,7 +20,7 @@ class DeleteFolderUseCaseTest {
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
-        useCase = DeleteFolderUseCase(repository)
+        useCase = DeleteFolderUseCase(repository, SafeExecutor(logger = null))
     }
 
     @Test

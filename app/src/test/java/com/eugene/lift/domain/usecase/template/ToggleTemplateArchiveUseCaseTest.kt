@@ -1,5 +1,6 @@
 package com.eugene.lift.domain.usecase.template
 
+import com.eugene.lift.core.util.SafeExecutor
 import com.eugene.lift.domain.repository.TemplateRepository
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -19,7 +20,7 @@ class ToggleTemplateArchiveUseCaseTest {
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
-        useCase = ToggleTemplateArchiveUseCase(repository)
+        useCase = ToggleTemplateArchiveUseCase(repository, SafeExecutor(logger = null))
     }
 
     @Test

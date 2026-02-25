@@ -41,6 +41,10 @@ class TemplateRepositoryImpl @Inject constructor(
         dao.saveTemplateComplete(entity, exerciseEntities)
     }
 
+    override suspend fun updateTemplatesOrder(templates: List<WorkoutTemplate>) {
+        dao.updateTemplatesOrder(templates.map { it.toEntity() })
+    }
+
     override suspend fun archiveTemplate(id: String, isArchived: Boolean) {
         dao.setArchived(id, isArchived)
     }

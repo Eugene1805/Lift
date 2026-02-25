@@ -23,5 +23,6 @@ data class WorkoutTemplateEntity(
     val notes: String,
     val isArchived: Boolean,
     val lastPerformedAt: LocalDateTime?,
-    val folderId: String? = null
+    val folderId: String? = null,
+    val sortOrder: Int = 0
 )

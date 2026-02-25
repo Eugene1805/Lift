@@ -1,9 +1,15 @@
 package com.eugene.lift.ui.feature.workout.active
 
+import com.eugene.lift.domain.error.AppError
 import com.eugene.lift.domain.model.SessionExercise
 import com.eugene.lift.domain.model.TimerState
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WorkoutSet
+
+data class ReorderUiState(
+    val isReorderMode: Boolean = false,
+    val draggingExerciseId: String? = null
+)
 
 data class ActiveWorkoutUiState(
     val isLoading: Boolean = true,
@@ -17,7 +23,8 @@ data class ActiveWorkoutUiState(
     val isAutoTimerEnabled: Boolean = true,
     val hasTemplate: Boolean = false,
     val hasWorkoutBeenModified: Boolean = false,
-    val sessionNote: String? = null
+    val sessionNote: String? = null,
+    val reorderState: ReorderUiState = ReorderUiState()
 )
 
 sealed interface ActiveWorkoutUiEvent {
@@ -40,9 +47,12 @@ sealed interface ActiveWorkoutUiEvent {
     data class ExerciseClicked(val exerciseId: String) : ActiveWorkoutUiEvent
     data class SessionNoteChanged(val value: String) : ActiveWorkoutUiEvent
     data class ExerciseNoteChanged(val exerciseIndex: Int, val value: String) : ActiveWorkoutUiEvent
+    data class ExercisesReordered(val fromIndex: Int, val toIndex: Int) : ActiveWorkoutUiEvent
+    data object ToggleReorderMode : ActiveWorkoutUiEvent
 }
 
 sealed interface ActiveWorkoutEffect {
     data object NavigateBack : ActiveWorkoutEffect
+    data class ShowSnackbar(val error: AppError) : ActiveWorkoutEffect
 }
 

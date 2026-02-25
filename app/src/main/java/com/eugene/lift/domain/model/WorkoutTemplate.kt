@@ -9,5 +9,6 @@ data class WorkoutTemplate(
     val exercises: List<TemplateExercise> = emptyList(),
     val isArchived: Boolean = false,
     val lastPerformedAt: LocalDateTime? = null,
-    val folderId: String? = null
+    val folderId: String? = null,
+    val sortOrder: Int = 0
 )

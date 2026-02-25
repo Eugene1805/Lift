@@ -1,5 +1,8 @@
 package com.eugene.lift.domain.usecase.workout
 
+import com.eugene.lift.core.util.SafeExecutor
+import com.eugene.lift.domain.error.AppError
+import com.eugene.lift.domain.error.AppResult
 import com.eugene.lift.domain.model.SessionExercise
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.WorkoutSet
@@ -16,21 +19,26 @@ import javax.inject.Inject
 class FinishWorkoutUseCase @Inject constructor(
     private val repository: WorkoutRepository,
     private val userProfileRepository: UserProfileRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val safeExecutor: SafeExecutor
 ) {
-    suspend operator fun invoke(activeSession: WorkoutSession) {
+    suspend operator fun invoke(activeSession: WorkoutSession): AppResult<Unit> {
         val duration = calculateDuration(activeSession)
         val processedExercises = processExercises(activeSession.exercises)
 
-        validateSession(processedExercises)
+        if (processedExercises.isEmpty()) {
+            return AppResult.Error(AppError.Validation)
+        }
 
         val finalSession = activeSession.copy(
             durationSeconds = duration,
             exercises = processedExercises
         )
 
-        repository.saveSession(finalSession)
-        recordUserStats(finalSession, duration)
+        return safeExecutor.execute {
+            repository.saveSession(finalSession)
+            recordUserStats(finalSession, duration)
+        }
     }
 
     private fun calculateDuration(session: WorkoutSession): Long {
@@ -83,11 +91,6 @@ class FinishWorkoutUseCase @Inject constructor(
             }
         }
     }
-    private fun validateSession(exercises: List<SessionExercise>) {
-        check(exercises.isNotEmpty()) {
-            "No se puede guardar un entrenamiento vacío"
-        }
-    }
 
     private suspend fun recordUserStats(
         session: WorkoutSession,
@@ -99,7 +102,6 @@ class FinishWorkoutUseCase @Inject constructor(
             .flatMap { it.sets }
             .filter { it.completed }
 
-        // Calcular volumen siempre en KG
         val totalVolumeKg = completedSets.sumOf { set ->
             val weightKg = when (unit) {
                 WeightUnit.KG -> set.weight
@@ -118,5 +120,4 @@ class FinishWorkoutUseCase @Inject constructor(
             prCount = totalPRs
         )
     }
-
 }

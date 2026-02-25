@@ -27,6 +27,7 @@ import com.eugene.lift.R
 import com.eugene.lift.domain.model.Folder
 import com.eugene.lift.ui.util.FolderColors
 import com.eugene.lift.ui.util.toColor
+import com.eugene.lift.ui.dragdrop.dropTarget
 
 @Composable
 fun FolderRow(
@@ -35,7 +36,9 @@ fun FolderRow(
     onFolderClick: (String) -> Unit,
     onBackToRoot: () -> Unit,
     onCreateFolderClick: () -> Unit,
-    onDeleteFolder: (String) -> Unit
+    onDeleteFolder: (String) -> Unit,
+    hoveredFolderId: String? = null,
+    onBoundsReported: (String, androidx.compose.ui.geometry.Rect) -> Unit = { _, _ -> }
 ) {
 
     LazyRow(
@@ -63,7 +66,12 @@ fun FolderRow(
                 onClick = { onFolderClick(folder.id) },
                 onLongClick = { onDeleteFolder(folder.id) },
                 showDelete = false,
-                onDelete = { onDeleteFolder(folder.id) }
+                onDelete = { onDeleteFolder(folder.id) },
+                isDragTarget = folder.id == hoveredFolderId,
+                modifier = Modifier.dropTarget(
+                    targetId = folder.id,
+                    onBoundsReported = onBoundsReported
+                )
             )
         }
 
@@ -84,18 +92,27 @@ fun FolderChip(
     onClick: () -> Unit,
     onLongClick: () -> Unit = {},
     showDelete: Boolean = false,
-    onDelete: () -> Unit = {}
+    onDelete: () -> Unit = {},
+    isDragTarget: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
-    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+    val backgroundColor = when {
+        isDragTarget -> MaterialTheme.colorScheme.secondaryContainer
+        isSelected -> MaterialTheme.colorScheme.primaryContainer
+        else -> MaterialTheme.colorScheme.surface
+    }
     val borderColor = folder.color.toColor()
+    val borderWidth = if (isDragTarget || isSelected) 2.dp else 1.dp
+    val borderAlpha = if (isDragTarget) 1f else 0.5f
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .height(40.dp)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         shape = RoundedCornerShape(12.dp),
         color = backgroundColor,
-        border = BorderStroke(1.dp, borderColor.copy(alpha = 0.5f))
+        border = BorderStroke(borderWidth, borderColor.copy(alpha = borderAlpha)),
+        tonalElevation = if (isDragTarget) 4.dp else 0.dp
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

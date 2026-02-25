@@ -3,12 +3,17 @@ package com.eugene.lift.ui.feature.workout
 import com.eugene.lift.domain.model.Folder
 import com.eugene.lift.domain.model.WorkoutTemplate
 
+import com.eugene.lift.ui.dragdrop.DragUiState
+import com.eugene.lift.ui.feature.workout.edit.ReorderUiState
+
 data class WorkoutUiState(
     val templates: List<WorkoutTemplate> = emptyList(),
     val isLoading: Boolean = true,
     val selectedTab: Int = 0,
     val folders: List<Folder> = emptyList(),
-    val currentFolderId: String? = null
+    val currentFolderId: String? = null,
+    val dragState: DragUiState = DragUiState(),
+    val reorderState: ReorderUiState = ReorderUiState()
 )
 
 sealed interface WorkoutUiEvent {
@@ -26,4 +31,13 @@ sealed interface WorkoutUiEvent {
     data class TemplateShared(val templateId: String) : WorkoutUiEvent
     data object StartEmptyClicked : WorkoutUiEvent
     data object AddTemplateClicked : WorkoutUiEvent
+    data object ToggleReorderMode : WorkoutUiEvent
+    data class TemplatesReordered(val fromIndex: Int, val toIndex: Int, val isArchived: Boolean) : WorkoutUiEvent
+
+    // --- Drag & Drop Events ---
+    data class OnDragStart(val templateId: String, val templateName: String, val position: androidx.compose.ui.geometry.Offset) : WorkoutUiEvent
+    data class OnDragMove(val position: androidx.compose.ui.geometry.Offset) : WorkoutUiEvent
+    data object OnDragEnd : WorkoutUiEvent
+    data object OnDragCancel : WorkoutUiEvent
+    data class OnDropTargetBoundsChanged(val targetId: String, val bounds: androidx.compose.ui.geometry.Rect) : WorkoutUiEvent
 }

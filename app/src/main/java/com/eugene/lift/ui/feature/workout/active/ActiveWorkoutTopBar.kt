@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -41,6 +42,7 @@ fun WorkoutTopBar(
     onExit: () -> Unit,
     onMetricChange: (String?) -> Unit,
     onToggleAutoTimer: () -> Unit,
+    onToggleReorderMode: () -> Unit,
     onFinish: (Boolean?) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -74,6 +76,9 @@ fun WorkoutTopBar(
             IconButton(onClick = onExit) { Icon(Icons.Default.Close, null) }
         },
         actions = {
+            IconButton(onClick = onToggleReorderMode) {
+                Icon(Icons.Default.Menu, contentDescription = null)
+            }
             IconButton(onClick = { showMenu = true }) {
                 Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.active_workout_configuration))
             }

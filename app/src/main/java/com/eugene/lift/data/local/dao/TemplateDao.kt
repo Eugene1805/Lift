@@ -33,7 +33,7 @@ data class TemplateWithExercises(
 @Dao
 interface TemplateDao {
     @Transaction
-    @Query("SELECT * FROM workout_templates WHERE isArchived = :isArchived ORDER BY lastPerformedAt DESC")
+    @Query("SELECT * FROM workout_templates WHERE isArchived = :isArchived ORDER BY sortOrder ASC, lastPerformedAt DESC")
     fun getTemplates(isArchived: Boolean): Flow<List<TemplateWithExercises>>
 
     @Transaction
@@ -59,6 +59,9 @@ interface TemplateDao {
 
     @Query("UPDATE workout_templates SET isArchived = :isArchived WHERE id = :id")
     suspend fun setArchived(id: String, isArchived: Boolean)
+
+    @Update
+    suspend fun updateTemplatesOrder(templates: List<WorkoutTemplateEntity>)
 
     @Query("DELETE FROM workout_templates WHERE id = :id")
     suspend fun deleteTemplate(id: String)

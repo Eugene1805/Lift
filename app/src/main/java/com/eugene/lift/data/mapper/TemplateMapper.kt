@@ -17,7 +17,8 @@ fun TemplateWithExercises.toDomain(): WorkoutTemplate {
         exercises = exercises
             .sortedBy { it.templateExercise.orderIndex }
             .map { it.toDomain() },
-        folderId = template.folderId
+        folderId = template.folderId,
+        sortOrder = template.sortOrder
     )
 }
 
@@ -53,5 +54,6 @@ fun WorkoutTemplate.toEntity() = WorkoutTemplateEntity(
     notes = notes,
     isArchived = isArchived,
     lastPerformedAt = lastPerformedAt,
-    folderId = folderId
+    folderId = folderId,
+    sortOrder = sortOrder
 )

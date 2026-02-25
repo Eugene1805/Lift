@@ -1,5 +1,8 @@
 package com.eugene.lift.domain.usecase
 
+import com.eugene.lift.core.util.SafeExecutor
+import com.eugene.lift.domain.error.AppError
+import com.eugene.lift.domain.error.AppResult
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
@@ -9,6 +12,8 @@ import com.eugene.lift.domain.usecase.exercise.SaveExerciseUseCase
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -24,7 +29,7 @@ class SaveExerciseUseCaseTest {
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
-        useCase = SaveExerciseUseCase(repository)
+        useCase = SaveExerciseUseCase(repository, SafeExecutor(logger = null))
     }
 
     @Test
@@ -47,8 +52,8 @@ class SaveExerciseUseCaseTest {
         coVerify(exactly = 1) { repository.saveExercise(exercise) }
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun `invoke with blank name throws IllegalArgumentException`() = runTest {
+    @Test
+    fun `invoke with blank name returns Validation error`() = runTest {
         // GIVEN
         val exercise = Exercise(
             id = "123",
@@ -61,13 +66,16 @@ class SaveExerciseUseCaseTest {
         )
 
         // WHEN
-        useCase(exercise)
+        val result = useCase(exercise)
 
-        // THEN - Exception should be thrown
+        // THEN
+        assertTrue(result is AppResult.Error)
+        assertEquals(AppError.Validation, (result as AppResult.Error).error)
+        coVerify(exactly = 0) { repository.saveExercise(any()) }
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun `invoke with empty name throws IllegalArgumentException`() = runTest {
+    @Test
+    fun `invoke with empty name returns Validation error`() = runTest {
         // GIVEN
         val exercise = Exercise(
             id = "123",
@@ -80,9 +88,12 @@ class SaveExerciseUseCaseTest {
         )
 
         // WHEN
-        useCase(exercise)
+        val result = useCase(exercise)
 
-        // THEN - Exception should be thrown
+        // THEN
+        assertTrue(result is AppResult.Error)
+        assertEquals(AppError.Validation, (result as AppResult.Error).error)
+        coVerify(exactly = 0) { repository.saveExercise(any()) }
     }
 
     @Test

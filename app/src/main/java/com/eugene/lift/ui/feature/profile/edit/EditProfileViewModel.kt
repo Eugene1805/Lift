@@ -2,13 +2,17 @@ package com.eugene.lift.ui.feature.profile.edit
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eugene.lift.domain.error.AppResult
 import com.eugene.lift.domain.model.UserProfile
 import com.eugene.lift.domain.usecase.profile.GetCurrentProfileUseCase
 import com.eugene.lift.domain.usecase.profile.UpdateProfileUseCase
+import com.eugene.lift.ui.event.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -29,6 +33,9 @@ class EditProfileViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(EditProfileUiState())
     val uiState: StateFlow<EditProfileUiState> = _uiState.asStateFlow()
+
+    private val _events = Channel<UiEvent>()
+    val events = _events.receiveAsFlow()
 
     private var originalProfile: UserProfile? = null
 
@@ -74,7 +81,10 @@ class EditProfileViewModel @Inject constructor(
                 avatarColor = state.avatarColor
             )
 
-            updateProfileUseCase.updateProfile(updatedProfile)
+            when (val result = updateProfileUseCase.updateProfile(updatedProfile)) {
+                is AppResult.Success -> Unit
+                is AppResult.Error -> _events.send(UiEvent.ShowSnackbar(result.error))
+            }
         }
     }
 }

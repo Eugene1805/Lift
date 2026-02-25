@@ -8,6 +8,7 @@ interface TemplateRepository {
     fun getTemplates(isArchived: Boolean): Flow<List<WorkoutTemplate>>
     fun getTemplate(id: String): Flow<WorkoutTemplate?>
     suspend fun saveTemplate(template: WorkoutTemplate)
+    suspend fun updateTemplatesOrder(templates: List<WorkoutTemplate>)
     suspend fun archiveTemplate(id: String, isArchived: Boolean)
     suspend fun deleteTemplate(id: String)
 }

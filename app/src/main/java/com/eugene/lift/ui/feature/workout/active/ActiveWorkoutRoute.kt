@@ -12,6 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import android.os.Build
+import com.eugene.lift.ui.feature.workout.active.service.ActiveWorkoutService
 
 @Composable
 fun ActiveWorkoutScreenRoute(
@@ -27,6 +32,22 @@ fun ActiveWorkoutScreenRoute(
     LaunchedEffect(Unit) {
         viewModel.effects.collectLatest { effect ->
             if (effect is ActiveWorkoutEffect.NavigateBack) onNavigateBack()
+        }
+    }
+
+    val context = LocalContext.current
+    DisposableEffect(Unit) {
+        val intent = Intent(context, ActiveWorkoutService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent)
+        } else {
+            context.startService(intent)
+        }
+        onDispose {
+            val stopIntent = Intent(context, ActiveWorkoutService::class.java).apply {
+                action = ActiveWorkoutService.ACTION_STOP_SERVICE
+            }
+            context.startService(stopIntent)
         }
     }
 

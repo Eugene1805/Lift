@@ -93,6 +93,7 @@ fun ActiveWorkoutScreen(
                 onExit = { screenState.requestExit() },
                 onMetricChange = { onEvent(ActiveWorkoutUiEvent.MetricChanged(it)) },
                 onToggleAutoTimer = { onEvent(ActiveWorkoutUiEvent.ToggleAutoTimer) },
+                onToggleReorderMode = { onEvent(ActiveWorkoutUiEvent.ToggleReorderMode) },
                 onFinish = { updateTemplate ->
                     when {
                         uiState.hasTemplate && uiState.hasWorkoutBeenModified -> screenState.showTemplateUpdate()

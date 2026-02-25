@@ -1,5 +1,6 @@
 package com.eugene.lift.domain.usecase.folder
 
+import com.eugene.lift.core.util.SafeExecutor
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
@@ -58,7 +59,7 @@ class MoveTemplateToFolderUseCaseTest {
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
-        useCase = MoveTemplateToFolderUseCase(repository)
+        useCase = MoveTemplateToFolderUseCase(repository, SafeExecutor(logger = null))
     }
 
     @Test

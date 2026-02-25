@@ -3,6 +3,8 @@ package com.eugene.lift.di
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.eugene.lift.data.local.AppDatabase
 import com.eugene.lift.data.local.ExerciseSeeder
 import com.eugene.lift.data.local.SettingsDataSource
@@ -39,11 +41,18 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(app: Application): AppDatabase {
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE workout_templates ADD COLUMN sortOrder INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         return Room.databaseBuilder(
             app,
             AppDatabase::class.java,
             "lift_db"
         )
+            .addMigrations(MIGRATION_8_9)
             .fallbackToDestructiveMigration(true)
             .build()
     }
@@ -132,6 +141,18 @@ object AppModule {
         @ApplicationContext context: Context
     ): StartEmptyWorkoutUseCase {
         return StartEmptyWorkoutUseCase(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDebugLogger(): com.eugene.lift.core.util.Logger {
+        return com.eugene.lift.core.util.DebugLogger()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSafeExecutor(logger: com.eugene.lift.core.util.Logger): com.eugene.lift.core.util.SafeExecutor {
+        return com.eugene.lift.core.util.SafeExecutor(logger)
     }
 
 }

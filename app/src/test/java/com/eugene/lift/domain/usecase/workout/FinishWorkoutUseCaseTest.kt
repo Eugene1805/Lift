@@ -1,12 +1,18 @@
 package com.eugene.lift.domain.usecase.workout
 
+import com.eugene.lift.core.util.SafeExecutor
+import com.eugene.lift.domain.error.AppError
+import com.eugene.lift.domain.error.AppResult
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.model.SessionExercise
+import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.WorkoutSet
+import com.eugene.lift.domain.repository.SettingsRepository
+import com.eugene.lift.domain.repository.UserProfileRepository
 import com.eugene.lift.domain.repository.WorkoutRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -43,9 +49,16 @@ class FinishWorkoutUseCaseTest {
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
-        val userProfileRepository = mockk<com.eugene.lift.domain.repository.UserProfileRepository>(relaxed = true)
+        val userProfileRepository = mockk<UserProfileRepository>(relaxed = true)
+        val settingsRepository = mockk<SettingsRepository>(relaxed = true)
         coEvery { userProfileRepository.getCurrentProfileOnce() } returns null
-        useCase = FinishWorkoutUseCase(repository, userProfileRepository)
+        coEvery { settingsRepository.getSettings() } returns flowOf(UserSettings())
+        useCase = FinishWorkoutUseCase(
+            repository,
+            userProfileRepository,
+            settingsRepository,
+            SafeExecutor(logger = null)
+        )
     }
 
     @Test
@@ -56,9 +69,10 @@ class FinishWorkoutUseCaseTest {
         coEvery { repository.getPersonalRecord(any()) } returns flowOf(null)
 
         // WHEN
-        useCase(session)
+        val result = useCase(session)
 
         // THEN
+        assertTrue(result is AppResult.Success)
         val slot = slot<WorkoutSession>()
         coVerify { repository.saveSession(capture(slot)) }
 
@@ -82,9 +96,10 @@ class FinishWorkoutUseCaseTest {
         coEvery { repository.getPersonalRecord("exercise-1") } returns flowOf(previousRecord)
 
         // WHEN
-        useCase(session)
+        val result = useCase(session)
 
         // THEN
+        assertTrue(result is AppResult.Success)
         val slot = slot<WorkoutSession>()
         coVerify { repository.saveSession(capture(slot)) }
 
@@ -279,8 +294,8 @@ class FinishWorkoutUseCaseTest {
         assertEquals("Empty exercise should be filtered out", 1, savedSession.exercises.size)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `invoke throws exception when workout has no completed exercises`() = runTest {
+    @Test
+    fun `invoke returns Validation error when workout has no completed exercises`() = runTest {
         // GIVEN - All exercises have no sets
         val emptyExercise = SessionExercise(
             id = "session-ex-1",
@@ -291,10 +306,13 @@ class FinishWorkoutUseCaseTest {
             exercises = listOf(emptyExercise)
         )
 
-        // WHEN - Should throw exception
-        useCase(session)
+        // WHEN
+        val result = useCase(session)
 
-        // THEN - Exception expected
+        // THEN
+        assertTrue(result is AppResult.Error)
+        assertEquals(AppError.Validation, (result as AppResult.Error).error)
+        coVerify(exactly = 0) { repository.saveSession(any()) }
     }
 
     @Test

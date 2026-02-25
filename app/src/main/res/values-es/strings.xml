@@ -571,5 +571,15 @@
     <string name="profile_avatar_color">Color del Avatar</string>
     <string name="profile_display_name">Nombre de usuario</string>
     <string name="profile_bio">Bio</string>
+
+    <!-- Template Actions -->
+    <string name="template_delete_title">¿Eliminar Rutina?</string>
+    <string name="template_delete_message">Esta rutina se eliminará permanentemente.</string>
+    <string name="template_actions_menu">Opciones de rutina</string>
+
+    <!-- Drag and Drop -->
+    <string name="folder_drop_hint">Suelta para mover a carpeta</string>
+    <string name="exercise_drag_handle">Arrastrar para reordenar</string>
+    <string name="exercise_reorder_hint">Mantén presionado para reordenar</string>
 </resources>
 

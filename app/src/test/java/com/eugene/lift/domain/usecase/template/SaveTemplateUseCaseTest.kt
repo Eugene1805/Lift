@@ -1,5 +1,8 @@
 package com.eugene.lift.domain.usecase.template
 
+import com.eugene.lift.core.util.SafeExecutor
+import com.eugene.lift.domain.error.AppError
+import com.eugene.lift.domain.error.AppResult
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
@@ -12,6 +15,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -54,7 +58,7 @@ class SaveTemplateUseCaseTest {
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
-        useCase = SaveTemplateUseCase(repository)
+        useCase = SaveTemplateUseCase(repository, SafeExecutor(logger = null))
     }
 
     @Test
@@ -63,9 +67,10 @@ class SaveTemplateUseCaseTest {
         val template = sampleTemplate
 
         // WHEN
-        useCase(template)
+        val result = useCase(template)
 
         // THEN
+        assertTrue(result is AppResult.Success)
         val slot = slot<WorkoutTemplate>()
         coVerify(exactly = 1) { repository.saveTemplate(capture(slot)) }
 
@@ -74,26 +79,32 @@ class SaveTemplateUseCaseTest {
         assertEquals(1, savedTemplate.exercises.size)
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun `invoke throws exception when name is blank`() = runTest {
+    @Test
+    fun `invoke returns Validation error when name is blank`() = runTest {
         // GIVEN
         val template = sampleTemplate.copy(name = "")
 
-        // WHEN - Should throw exception
-        useCase(template)
+        // WHEN
+        val result = useCase(template)
 
-        // THEN - Exception expected
+        // THEN
+        assertTrue(result is AppResult.Error)
+        assertEquals(AppError.Validation, (result as AppResult.Error).error)
+        coVerify(exactly = 0) { repository.saveTemplate(any()) }
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun `invoke throws exception when name is only whitespace`() = runTest {
+    @Test
+    fun `invoke returns Validation error when name is only whitespace`() = runTest {
         // GIVEN
         val template = sampleTemplate.copy(name = "   ")
 
-        // WHEN - Should throw exception
-        useCase(template)
+        // WHEN
+        val result = useCase(template)
 
-        // THEN - Exception expected
+        // THEN
+        assertTrue(result is AppResult.Error)
+        assertEquals(AppError.Validation, (result as AppResult.Error).error)
+        coVerify(exactly = 0) { repository.saveTemplate(any()) }
     }
 
     @Test
@@ -102,9 +113,10 @@ class SaveTemplateUseCaseTest {
         val template = sampleTemplate.copy(exercises = emptyList())
 
         // WHEN
-        useCase(template)
+        val result = useCase(template)
 
         // THEN
+        assertTrue(result is AppResult.Success)
         val slot = slot<WorkoutTemplate>()
         coVerify(exactly = 1) { repository.saveTemplate(capture(slot)) }
 
@@ -129,9 +141,10 @@ class SaveTemplateUseCaseTest {
         val template = sampleTemplate.copy(exercises = exercises)
 
         // WHEN
-        useCase(template)
+        val result = useCase(template)
 
         // THEN
+        assertTrue(result is AppResult.Success)
         val slot = slot<WorkoutTemplate>()
         coVerify(exactly = 1) { repository.saveTemplate(capture(slot)) }
 
@@ -149,9 +162,10 @@ class SaveTemplateUseCaseTest {
         )
 
         // WHEN
-        useCase(template)
+        val result = useCase(template)
 
         // THEN
+        assertTrue(result is AppResult.Success)
         val slot = slot<WorkoutTemplate>()
         coVerify(exactly = 1) { repository.saveTemplate(capture(slot)) }
 
@@ -235,9 +249,10 @@ class SaveTemplateUseCaseTest {
         val template = sampleTemplate.copy(name = longName)
 
         // WHEN
-        useCase(template)
+        val result = useCase(template)
 
         // THEN
+        assertTrue(result is AppResult.Success)
         val slot = slot<WorkoutTemplate>()
         coVerify(exactly = 1) { repository.saveTemplate(capture(slot)) }
 
@@ -252,9 +267,10 @@ class SaveTemplateUseCaseTest {
         val template = sampleTemplate.copy(name = specialName)
 
         // WHEN
-        useCase(template)
+        val result = useCase(template)
 
         // THEN
+        assertTrue(result is AppResult.Success)
         val slot = slot<WorkoutTemplate>()
         coVerify(exactly = 1) { repository.saveTemplate(capture(slot)) }
 

@@ -1,4 +1,4 @@
-package com.eugene.lift.domain.usecase
+package com.eugene.lift.domain.usecase.exercise
 
 import com.eugene.lift.core.util.SafeExecutor
 import com.eugene.lift.domain.error.AppError
@@ -8,12 +8,10 @@ import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.repository.ExerciseRepository
-import com.eugene.lift.domain.usecase.exercise.SaveExerciseUseCase
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
@@ -69,8 +67,8 @@ class SaveExerciseUseCaseTest {
         val result = useCase(exercise)
 
         // THEN
-        assertTrue(result is AppResult.Error)
-        assertEquals(AppError.Validation, (result as AppResult.Error).error)
+        Assert.assertTrue(result is AppResult.Error)
+        Assert.assertEquals(AppError.Validation, (result as AppResult.Error).error)
         coVerify(exactly = 0) { repository.saveExercise(any()) }
     }
 
@@ -91,8 +89,8 @@ class SaveExerciseUseCaseTest {
         val result = useCase(exercise)
 
         // THEN
-        assertTrue(result is AppResult.Error)
-        assertEquals(AppError.Validation, (result as AppResult.Error).error)
+        Assert.assertTrue(result is AppResult.Error)
+        Assert.assertEquals(AppError.Validation, (result as AppResult.Error).error)
         coVerify(exactly = 0) { repository.saveExercise(any()) }
     }
 

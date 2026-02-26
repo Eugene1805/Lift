@@ -1,4 +1,4 @@
-package com.eugene.lift.domain.usecase
+package com.eugene.lift.domain.usecase.exercise
 
 import com.eugene.lift.domain.model.AppTheme
 import com.eugene.lift.domain.model.DistanceUnit
@@ -8,10 +8,12 @@ import com.eugene.lift.domain.repository.SettingsRepository
 import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
@@ -46,10 +48,10 @@ class GetSettingsUseCaseTest {
         val result = useCase().first()
 
         // THEN
-        assertEquals(AppTheme.SYSTEM, result.theme)
-        assertEquals(WeightUnit.KG, result.weightUnit)
-        assertEquals(DistanceUnit.KM, result.distanceUnit)
-        assertEquals("en", result.languageCode)
+        Assert.assertEquals(AppTheme.SYSTEM, result.theme)
+        Assert.assertEquals(WeightUnit.KG, result.weightUnit)
+        Assert.assertEquals(DistanceUnit.KM, result.distanceUnit)
+        Assert.assertEquals("en", result.languageCode)
     }
 
     @Test
@@ -62,7 +64,7 @@ class GetSettingsUseCaseTest {
         val result = useCase().first()
 
         // THEN
-        assertEquals(AppTheme.LIGHT, result.theme)
+        Assert.assertEquals(AppTheme.LIGHT, result.theme)
     }
 
     @Test
@@ -75,7 +77,7 @@ class GetSettingsUseCaseTest {
         val result = useCase().first()
 
         // THEN
-        assertEquals(AppTheme.DARK, result.theme)
+        Assert.assertEquals(AppTheme.DARK, result.theme)
     }
 
     @Test
@@ -88,7 +90,7 @@ class GetSettingsUseCaseTest {
         val result = useCase().first()
 
         // THEN
-        assertEquals(WeightUnit.LBS, result.weightUnit)
+        Assert.assertEquals(WeightUnit.LBS, result.weightUnit)
     }
 
     @Test
@@ -101,7 +103,7 @@ class GetSettingsUseCaseTest {
         val result = useCase().first()
 
         // THEN
-        assertEquals(DistanceUnit.MILES, result.distanceUnit)
+        Assert.assertEquals(DistanceUnit.MILES, result.distanceUnit)
     }
 
     @Test
@@ -114,7 +116,7 @@ class GetSettingsUseCaseTest {
         val result = useCase().first()
 
         // THEN
-        assertEquals("es", result.languageCode)
+        Assert.assertEquals("es", result.languageCode)
     }
 
     @Test
@@ -127,7 +129,7 @@ class GetSettingsUseCaseTest {
         val result = useCase().first()
 
         // THEN
-        assertEquals("fr", result.languageCode)
+        Assert.assertEquals("fr", result.languageCode)
     }
 
     @Test
@@ -145,20 +147,20 @@ class GetSettingsUseCaseTest {
         val result = useCase().first()
 
         // THEN
-        assertEquals(AppTheme.DARK, result.theme)
-        assertEquals(WeightUnit.LBS, result.weightUnit)
-        assertEquals(DistanceUnit.MILES, result.distanceUnit)
-        assertEquals("es", result.languageCode)
+        Assert.assertEquals(AppTheme.DARK, result.theme)
+        Assert.assertEquals(WeightUnit.LBS, result.weightUnit)
+        Assert.assertEquals(DistanceUnit.MILES, result.distanceUnit)
+        Assert.assertEquals("es", result.languageCode)
     }
 
     @Test
     fun `invoke returns flow that emits multiple times`() = runTest {
         // GIVEN
-        val flow = kotlinx.coroutines.flow.flow {
+        val flow = flow {
             emit(defaultSettings)
-            kotlinx.coroutines.delay(100)
+            delay(100)
             emit(defaultSettings.copy(theme = AppTheme.DARK))
-            kotlinx.coroutines.delay(100)
+            delay(100)
             emit(defaultSettings.copy(theme = AppTheme.LIGHT))
         }
         coEvery { repository.getSettings() } returns flow
@@ -171,10 +173,10 @@ class GetSettingsUseCaseTest {
         }
 
         // THEN
-        assertEquals(3, results.size)
-        assertEquals(AppTheme.SYSTEM, results[0].theme)
-        assertEquals(AppTheme.DARK, results[1].theme)
-        assertEquals(AppTheme.LIGHT, results[2].theme)
+        Assert.assertEquals(3, results.size)
+        Assert.assertEquals(AppTheme.SYSTEM, results[0].theme)
+        Assert.assertEquals(AppTheme.DARK, results[1].theme)
+        Assert.assertEquals(AppTheme.LIGHT, results[2].theme)
     }
 
     @Test
@@ -187,7 +189,7 @@ class GetSettingsUseCaseTest {
         val result = useCase().first()
 
         // THEN
-        assertEquals("en-US", result.languageCode)
+        Assert.assertEquals("en-US", result.languageCode)
     }
 
     @Test
@@ -205,9 +207,9 @@ class GetSettingsUseCaseTest {
         val result = useCase().first()
 
         // THEN
-        assertEquals(AppTheme.LIGHT, result.theme)
-        assertEquals(WeightUnit.LBS, result.weightUnit)
-        assertEquals(DistanceUnit.KM, result.distanceUnit)
-        assertEquals("es", result.languageCode)
+        Assert.assertEquals(AppTheme.LIGHT, result.theme)
+        Assert.assertEquals(WeightUnit.LBS, result.weightUnit)
+        Assert.assertEquals(DistanceUnit.KM, result.distanceUnit)
+        Assert.assertEquals("es", result.languageCode)
     }
 }

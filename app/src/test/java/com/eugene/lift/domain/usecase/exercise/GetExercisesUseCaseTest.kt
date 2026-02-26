@@ -1,4 +1,4 @@
-package com.eugene.lift.domain.usecase
+package com.eugene.lift.domain.usecase.exercise
 
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
@@ -6,16 +6,12 @@ import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.repository.ExerciseRepository
 import com.eugene.lift.domain.repository.WorkoutRepository
-import com.eugene.lift.domain.usecase.exercise.ExerciseFilter
-import com.eugene.lift.domain.usecase.exercise.GetExercisesUseCase
-import com.eugene.lift.domain.usecase.exercise.SortOrder
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
@@ -78,10 +74,10 @@ class GetExercisesUseCaseTest {
         val result = useCase(emptyFilter).first()
 
         // THEN
-        assertEquals(3, result.size)
-        assertTrue(result.any { it.name == "Bench Press" })
-        assertTrue(result.any { it.name == "Squat" })
-        assertTrue(result.any { it.name == "Push-ups" })
+        Assert.assertEquals(3, result.size)
+        Assert.assertTrue(result.any { it.name == "Bench Press" })
+        Assert.assertTrue(result.any { it.name == "Squat" })
+        Assert.assertTrue(result.any { it.name == "Push-ups" })
     }
 
     @Test
@@ -94,9 +90,9 @@ class GetExercisesUseCaseTest {
         val result = useCase(filter).first()
 
         // THEN
-        assertEquals(1, result.size)
-        assertTrue(result.all { it.name.contains("press", ignoreCase = true) })
-        assertTrue(result.any { it.name == "Bench Press" })
+        Assert.assertEquals(1, result.size)
+        Assert.assertTrue(result.all { it.name.contains("press", ignoreCase = true) })
+        Assert.assertTrue(result.any { it.name == "Bench Press" })
     }
 
     @Test
@@ -109,8 +105,8 @@ class GetExercisesUseCaseTest {
         val result = useCase(filter).first()
 
         // THEN
-        assertEquals(2, result.size)
-        assertTrue(result.all { it.bodyParts.contains(BodyPart.CHEST) })
+        Assert.assertEquals(2, result.size)
+        Assert.assertTrue(result.all { it.bodyParts.contains(BodyPart.CHEST) })
     }
 
     @Test
@@ -123,8 +119,8 @@ class GetExercisesUseCaseTest {
         val result = useCase(filter).first()
 
         // THEN
-        assertEquals(2, result.size)
-        assertTrue(result.all { it.category == ExerciseCategory.BARBELL })
+        Assert.assertEquals(2, result.size)
+        Assert.assertTrue(result.all { it.category == ExerciseCategory.BARBELL })
     }
 
     @Test
@@ -137,9 +133,9 @@ class GetExercisesUseCaseTest {
         val result = useCase(filter).first()
 
         // THEN
-        assertEquals("Bench Press", result[0].name)
-        assertEquals("Push-ups", result[1].name)
-        assertEquals("Squat", result[2].name)
+        Assert.assertEquals("Bench Press", result[0].name)
+        Assert.assertEquals("Push-ups", result[1].name)
+        Assert.assertEquals("Squat", result[2].name)
     }
 
     @Test
@@ -152,9 +148,9 @@ class GetExercisesUseCaseTest {
         val result = useCase(filter).first()
 
         // THEN
-        assertEquals("Squat", result[0].name)
-        assertEquals("Push-ups", result[1].name)
-        assertEquals("Bench Press", result[2].name)
+        Assert.assertEquals("Squat", result[0].name)
+        Assert.assertEquals("Push-ups", result[1].name)
+        Assert.assertEquals("Bench Press", result[2].name)
     }
 
     @Test
@@ -167,7 +163,7 @@ class GetExercisesUseCaseTest {
         val result = useCase(filter).first()
 
         // THEN
-        assertEquals(0, result.size)
+        Assert.assertEquals(0, result.size)
     }
 
     @Test
@@ -184,7 +180,7 @@ class GetExercisesUseCaseTest {
         val result = useCase(filter).first()
 
         // THEN
-        assertEquals(1, result.size)
-        assertEquals("Bench Press", result[0].name)
+        Assert.assertEquals(1, result.size)
+        Assert.assertEquals("Bench Press", result[0].name)
     }
 }

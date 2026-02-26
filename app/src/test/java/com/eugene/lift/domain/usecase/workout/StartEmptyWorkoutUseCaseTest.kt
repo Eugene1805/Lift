@@ -1,5 +1,8 @@
 package com.eugene.lift.domain.usecase.workout
 
+import android.content.Context
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -16,10 +19,13 @@ import java.time.LocalDateTime
 class StartEmptyWorkoutUseCaseTest {
 
     private lateinit var useCase: StartEmptyWorkoutUseCase
+    private lateinit var context: Context
 
     @Before
     fun setup() {
-        useCase = StartEmptyWorkoutUseCase()
+        context = mockk()
+        every { context.getString(any()) } returns "Quick Workout"
+        useCase = StartEmptyWorkoutUseCase(context)
     }
 
     @Test
@@ -29,7 +35,7 @@ class StartEmptyWorkoutUseCaseTest {
 
         // THEN
         assertNotNull(result)
-        assertEquals("Quick Workout", result.name)
+        assertTrue(result.name.startsWith("Quick Workout"))
     }
 
     @Test
@@ -103,8 +109,7 @@ class StartEmptyWorkoutUseCaseTest {
         val uniqueIds = sessions.map { it.id }.distinct()
         assertEquals(10, uniqueIds.size)
 
-        // All should have default properties
-        assertTrue(sessions.all { it.name == "Quick Workout" })
+        assertTrue(sessions.all { it.name.startsWith("Quick Workout") })
         assertTrue(sessions.all { it.templateId == null })
         assertTrue(sessions.all { it.exercises.isEmpty() })
         assertTrue(sessions.all { it.durationSeconds == 0L })

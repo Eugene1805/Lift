@@ -1,19 +1,18 @@
-package com.eugene.lift.domain.usecase
+package com.eugene.lift.domain.usecase.exercise
 
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.repository.ExerciseRepository
-import com.eugene.lift.domain.usecase.exercise.GetExerciseDetailUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
@@ -51,9 +50,9 @@ class GetExerciseDetailUseCaseTest {
         val result = useCase("exercise-1").first()
 
         // THEN
-        assertNotNull(result)
-        assertEquals("exercise-1", result?.id)
-        assertEquals("Bench Press", result?.name)
+        Assert.assertNotNull(result)
+        Assert.assertEquals("exercise-1", result?.id)
+        Assert.assertEquals("Bench Press", result?.name)
     }
 
     @Test
@@ -65,14 +64,14 @@ class GetExerciseDetailUseCaseTest {
         val result = useCase("exercise-1").first()
 
         // THEN
-        assertNotNull(result)
-        assertEquals(2, result?.bodyParts?.size)
-        assertEquals(BodyPart.CHEST, result?.bodyParts?.get(0))
-        assertEquals(BodyPart.TRICEPS, result?.bodyParts?.get(1))
-        assertEquals(ExerciseCategory.BARBELL, result?.category)
-        assertEquals(MeasureType.REPS_AND_WEIGHT, result?.measureType)
-        assertEquals("Lie on bench, lower bar to chest, press up", result?.instructions)
-        assertEquals("/images/bench_press.jpg", result?.imagePath)
+        Assert.assertNotNull(result)
+        Assert.assertEquals(2, result?.bodyParts?.size)
+        Assert.assertEquals(BodyPart.CHEST, result?.bodyParts?.get(0))
+        Assert.assertEquals(BodyPart.TRICEPS, result?.bodyParts?.get(1))
+        Assert.assertEquals(ExerciseCategory.BARBELL, result?.category)
+        Assert.assertEquals(MeasureType.REPS_AND_WEIGHT, result?.measureType)
+        Assert.assertEquals("Lie on bench, lower bar to chest, press up", result?.instructions)
+        Assert.assertEquals("/images/bench_press.jpg", result?.imagePath)
     }
 
     @Test
@@ -84,7 +83,7 @@ class GetExerciseDetailUseCaseTest {
         val result = useCase("non-existent").first()
 
         // THEN
-        assertNull(result)
+        Assert.assertNull(result)
     }
 
     @Test
@@ -101,8 +100,8 @@ class GetExerciseDetailUseCaseTest {
         val result2 = useCase("exercise-2").first()
 
         // THEN
-        assertEquals("Bench Press", result1?.name)
-        assertEquals("Squat", result2?.name)
+        Assert.assertEquals("Bench Press", result1?.name)
+        Assert.assertEquals("Squat", result2?.name)
     }
 
     @Test
@@ -115,8 +114,8 @@ class GetExerciseDetailUseCaseTest {
         val result = useCase("exercise-1").first()
 
         // THEN
-        assertEquals(1, result?.bodyParts?.size)
-        assertEquals(BodyPart.CHEST, result?.bodyParts?.first())
+        Assert.assertEquals(1, result?.bodyParts?.size)
+        Assert.assertEquals(BodyPart.CHEST, result?.bodyParts?.first())
     }
 
     @Test
@@ -131,15 +130,17 @@ class GetExerciseDetailUseCaseTest {
         val result = useCase("exercise-1").first()
 
         // THEN
-        assertEquals(3, result?.bodyParts?.size)
+        Assert.assertEquals(3, result?.bodyParts?.size)
     }
 
     @Test
     fun `invoke returns exercise with different categories`() = runTest {
         // GIVEN
         val barbellExercise = sampleExercise.copy(category = ExerciseCategory.BARBELL)
-        val dumbbellExercise = sampleExercise.copy(id = "ex-2", category = ExerciseCategory.DUMBBELL)
-        val bodyweightExercise = sampleExercise.copy(id = "ex-3", category = ExerciseCategory.BODYWEIGHT)
+        val dumbbellExercise =
+            sampleExercise.copy(id = "ex-2", category = ExerciseCategory.DUMBBELL)
+        val bodyweightExercise =
+            sampleExercise.copy(id = "ex-3", category = ExerciseCategory.BODYWEIGHT)
 
         coEvery { repository.getExerciseById("ex-1") } returns flowOf(barbellExercise)
         coEvery { repository.getExerciseById("ex-2") } returns flowOf(dumbbellExercise)
@@ -151,9 +152,9 @@ class GetExerciseDetailUseCaseTest {
         val result3 = useCase("ex-3").first()
 
         // THEN
-        assertEquals(ExerciseCategory.BARBELL, result1?.category)
-        assertEquals(ExerciseCategory.DUMBBELL, result2?.category)
-        assertEquals(ExerciseCategory.BODYWEIGHT, result3?.category)
+        Assert.assertEquals(ExerciseCategory.BARBELL, result1?.category)
+        Assert.assertEquals(ExerciseCategory.DUMBBELL, result2?.category)
+        Assert.assertEquals(ExerciseCategory.BODYWEIGHT, result3?.category)
     }
 
     @Test
@@ -173,9 +174,9 @@ class GetExerciseDetailUseCaseTest {
         val result3 = useCase("ex-3").first()
 
         // THEN
-        assertEquals(MeasureType.REPS_AND_WEIGHT, result1?.measureType)
-        assertEquals(MeasureType.REPS_ONLY, result2?.measureType)
-        assertEquals(MeasureType.TIME, result3?.measureType)
+        Assert.assertEquals(MeasureType.REPS_AND_WEIGHT, result1?.measureType)
+        Assert.assertEquals(MeasureType.REPS_ONLY, result2?.measureType)
+        Assert.assertEquals(MeasureType.TIME, result3?.measureType)
     }
 
     @Test
@@ -188,28 +189,30 @@ class GetExerciseDetailUseCaseTest {
         val result = useCase("exercise-1").first()
 
         // THEN
-        assertNull(result?.imagePath)
+        Assert.assertNull(result?.imagePath)
     }
 
     @Test
     fun `invoke returns exercise with empty instructions`() = runTest {
         // GIVEN
         val exerciseWithoutInstructions = sampleExercise.copy(instructions = "")
-        coEvery { repository.getExerciseById("exercise-1") } returns flowOf(exerciseWithoutInstructions)
+        coEvery { repository.getExerciseById("exercise-1") } returns flowOf(
+            exerciseWithoutInstructions
+        )
 
         // WHEN
         val result = useCase("exercise-1").first()
 
         // THEN
-        assertEquals("", result?.instructions)
+        Assert.assertEquals("", result?.instructions)
     }
 
     @Test
     fun `invoke returns flow that emits multiple times`() = runTest {
         // GIVEN
-        val flow = kotlinx.coroutines.flow.flow {
+        val flow = flow {
             emit(sampleExercise.copy(name = "Version 1"))
-            kotlinx.coroutines.delay(100)
+            delay(100)
             emit(sampleExercise.copy(name = "Version 2"))
         }
         coEvery { repository.getExerciseById("exercise-1") } returns flow
@@ -219,9 +222,9 @@ class GetExerciseDetailUseCaseTest {
         useCase("exercise-1").collect { results.add(it) }
 
         // THEN
-        assertEquals(2, results.size)
-        assertEquals("Version 1", results[0]?.name)
-        assertEquals("Version 2", results[1]?.name)
+        Assert.assertEquals(2, results.size)
+        Assert.assertEquals("Version 1", results[0]?.name)
+        Assert.assertEquals("Version 2", results[1]?.name)
     }
 
     @Test
@@ -235,7 +238,7 @@ class GetExerciseDetailUseCaseTest {
         val result = useCase(uuidId).first()
 
         // THEN
-        assertNotNull(result)
-        assertEquals(uuidId, result?.id)
+        Assert.assertNotNull(result)
+        Assert.assertEquals(uuidId, result?.id)
     }
 }

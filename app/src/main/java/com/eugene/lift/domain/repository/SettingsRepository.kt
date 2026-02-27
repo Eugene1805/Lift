@@ -12,6 +12,8 @@ interface SettingsRepository {
     suspend fun setWeightUnit(unit: WeightUnit)
     suspend fun setDistanceUnit(unit: DistanceUnit)
     suspend fun setLanguageCode(code: String)
+    fun getTrackedExerciseIds(): Flow<List<String>>
+    suspend fun setTrackedExerciseIds(ids: List<String>)
 }
 
 

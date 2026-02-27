@@ -76,6 +76,9 @@ interface UserProfileDao {
     @Query("UPDATE user_profiles SET bio = :bio, updatedAt = :updatedAt WHERE id = :id")
     suspend fun updateBio(id: String, bio: String?, updatedAt: LocalDateTime)
 
+    @Query("UPDATE user_profiles SET username = :username, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun updateUsername(id: String, username: String, updatedAt: LocalDateTime)
+
     // Social updates (for future use)
     @Query("UPDATE user_profiles SET followersCount = followersCount + :delta WHERE id = :id")
     suspend fun updateFollowersCount(id: String, delta: Int)

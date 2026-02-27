@@ -29,6 +29,8 @@ interface UserProfileRepository {
 
     suspend fun updateAvatarUrl(id: String, avatarUrl: String?)
 
+    suspend fun updateUsername(id: String, username: String)
+
     // Stats
     suspend fun recordWorkoutCompleted(
         id: String,

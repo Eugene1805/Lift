@@ -2,14 +2,24 @@ package com.eugene.lift.ui.feature.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eugene.lift.domain.model.Exercise
+import com.eugene.lift.domain.model.ExerciseProgression
 import com.eugene.lift.domain.model.UserProfile
 import com.eugene.lift.domain.model.WorkoutSession
+import com.eugene.lift.domain.repository.SettingsRepository
 import com.eugene.lift.domain.repository.WorkoutRepository
+import com.eugene.lift.domain.usecase.exercise.GetExerciseProgressionUseCase
+import com.eugene.lift.domain.usecase.exercise.GetExercisesUseCase
 import com.eugene.lift.domain.usecase.profile.GetCurrentProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -49,13 +59,22 @@ data class ProfileUiState(
     val profile: UserProfile? = null,
     val isLoading: Boolean = true,
     val selectedTimeRange: TimeRange = TimeRange.MONTH,
-    val stats: ProfileStats = ProfileStats()
+    val stats: ProfileStats = ProfileStats(),
+    // Exercise progression
+    val progressions: List<ExerciseProgression> = emptyList(),
+    val allExercises: List<Exercise> = emptyList(),
+    val isProgressionLoading: Boolean = false,
+    val showExercisePickerDialog: Boolean = false,
+    val weightUnit: String = "kg"
 )
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val getCurrentProfileUseCase: GetCurrentProfileUseCase,
-    private val workoutRepository: WorkoutRepository
+    private val workoutRepository: WorkoutRepository,
+    private val getExercisesUseCase: GetExercisesUseCase,
+    private val getExerciseProgressionUseCase: GetExerciseProgressionUseCase,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -63,21 +82,32 @@ class ProfileViewModel @Inject constructor(
 
     private var allSessions: List<WorkoutSession> = emptyList()
 
+    // Active progression observation jobs, keyed by exerciseId
+    private val progressionJobs = mutableMapOf<String, Job>()
+
     init {
+        loadSettings()
         loadProfile()
         loadWorkoutHistory()
+        loadExercises()
+        observeTrackedExercises()
+    }
+
+    private fun loadSettings() {
+        viewModelScope.launch {
+            settingsRepository.getSettings().collect { settings ->
+                _uiState.value = _uiState.value.copy(
+                    weightUnit = if (settings.weightUnit == com.eugene.lift.domain.model.WeightUnit.LBS) "lbs" else "kg"
+                )
+            }
+        }
     }
 
     private fun loadProfile() {
         viewModelScope.launch {
-            // Get or create profile on first launch
             val profile = getCurrentProfileUseCase.getOrCreate()
-            _uiState.value = _uiState.value.copy(
-                profile = profile,
-                isLoading = false
-            )
+            _uiState.value = _uiState.value.copy(profile = profile, isLoading = false)
 
-            // Observe profile changes
             getCurrentProfileUseCase().collect { updatedProfile ->
                 if (updatedProfile != null) {
                     _uiState.value = _uiState.value.copy(profile = updatedProfile)
@@ -95,10 +125,105 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    private fun loadExercises() {
+        viewModelScope.launch {
+            getExercisesUseCase(com.eugene.lift.domain.usecase.exercise.ExerciseFilter())
+                .collect { exercises ->
+                    _uiState.value = _uiState.value.copy(allExercises = exercises)
+                }
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeTrackedExercises() {
+        viewModelScope.launch {
+            settingsRepository.getTrackedExerciseIds().collect { trackedIds ->
+                refreshProgressionObservers(trackedIds)
+            }
+        }
+    }
+
+    /**
+     * Starts/stops flow-collection jobs so only exercises that are currently
+     * tracked are being observed. Cancelled jobs clean up automatically.
+     */
+    private fun refreshProgressionObservers(trackedIds: List<String>) {
+        // Cancel jobs for exercises that have been un-tracked
+        val toRemove = progressionJobs.keys - trackedIds.toSet()
+        toRemove.forEach { id ->
+            progressionJobs.remove(id)?.cancel()
+        }
+        // Remove progressions for un-tracked exercises from state
+        if (toRemove.isNotEmpty()) {
+            _uiState.value = _uiState.value.copy(
+                progressions = _uiState.value.progressions.filter { it.exerciseId in trackedIds }
+            )
+        }
+
+        // Start new jobs for newly tracked exercises
+        trackedIds.forEach { exerciseId ->
+            if (progressionJobs.containsKey(exerciseId)) return@forEach
+            progressionJobs[exerciseId] = viewModelScope.launch {
+                val exercises = _uiState.value.allExercises.ifEmpty {
+                    // Wait for exercises to load if not yet available
+                    getExercisesUseCase(com.eugene.lift.domain.usecase.exercise.ExerciseFilter()).first()
+                }
+                val exercise = exercises.firstOrNull { it.id == exerciseId } ?: return@launch
+
+                getExerciseProgressionUseCase(
+                    exerciseId = exerciseId,
+                    exerciseName = exercise.name,
+                    measureType = exercise.measureType
+                ).collect { progression ->
+                    val current = _uiState.value.progressions.toMutableList()
+                    val existingIndex = current.indexOfFirst { it.exerciseId == exerciseId }
+                    if (existingIndex >= 0) {
+                        current[existingIndex] = progression
+                    } else {
+                        current.add(progression)
+                    }
+                    _uiState.value = _uiState.value.copy(progressions = current.toList())
+                }
+            }
+        }
+    }
+
+    // ── Public events ────────────────────────────────────────────────────────
+
     fun setTimeRange(range: TimeRange) {
         _uiState.value = _uiState.value.copy(selectedTimeRange = range)
         calculateStats()
     }
+
+    fun showExercisePicker() {
+        _uiState.value = _uiState.value.copy(showExercisePickerDialog = true)
+    }
+
+    fun hideExercisePicker() {
+        _uiState.value = _uiState.value.copy(showExercisePickerDialog = false)
+    }
+
+    fun toggleTrackedExercise(exerciseId: String) {
+        viewModelScope.launch {
+            val current = settingsRepository.getTrackedExerciseIds().first().toMutableList()
+            if (exerciseId in current) {
+                current.remove(exerciseId)
+            } else if (current.size < GetExerciseProgressionUseCase.MAX_TRACKED) {
+                current.add(exerciseId)
+            }
+            settingsRepository.setTrackedExerciseIds(current)
+        }
+    }
+
+    fun removeTrackedExercise(exerciseId: String) {
+        viewModelScope.launch {
+            val current = settingsRepository.getTrackedExerciseIds().first().toMutableList()
+            current.remove(exerciseId)
+            settingsRepository.setTrackedExerciseIds(current)
+        }
+    }
+
+    // ── Stats calculation ────────────────────────────────────────────────────
 
     private fun calculateStats() {
         val range = _uiState.value.selectedTimeRange
@@ -125,16 +250,13 @@ class ProfileViewModel @Inject constructor(
                 val start = now.minusYears(1)
                 allSessions.filter { it.date.toLocalDate() >= start }
             }
-            TimeRange.ALL_TIME -> {
-                allSessions
-            }
+            TimeRange.ALL_TIME -> allSessions
         }
 
         val groupedByWeek = sessions.groupBy { session ->
             session.date.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
         }
 
-        // Duration data (in minutes)
         val durationData = groupedByWeek.map { (weekStart, weekSessions) ->
             val totalMinutes = weekSessions.sumOf { it.durationSeconds } / 60.0
             HistogramDataPoint(
@@ -143,7 +265,6 @@ class ProfileViewModel @Inject constructor(
             )
         }.sortedBy { it.label }
 
-        // Volume data (in kg)
         val volumeData = groupedByWeek.map { (weekStart, weekSessions) ->
             val totalVolume = weekSessions.sumOf { session ->
                 session.exercises.flatMap { it.sets }
@@ -156,7 +277,6 @@ class ProfileViewModel @Inject constructor(
             )
         }.sortedBy { it.label }
 
-        // Reps data
         val repsData = groupedByWeek.map { (weekStart, weekSessions) ->
             val totalReps = weekSessions.sumOf { session ->
                 session.exercises.flatMap { it.sets }
@@ -169,7 +289,6 @@ class ProfileViewModel @Inject constructor(
             )
         }.sortedBy { it.label }
 
-        // Workouts per week
         val workoutsPerWeek = groupedByWeek.map { (weekStart, weekSessions) ->
             HistogramDataPoint(
                 label = "${weekStart.dayOfMonth}/${weekStart.monthValue}",

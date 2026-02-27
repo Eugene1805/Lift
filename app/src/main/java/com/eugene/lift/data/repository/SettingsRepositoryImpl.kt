@@ -66,4 +66,10 @@ class SettingsRepositoryImpl @Inject constructor(
             throw e
         }
     }
+
+    override fun getTrackedExerciseIds(): Flow<List<String>> = dataSource.trackedExerciseIds
+
+    override suspend fun setTrackedExerciseIds(ids: List<String>) {
+        dataSource.setTrackedExerciseIds(ids)
+    }
 }

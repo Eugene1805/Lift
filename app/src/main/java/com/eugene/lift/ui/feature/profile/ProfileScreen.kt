@@ -21,6 +21,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -66,7 +70,11 @@ fun ProfileRoute(
     ProfileScreen(
         uiState = uiState,
         onTimeRangeChange = viewModel::setTimeRange,
-        onEditProfileClick = onEditProfileClick
+        onEditProfileClick = onEditProfileClick,
+        onShowExercisePicker = viewModel::showExercisePicker,
+        onHideExercisePicker = viewModel::hideExercisePicker,
+        onToggleTrackedExercise = viewModel::toggleTrackedExercise,
+        onRemoveTrackedExercise = viewModel::removeTrackedExercise
     )
 }
 
@@ -75,7 +83,11 @@ fun ProfileRoute(
 fun ProfileScreen(
     uiState: ProfileUiState,
     onTimeRangeChange: (TimeRange) -> Unit,
-    onEditProfileClick: () -> Unit
+    onEditProfileClick: () -> Unit,
+    onShowExercisePicker: () -> Unit,
+    onHideExercisePicker: () -> Unit,
+    onToggleTrackedExercise: (String) -> Unit,
+    onRemoveTrackedExercise: (String) -> Unit
 ) {
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -125,9 +137,20 @@ fun ProfileScreen(
                     )
                 }
 
-                // Exercise Progression Section (placeholder for future)
+                // Exercise Progression Section
                 item {
-                    ExerciseProgressionSection()
+                    val weightUnit = uiState.weightUnit
+                    ExerciseProgressionSection(
+                        progressions = uiState.progressions,
+                        allExercises = uiState.allExercises,
+                        trackedIds = uiState.progressions.map { it.exerciseId },
+                        showPickerDialog = uiState.showExercisePickerDialog,
+                        weightUnit = weightUnit,
+                        onAddClick = onShowExercisePicker,
+                        onRemoveClick = onRemoveTrackedExercise,
+                        onToggleExercise = onToggleTrackedExercise,
+                        onDismissPicker = onHideExercisePicker
+                    )
                 }
             }
         }
@@ -162,12 +185,15 @@ private fun ProfileHeader(
                 contentAlignment = Alignment.Center
             ) {
                 if (profile?.avatarUrl != null) {
-                    // TODO: Load image with Coil
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(40.dp),
-                        tint = MaterialTheme.colorScheme.onPrimary
+                    // Load saved avatar with Coil
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(profile.avatarUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Avatar",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
                 } else {
                     Text(
@@ -460,50 +486,6 @@ private fun DashboardSection(stats: ProfileStats) {
     }
 }
 
-@Composable
-private fun ExerciseProgressionSection() {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Exercise Progression",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                IconButton(onClick = { /* TODO: Add exercise diagram */ }) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add exercise chart",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Tap + to track an exercise's progression over time",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-    }
-}
 
 @Composable
 private fun ProfileSkeletonLoader(modifier: Modifier = Modifier) {

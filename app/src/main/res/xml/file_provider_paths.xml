@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- App-private files directory (used when saving images via camera) -->
+    <files-path
+        name="images"
+        path="images/" />
+    <!-- Shared cache directory (used for camera capture temp files) -->
+    <cache-path
+        name="camera_temp"
+        path="camera/" />
+</paths>

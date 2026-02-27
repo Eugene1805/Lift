@@ -42,9 +42,9 @@ fun HistoryText(text: String, modifier: Modifier = Modifier) {
 fun CompactNumberInput(
     value: String,
     onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
     placeholder: @Composable (() -> Unit)? = null,
-    enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    enabled: Boolean = true
 ) {
     CompactTextInput(
         value = value,
@@ -61,9 +61,9 @@ fun CompactNumberInput(
 fun CompactDecimalInput(
     value: String,
     onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
     placeholder: @Composable (() -> Unit)? = null,
-    enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    enabled: Boolean = true
 ) {
     CompactTextInput(
         value = value,

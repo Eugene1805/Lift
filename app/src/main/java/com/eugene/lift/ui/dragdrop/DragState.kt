@@ -18,13 +18,3 @@ data class DragUiState(
     /** The ID of the valid drop target currently being hovered over, if any */
     val hoveredTargetId: String? = null
 )
-
-/**
- * Interface that ViewModels implement to receive global drag updates from the UI.
- */
-interface DragDropActionHandler {
-    fun onDragStart(itemId: String, itemName: String, initialPosition: Offset)
-    fun onDragMove(position: Offset)
-    fun onDragEnd()
-    fun onDragCancel()
-}

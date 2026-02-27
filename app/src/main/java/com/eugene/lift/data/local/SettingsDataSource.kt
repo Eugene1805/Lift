@@ -35,6 +35,7 @@ class SettingsDataSource @Inject constructor(
         val WEIGHT_UNIT = stringPreferencesKey("weight_unit")
         val DISTANCE_UNIT = stringPreferencesKey("distance_unit")
         val LANGUAGE_CODE = stringPreferencesKey("language_code")
+        val TRACKED_EXERCISE_IDS = stringPreferencesKey("tracked_exercise_ids")
     }
 
     // Leemos y convertimos los Strings guardados a Enums
@@ -96,5 +97,16 @@ class SettingsDataSource @Inject constructor(
             Log.e(TAG, "Failed to save distance unit to DataStore", e)
             throw e
         }
+    }
+
+    // ── Tracked exercise IDs ────────────────────────────────────────────────
+
+    val trackedExerciseIds: Flow<List<String>> = dataStore.data.map { prefs ->
+        val raw = prefs[Keys.TRACKED_EXERCISE_IDS] ?: ""
+        if (raw.isBlank()) emptyList() else raw.split(",").filter { it.isNotBlank() }
+    }
+
+    suspend fun setTrackedExerciseIds(ids: List<String>) {
+        dataStore.edit { prefs -> prefs[Keys.TRACKED_EXERCISE_IDS] = ids.joinToString(",") }
     }
 }

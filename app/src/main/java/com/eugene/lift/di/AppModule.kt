@@ -16,12 +16,14 @@ import com.eugene.lift.data.local.dao.UserProfileDao
 import com.eugene.lift.data.local.dao.WorkoutDao
 import com.eugene.lift.data.repository.ExerciseRepositoryImpl
 import com.eugene.lift.data.repository.FolderRepositoryImpl
+import com.eugene.lift.data.repository.ImageRepositoryImpl
 import com.eugene.lift.data.repository.SettingsRepositoryImpl
 import com.eugene.lift.data.repository.TemplateRepositoryImpl
 import com.eugene.lift.data.repository.UserProfileRepositoryImpl
 import com.eugene.lift.data.repository.WorkoutRepositoryImpl
 import com.eugene.lift.domain.repository.ExerciseRepository
 import com.eugene.lift.domain.repository.FolderRepository
+import com.eugene.lift.domain.repository.ImageRepository
 import com.eugene.lift.domain.repository.SettingsRepository
 import com.eugene.lift.domain.repository.TemplateRepository
 import com.eugene.lift.domain.repository.UserProfileRepository
@@ -153,6 +155,14 @@ object AppModule {
     @Singleton
     fun provideSafeExecutor(logger: com.eugene.lift.core.util.Logger): com.eugene.lift.core.util.SafeExecutor {
         return com.eugene.lift.core.util.SafeExecutor(logger)
+    }
+
+    @Provides
+    @Singleton
+    fun provideImageRepository(
+        @ApplicationContext context: android.content.Context
+    ): ImageRepository {
+        return ImageRepositoryImpl(context)
     }
 
 }

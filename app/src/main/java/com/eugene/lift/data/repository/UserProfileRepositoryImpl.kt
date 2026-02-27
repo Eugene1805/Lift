@@ -80,6 +80,10 @@ class UserProfileRepositoryImpl @Inject constructor(
         userProfileDao.updateAvatarUrl(id, avatarUrl, LocalDateTime.now())
     }
 
+    override suspend fun updateUsername(id: String, username: String) {
+        userProfileDao.updateUsername(id, username, LocalDateTime.now())
+    }
+
     // Stats methods
     override suspend fun recordWorkoutCompleted(id: String, volume: Double, duration: Long, prCount: Int) {
         val now = LocalDateTime.now()

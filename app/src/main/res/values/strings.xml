@@ -452,6 +452,9 @@
     <string name="tab_archived">Archived</string>
     <string name="empty_routines">No routines here</string>
     <string name="empty_archived">No archived routines</string>
+
+    <!-- Snackbar -->
+    <string name="snackbar_new_pr">New Personal Record! 🏆</string>
     <string name="exercise_count">Exercises: %d</string>
     <string name="action_edit">Edit</string>
     <string name="action_archive">Archive</string>

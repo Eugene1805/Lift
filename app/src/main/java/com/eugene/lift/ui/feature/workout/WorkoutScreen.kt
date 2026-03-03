@@ -247,6 +247,12 @@ private fun WorkoutContent(
     onFolderDeleteRequest: (String) -> Unit,
     onTemplateDeleteRequest: (WorkoutTemplate) -> Unit
 ) {
+    LaunchedEffect(uiState.selectedTab) {
+        if (pagerState.currentPage != uiState.selectedTab) {
+            pagerState.animateScrollToPage(uiState.selectedTab)
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         WorkoutTopBar(
             selectedTab = pagerState.currentPage,

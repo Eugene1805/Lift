@@ -103,13 +103,6 @@ fun ExerciseSnackbar(
     isPr: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    DisposableEffect(isVisible) {
-        if (isVisible) {
-            onDismiss()
-        }
-        onDispose { }
-    }
-
     AnimatedVisibility(
         visible = isVisible,
         enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
@@ -138,7 +131,7 @@ fun ExerciseSnackbar(
                 Column(modifier = Modifier.weight(1f)) {
                     if (isPr) {
                         Text(
-                            text = "New Personal Record!",
+                            text = stringResource(R.string.snackbar_new_pr),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
                             color = contentColor.copy(alpha = 0.7f)

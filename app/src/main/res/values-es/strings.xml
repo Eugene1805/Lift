@@ -434,6 +434,20 @@
     <string name="tab_archived">Archivadas</string>
     <string name="empty_routines">No hay rutinas aquí</string>
     <string name="empty_archived">No hay archivadas</string>
+
+    <!-- Snackbar -->
+    <string name="snackbar_new_pr">¡Nuevo Récord Personal! 🏆</string>
+
+    <!-- Missing keys -->
+    <string name="loading">cargando</string>
+    <string name="exercise_detail_no_data">Sin datos</string>
+    <string name="template_detail_no_data">Sin datos</string>
+    <string name="folder_delete_title">Eliminar carpeta</string>
+    <string name="folder_delete_message">La carpeta será eliminada</string>
+    <string name="notification_channel_workout">Entrenamiento activo</string>
+    <string name="notification_channel_workout_desc">Controles para tu sesión de entrenamiento en curso</string>
+    <string name="action_complete_set">Completar Serie</string>
+    <string name="active_workout_summary">Entrenamiento en progreso</string>
     <string name="exercise_count">Ejercicios: %d</string>
     <string name="action_edit">Editar</string>
     <string name="action_archive">Archivar</string>

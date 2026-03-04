@@ -257,13 +257,22 @@ fun LiftTheme(
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
+
+    // Detect system high-contrast accessibility setting via public Settings.Secure API
+    val isHighContrast = android.provider.Settings.Secure.getInt(
+        context.contentResolver,
+        "high_text_contrast_enabled",
+        0
+    ) == 1
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
+        darkTheme && isHighContrast -> highContrastDarkColorScheme
         darkTheme -> darkScheme
+        isHighContrast -> highContrastLightColorScheme
         else -> lightScheme
     }
 

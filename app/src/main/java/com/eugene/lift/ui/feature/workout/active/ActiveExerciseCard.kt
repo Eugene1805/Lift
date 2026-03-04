@@ -104,7 +104,7 @@ private fun ExerciseHeader(
         )
         Icon(
             imageVector = Icons.Default.Info,
-            contentDescription = null,
+            contentDescription = stringResource(R.string.active_workout_view_details),
             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
             modifier = Modifier.size(20.dp)
         )
@@ -153,7 +153,7 @@ private fun ExerciseFooter(onAddSet: () -> Unit, note: String, onNoteChange: (St
         onClick = onAddSet,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
     ) {
-        Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
+        Icon(Icons.Default.Add, stringResource(R.string.cd_add), modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(4.dp))
         Text(stringResource(R.string.active_workout_add_set))
     }

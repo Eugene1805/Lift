@@ -16,6 +16,7 @@ import com.eugene.lift.domain.model.AppTheme
 import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
+import com.eugene.lift.domain.repository.SettingsRepository
 import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
 import com.eugene.lift.ui.theme.LiftTheme
 
@@ -31,7 +32,10 @@ import com.eugene.lift.ui.theme.LiftTheme
  * @param getSettingsUseCase Use case for retrieving user settings
  */
 @Composable
-fun LiftApp(getSettingsUseCase: GetSettingsUseCase) {
+fun LiftApp(
+    getSettingsUseCase: GetSettingsUseCase,
+    settingsRepository: SettingsRepository
+) {
     // Observe user settings
     val settingsState by getSettingsUseCase()
         .collectAsState(
@@ -64,7 +68,7 @@ fun LiftApp(getSettingsUseCase: GetSettingsUseCase) {
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                MainAppShell()
+                MainAppShell(settingsRepository = settingsRepository)
             }
         }
     }

@@ -32,6 +32,9 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,7 +119,9 @@ fun ExerciseSnackbar(
         val icon = if (isPr) Icons.Default.EmojiEvents else Icons.Default.LocalCafe
         
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { liveRegion = LiveRegionMode.Assertive },
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(containerColor = containerColor),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
@@ -153,7 +158,7 @@ fun ExerciseSnackbar(
 
                 Icon(
                     imageVector = icon,
-                    contentDescription = if (isPr) "Trophy Icon" else "Cup Icon",
+                    contentDescription = stringResource(R.string.cd_pr_icon),
                     tint = contentColor,
                     modifier = Modifier.size(32.dp)
                 )

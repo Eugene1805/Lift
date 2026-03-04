@@ -3,47 +3,67 @@ package com.eugene.lift.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.eugene.lift.domain.repository.SettingsRepository
 import com.eugene.lift.ui.feature.exercises.create.AddExerciseRoute
 import com.eugene.lift.ui.feature.exercises.ExercisesRoute
 import com.eugene.lift.ui.feature.exercises.detail.ExerciseDetailRoute
 import com.eugene.lift.ui.feature.history.HistoryRoute
 import com.eugene.lift.ui.feature.history.calendar.HistoryCalendarRoute as HistoryCalendarRouteScreen
 import com.eugene.lift.ui.feature.history.detail.SessionDetailRoute as SessionDetailRouteScreen
+import com.eugene.lift.ui.feature.onboarding.OnboardingRoute as OnboardingRouteScreen
 import com.eugene.lift.ui.feature.profile.ProfileRoute
 import com.eugene.lift.ui.feature.profile.edit.EditProfileRoute as EditProfileRouteScreen
 import com.eugene.lift.ui.feature.settings.SettingsRoute
 import com.eugene.lift.ui.feature.workout.WorkoutRoute
 import com.eugene.lift.ui.feature.workout.active.ActiveWorkoutViewModel
+import com.eugene.lift.ui.feature.workout.active.ActiveWorkoutScreenRoute
 import com.eugene.lift.ui.feature.workout.detail.TemplateDetailRoute
 import com.eugene.lift.ui.feature.workout.edit.EditTemplateRoute
 import com.eugene.lift.ui.feature.workout.edit.EditTemplateUiEvent
 import com.eugene.lift.ui.feature.workout.edit.EditTemplateViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.eugene.lift.ui.feature.workout.active.ActiveWorkoutScreenRoute
 import java.time.LocalDate
 
 /**
  * Main navigation graph for the Lift app.
  *
  * @param navController Navigation controller for handling navigation
+ * @param settingsRepository Used to gate the onboarding start destination
  * @param modifier Modifier to apply to the NavHost
  */
 @Composable
 fun LiftNavGraph(
     navController: NavHostController,
+    settingsRepository: SettingsRepository,
     modifier: Modifier = Modifier
 ) {
+    val onboardingComplete by settingsRepository.isOnboardingComplete()
+        .collectAsStateWithLifecycle(initialValue = null)
+
+    // Wait until we know whether onboarding is needed before rendering NavHost
+    // (avoids a flash of the wrong start destination)
+    val startDestination = when (onboardingComplete) {
+        true -> com.eugene.lift.ui.navigation.WorkoutRoute as Any
+        false -> com.eugene.lift.ui.navigation.OnboardingRoute as Any
+        null -> return   // still loading from DataStore
+    }
+
     NavHost(
         navController = navController,
-        startDestination = com.eugene.lift.ui.navigation.WorkoutRoute,
+        startDestination = startDestination,
         modifier = modifier
     ) {
+        // Onboarding
+        onboardingScreen(navController)
+
         // Main bottom navigation destinations
         profileScreen(navController)
         historyScreen(navController)
@@ -61,6 +81,19 @@ fun LiftNavGraph(
         sessionDetailScreen(navController)
         historyCalendarScreen(navController)
         editProfileScreen(navController)
+    }
+}
+
+// Onboarding Screen
+private fun NavGraphBuilder.onboardingScreen(navController: NavHostController) {
+    composable<com.eugene.lift.ui.navigation.OnboardingRoute> {
+        OnboardingRouteScreen(
+            onComplete = {
+                navController.navigate(com.eugene.lift.ui.navigation.WorkoutRoute) {
+                    popUpTo(com.eugene.lift.ui.navigation.OnboardingRoute) { inclusive = true }
+                }
+            }
+        )
     }
 }
 

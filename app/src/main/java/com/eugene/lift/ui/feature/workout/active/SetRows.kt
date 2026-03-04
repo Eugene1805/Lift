@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.semantics
 import com.eugene.lift.R
 import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.MeasureType
@@ -64,10 +66,16 @@ fun SetRowItem(
 
         EffortRow(set, context, callbacks)
 
-        IconButton(onClick = callbacks.onCompleted, modifier = Modifier.width(48.dp)) {
+        val completedDesc = stringResource(if (set.completed) R.string.cd_set_completed else R.string.cd_set_not_completed)
+        IconButton(
+            onClick = callbacks.onCompleted,
+            modifier = Modifier
+                .width(48.dp)
+                .semantics { stateDescription = completedDesc }
+        ) {
             Icon(
                 imageVector = Icons.Default.Check,
-                contentDescription = null,
+                contentDescription = completedDesc,
                 tint = if (set.completed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
             )
         }

@@ -72,4 +72,16 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setTrackedExerciseIds(ids: List<String>) {
         dataSource.setTrackedExerciseIds(ids)
     }
+
+    override fun isOnboardingComplete(): Flow<Boolean> = dataSource.isOnboardingComplete
+
+    override suspend fun setOnboardingComplete(done: Boolean) {
+        dataSource.setOnboardingComplete(done)
+    }
+
+    override fun isSwipeHintSeen(): Flow<Boolean> = dataSource.isSwipeHintSeen
+
+    override suspend fun setSwipeHintSeen() {
+        dataSource.setSwipeHintSeen()
+    }
 }

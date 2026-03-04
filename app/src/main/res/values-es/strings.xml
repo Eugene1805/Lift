@@ -595,5 +595,54 @@
     <string name="folder_drop_hint">Suelta para mover a carpeta</string>
     <string name="exercise_drag_handle">Arrastrar para reordenar</string>
     <string name="exercise_reorder_hint">Mantén presionado para reordenar</string>
+
+    <!-- Accessibility: Content Descriptions -->
+    <string name="cd_navigate_back">Ir atrás</string>
+    <string name="cd_close">Cerrar</string>
+    <string name="cd_add">Agregar</string>
+    <string name="cd_delete">Eliminar</string>
+    <string name="cd_edit">Editar</string>
+    <string name="cd_search">Buscar</string>
+    <string name="cd_settings">Configuración</string>
+    <string name="cd_menu">Menú</string>
+    <string name="cd_reorder_exercise">Reordenar ejercicio</string>
+    <string name="cd_archive">Archivar</string>
+    <string name="cd_more_options">Más opciones</string>
+    <string name="cd_exercise_selected">Ejercicio seleccionado</string>
+    <string name="cd_pr_icon">Récord personal</string>
+    <string name="cd_calendar">Abrir calendario</string>
+    <string name="cd_filter">Filtrar ejercicios</string>
+    <string name="cd_sort">Ordenar ejercicios</string>
+    <string name="cd_add_exercise_chart">Agregar ejercicio al gráfico</string>
+    <string name="cd_avatar">Foto de perfil</string>
+    <string name="cd_camera">Tomar foto</string>
+    <string name="cd_gallery">Elegir de galería</string>
+    <string name="cd_check_selected">Seleccionado</string>
+    <string name="cd_drag_handle">Arrastrar para reordenar</string>
+    <string name="cd_timer">Cronómetro del entrenamiento</string>
+    <string name="cd_set_completed">Serie completada</string>
+    <string name="cd_set_not_completed">Serie no completada</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Omitir</string>
+    <string name="onboarding_next">Siguiente</string>
+    <string name="onboarding_get_started">Comenzar</string>
+    <string name="onboarding_welcome_title">Registra Cada Levantamiento</string>
+    <string name="onboarding_welcome_subtitle">Anota tus entrenamientos, crea rutinas y alcanza tus metas — todo en un solo lugar.</string>
+    <string name="onboarding_progress_title">Ve Tus Progresos</string>
+    <string name="onboarding_progress_subtitle">Observa cómo crece tu fuerza con el tiempo. Los récords personales se registran automáticamente.</string>
+    <string name="onboarding_setup_title">Configuración Rápida</string>
+    <string name="onboarding_setup_subtitle">¿Qué unidad prefieres para los pesos?</string>
+
+    <!-- Swipe hint -->
+    <string name="swipe_hint_delete_set">Desliza a la izquierda para eliminar una serie</string>
+
+    <!-- Empty states -->
+    <string name="empty_state_workout_title">Aún no hay rutinas</string>
+    <string name="empty_state_workout_subtitle">Pulsa el botón + para crear tu primera plantilla de entrenamiento.</string>
+    <string name="empty_state_history_title">Aún no hay entrenamientos</string>
+    <string name="empty_state_history_subtitle">Completa tu primer entrenamiento para verlo aquí.</string>
+    <string name="empty_state_exercises_title">No se encontraron ejercicios</string>
+    <string name="empty_state_exercises_subtitle">Intenta otra búsqueda o añade un ejercicio personalizado.</string>
 </resources>
 

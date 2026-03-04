@@ -598,5 +598,54 @@
     <string name="notification_channel_workout_desc">Controls for your ongoing workout session</string>
     <string name="action_complete_set">Complete Set</string>
     <string name="active_workout_summary">Workout in progress</string>
+
+    <!-- Accessibility: Content Descriptions -->
+    <string name="cd_navigate_back">Navigate back</string>
+    <string name="cd_close">Close</string>
+    <string name="cd_add">Add</string>
+    <string name="cd_delete">Delete</string>
+    <string name="cd_edit">Edit</string>
+    <string name="cd_search">Search</string>
+    <string name="cd_settings">Settings</string>
+    <string name="cd_menu">Menu</string>
+    <string name="cd_reorder_exercise">Reorder exercise</string>
+    <string name="cd_archive">Archive</string>
+    <string name="cd_more_options">More options</string>
+    <string name="cd_exercise_selected">Exercise selected</string>
+    <string name="cd_pr_icon">Personal record</string>
+    <string name="cd_calendar">Open calendar</string>
+    <string name="cd_filter">Filter exercises</string>
+    <string name="cd_sort">Sort exercises</string>
+    <string name="cd_add_exercise_chart">Add exercise to chart</string>
+    <string name="cd_avatar">Profile picture</string>
+    <string name="cd_camera">Take photo</string>
+    <string name="cd_gallery">Choose from gallery</string>
+    <string name="cd_check_selected">Selected</string>
+    <string name="cd_drag_handle">Drag to reorder</string>
+    <string name="cd_timer">Workout timer</string>
+    <string name="cd_set_completed">Set completed</string>
+    <string name="cd_set_not_completed">Set not completed</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_welcome_title">Track Every Lift</string>
+    <string name="onboarding_welcome_subtitle">Log your workouts, build routines, and crush your goals — all in one place.</string>
+    <string name="onboarding_progress_title">See Your Gains</string>
+    <string name="onboarding_progress_subtitle">Watch your strength grow over time. Personal records are automatically tracked for every exercise.</string>
+    <string name="onboarding_setup_title">Quick Setup</string>
+    <string name="onboarding_setup_subtitle">Which unit do you prefer for weights?</string>
+
+    <!-- Swipe hint -->
+    <string name="swipe_hint_delete_set">Swipe left to delete a set</string>
+
+    <!-- Empty states -->
+    <string name="empty_state_workout_title">No Routines Yet</string>
+    <string name="empty_state_workout_subtitle">Tap the + button to create your first workout template.</string>
+    <string name="empty_state_history_title">No Workouts Yet</string>
+    <string name="empty_state_history_subtitle">Complete your first workout to see it here.</string>
+    <string name="empty_state_exercises_title">No Exercises Found</string>
+    <string name="empty_state_exercises_subtitle">Try a different search or add a custom exercise.</string>
 </resources>
 

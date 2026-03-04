@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.eugene.lift.domain.model.AppTheme
@@ -36,6 +37,8 @@ class SettingsDataSource @Inject constructor(
         val DISTANCE_UNIT = stringPreferencesKey("distance_unit")
         val LANGUAGE_CODE = stringPreferencesKey("language_code")
         val TRACKED_EXERCISE_IDS = stringPreferencesKey("tracked_exercise_ids")
+        val ONBOARDING_COMPLETE = booleanPreferencesKey("onboarding_complete")
+        val SWIPE_HINT_SEEN = booleanPreferencesKey("swipe_hint_seen")
     }
 
     // Leemos y convertimos los Strings guardados a Enums
@@ -108,5 +111,25 @@ class SettingsDataSource @Inject constructor(
 
     suspend fun setTrackedExerciseIds(ids: List<String>) {
         dataStore.edit { prefs -> prefs[Keys.TRACKED_EXERCISE_IDS] = ids.joinToString(",") }
+    }
+
+    // ── Onboarding ─────────────────────────────────────────────────────────
+
+    val isOnboardingComplete: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.ONBOARDING_COMPLETE] ?: false
+    }
+
+    suspend fun setOnboardingComplete(done: Boolean) {
+        dataStore.edit { prefs -> prefs[Keys.ONBOARDING_COMPLETE] = done }
+    }
+
+    // ── Swipe hint ─────────────────────────────────────────────────────────
+
+    val isSwipeHintSeen: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[Keys.SWIPE_HINT_SEEN] ?: false
+    }
+
+    suspend fun setSwipeHintSeen() {
+        dataStore.edit { prefs -> prefs[Keys.SWIPE_HINT_SEEN] = true }
     }
 }

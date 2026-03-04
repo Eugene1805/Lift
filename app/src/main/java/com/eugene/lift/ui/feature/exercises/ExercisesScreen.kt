@@ -66,6 +66,7 @@ import coil.request.ImageRequest
 import com.eugene.lift.R
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.usecase.exercise.SortOrder
+import com.eugene.lift.ui.components.ExercisesEmptyState
 
 @Composable
 fun ExercisesRoute(
@@ -340,7 +341,7 @@ private fun ExercisesFab(
         uiState.isSelectionMode && uiState.selectedExerciseIds.isNotEmpty() -> {
             ExtendedFloatingActionButton(
                 onClick = { onEvent(ExercisesUiEvent.SelectionConfirmed) },
-                icon = { Icon(Icons.Default.Check, null) },
+                icon = { Icon(Icons.Default.Check, stringResource(R.string.cd_check_selected)) },
                 text = { Text(stringResource(R.string.exercise_add_selected, uiState.selectedExerciseIds.size)) },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -352,7 +353,7 @@ private fun ExercisesFab(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Add, contentDescription = null)
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add))
             }
         }
     }
@@ -365,19 +366,9 @@ fun ExercisesContent(
     modifier: Modifier = Modifier
 ) {
     if (uiState.exercises.isEmpty()) {
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(R.string.empty_exercises_text),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        ExercisesEmptyState(
+            modifier = modifier.fillMaxSize()
+        )
     } else {
         LazyColumn(
             modifier = modifier.fillMaxSize(),

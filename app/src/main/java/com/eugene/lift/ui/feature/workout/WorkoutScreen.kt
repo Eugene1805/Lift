@@ -82,6 +82,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eugene.lift.R
+import com.eugene.lift.ui.components.WorkoutEmptyState
 import com.eugene.lift.domain.model.Folder
 import com.eugene.lift.domain.model.WorkoutTemplate
 import com.eugene.lift.ui.feature.workout.components.CreateFolderDialog
@@ -304,7 +305,7 @@ private fun WorkoutOverlays(
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = null)
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add))
             }
         }
 
@@ -334,7 +335,7 @@ private fun WorkoutTopBar(selectedTab: Int, onTabSelected: (Int) -> Unit, onTogg
         title = { Text(stringResource(R.string.title_workout)) },
         actions = {
             IconButton(onClick = onToggleReorderMode) {
-                Icon(Icons.Default.Menu, contentDescription = null)
+                Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.cd_reorder_exercise))
             }
         },
         windowInsets = WindowInsets(0, 0, 0, 0),
@@ -472,19 +473,9 @@ private fun WorkoutTemplatesSection(
             }
         } else {
             item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, top = 32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = if (selectedPage == 0) stringResource(R.string.empty_routines)
-                        else stringResource(R.string.empty_archived),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                WorkoutEmptyState(
+                    modifier = Modifier.padding(top = 32.dp)
+                )
             }
         }
     }

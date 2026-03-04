@@ -27,6 +27,7 @@ import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.util.WeightConverter
+import com.eugene.lift.ui.components.HistoryEmptyState
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -99,7 +100,7 @@ fun HistoryScreen(
     ) { innerPadding ->
         if (historyItems.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.history_empty), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                HistoryEmptyState()
             }
         } else {
             LazyColumn(
@@ -273,7 +274,7 @@ private fun PrStat(prCount: Int) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = Icons.Default.EmojiEvents,
-            contentDescription = null,
+            contentDescription = stringResource(R.string.cd_pr_icon),
             modifier = Modifier.size(16.dp),
             tint = MaterialTheme.colorScheme.tertiary
         )
@@ -414,7 +415,7 @@ private fun ExerciseSummaryHeader(
                     Spacer(modifier = Modifier.width(6.dp))
                     Icon(
                         imageVector = Icons.Default.EmojiEvents,
-                        contentDescription = "PR",
+                        contentDescription = stringResource(R.string.cd_pr_icon),
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.tertiary
                     )

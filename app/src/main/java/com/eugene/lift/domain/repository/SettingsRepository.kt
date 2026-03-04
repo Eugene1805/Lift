@@ -14,6 +14,10 @@ interface SettingsRepository {
     suspend fun setLanguageCode(code: String)
     fun getTrackedExerciseIds(): Flow<List<String>>
     suspend fun setTrackedExerciseIds(ids: List<String>)
+    fun isOnboardingComplete(): Flow<Boolean>
+    suspend fun setOnboardingComplete(done: Boolean)
+    fun isSwipeHintSeen(): Flow<Boolean>
+    suspend fun setSwipeHintSeen()
 }
 
 

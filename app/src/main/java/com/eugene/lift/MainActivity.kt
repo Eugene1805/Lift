@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.eugene.lift.common.work.WorkInitializer
+import com.eugene.lift.domain.repository.SettingsRepository
 import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
 import com.eugene.lift.ui.LiftApp
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,6 +30,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var getSettingsUseCase: GetSettingsUseCase
 
+    @Inject
+    lateinit var settingsRepository: SettingsRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate: Initializing MainActivity")
@@ -40,7 +44,10 @@ class MainActivity : ComponentActivity() {
 
         // Set up Compose UI
         setContent {
-            LiftApp(getSettingsUseCase = getSettingsUseCase)
+            LiftApp(
+                getSettingsUseCase = getSettingsUseCase,
+                settingsRepository = settingsRepository
+            )
         }
 
         Log.i(TAG, "onCreate: MainActivity initialized successfully")

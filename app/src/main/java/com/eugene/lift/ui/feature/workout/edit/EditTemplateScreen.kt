@@ -75,12 +75,12 @@ fun EditTemplateScreen(
                 title = { Text(stringResource(R.string.title_edit_routine)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Filled.Close, contentDescription = null)
+                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.cd_close))
                     }
                 },
                 actions = {
                     IconButton(onClick = { onEvent(EditTemplateUiEvent.ToggleReorderMode) }) {
-                        Icon(Icons.Filled.Menu, contentDescription = null)
+                        Icon(Icons.Filled.Menu, contentDescription = stringResource(R.string.cd_reorder_exercise))
                     }
                     Button(
                         onClick = { onEvent(EditTemplateUiEvent.SaveClicked) },

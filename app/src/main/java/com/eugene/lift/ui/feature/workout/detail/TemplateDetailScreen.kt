@@ -58,7 +58,7 @@ fun TemplateDetailScreen(
                 title = { Text(uiState.template?.name ?: "") },
                 navigationIcon = {
                     IconButton(onClick = { onEvent(TemplateDetailUiEvent.BackClicked) }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_navigate_back))
                     }
                 },
                 actions = {
@@ -76,7 +76,7 @@ fun TemplateDetailScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { onEvent(TemplateDetailUiEvent.StartWorkoutClicked) },
-                icon = { Icon(Icons.Default.PlayArrow, null) },
+                icon = { Icon(Icons.Default.PlayArrow, stringResource(R.string.template_detail_start_routine)) },
                 text = { Text(stringResource(R.string.template_detail_start_routine)) },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary

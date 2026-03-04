@@ -89,7 +89,7 @@ fun HistoryCalendarScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.cd_navigate_back),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }

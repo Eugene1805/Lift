@@ -9,6 +9,7 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.eugene.lift.domain.repository.SettingsRepository
 import com.eugene.lift.ui.components.LiftBottomNavigationBar
 import com.eugene.lift.ui.navigation.BottomNavConfig
 import com.eugene.lift.ui.navigation.LiftNavGraph
@@ -22,7 +23,7 @@ import com.eugene.lift.ui.navigation.LiftNavGraph
  * - Contains the navigation graph
  */
 @Composable
-fun MainAppShell() {
+fun MainAppShell(settingsRepository: SettingsRepository) {
     val navController = rememberNavController()
     val bottomNavItems = BottomNavConfig.getBottomNavItems()
 
@@ -47,6 +48,7 @@ fun MainAppShell() {
     ) { innerPadding ->
         LiftNavGraph(
             navController = navController,
+            settingsRepository = settingsRepository,
             modifier = Modifier.padding(innerPadding)
         )
     }

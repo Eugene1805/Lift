@@ -31,6 +31,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.eugene.lift.R
 
@@ -63,6 +66,7 @@ fun WorkoutTopBar(
                     Surface(
                         color = MaterialTheme.colorScheme.secondaryContainer,
                         shape = MaterialTheme.shapes.small,
+                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
                     ) {
                         Text(
                             text = formattedTime,
@@ -75,11 +79,11 @@ fun WorkoutTopBar(
             }
         },
         navigationIcon = {
-            IconButton(onClick = onExit) { Icon(Icons.Default.Close, null) }
+            IconButton(onClick = onExit) { Icon(Icons.Default.Close, stringResource(R.string.cd_close)) }
         },
         actions = {
             IconButton(onClick = onToggleReorderMode) {
-                Icon(Icons.Default.Menu, contentDescription = null)
+                Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.cd_reorder_exercise))
             }
             IconButton(onClick = { showMenu = true }) {
                 Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.active_workout_configuration))
@@ -88,18 +92,18 @@ fun WorkoutTopBar(
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.active_workout_use_rpe)) },
                     onClick = { onMetricChange("RPE"); showMenu = false },
-                    trailingIcon = { if (uiState.effortMetric == "RPE") Icon(Icons.Default.Check, null) }
+                    trailingIcon = { if (uiState.effortMetric == "RPE") Icon(Icons.Default.Check, stringResource(R.string.cd_check_selected)) }
                 )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.active_workout_use_rir)) },
                     onClick = { onMetricChange("RIR"); showMenu = false },
-                    trailingIcon = { if (uiState.effortMetric == "RIR") Icon(Icons.Default.Check, null) }
+                    trailingIcon = { if (uiState.effortMetric == "RIR") Icon(Icons.Default.Check, stringResource(R.string.cd_check_selected)) }
                 )
                 HorizontalDivider()
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.active_workout_hide_metric)) },
                     onClick = { onMetricChange(null); showMenu = false },
-                    trailingIcon = { if (uiState.effortMetric == null) Icon(Icons.Default.Check, null) }
+                    trailingIcon = { if (uiState.effortMetric == null) Icon(Icons.Default.Check, stringResource(R.string.cd_check_selected)) }
                 )
                 HorizontalDivider()
                 DropdownMenuItem(

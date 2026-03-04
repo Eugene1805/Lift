@@ -99,7 +99,7 @@
     <string name="profile_avatar_color">Avatar Color</string>
     <string name="profile_display_name">Display Name</string>
     <string name="profile_bio">Bio</string>
-    <string name="profile_bio_hint">Tell us about yourself...</string>
+    <string name="profile_bio_hint">Tell us about yourself…</string>
 
     <string name="seed_bench_press">Bench Press (Barbell)</string>
     <string name="seed_bench_desc">1. Lie on the bench with your eyes under the bar.\n2. Grip the bar slightly wider than shoulder-width.\n3. Lower the bar to mid-chest.\n4. Press up explosively.</string>
@@ -131,7 +131,7 @@
     <string name="seed_dumbbell_row_desc">1. Place one knee and hand on bench for support.\n2. Hold dumbbell in opposite hand, arm extended.\n3. Pull dumbbell to hip, keeping elbow close to body.\n4. Squeeze shoulder blade at the top.\n5. Lower under control and repeat.</string>
     <string name="seed_bicep_curl">Bicep Curl (Dumbbell)</string>
     <string name="seed_bicep_curl_desc">1. Stand with dumbbells at sides, palms facing forward.\n2. Keep elbows close to torso.\n3. Curl weights up to shoulders without moving upper arms.\n4. Squeeze biceps at the top.\n5. Lower under control to starting position.</string>
-    <string name="seed_tricep_extension">Overhead Tricep Extension (Dumbbell)</string>
+    <string name="seed_tricep_extension">Overhead Triceps Extension (Dumbbell)</string>
     <string name="seed_tricep_extension_desc">1. Hold one dumbbell with both hands overhead.\n2. Keep elbows pointing forward, close to head.\n3. Lower dumbbell behind head by bending elbows.\n4. Extend arms back to starting position.\n5. Keep upper arms stationary throughout.</string>
     <string name="seed_lateral_raise">Lateral Raise (Dumbbell)</string>
     <string name="seed_lateral_raise_desc">1. Stand with dumbbells at sides, slight bend in elbows.\n2. Keep torso stationary and core engaged.\n3. Raise dumbbells to sides until arms parallel to floor.\n4. Lead with elbows, not hands.\n5. Lower under control to starting position.</string>
@@ -150,7 +150,7 @@
     <string name="seed_hip_thrust">Hip Thrust (Barbell)</string>
     <string name="seed_hip_thrust_desc">1. Sit on ground with upper back against bench, bar over hips.\n2. Plant feet flat, shoulder-width apart.\n3. Drive through heels, lifting hips until body forms straight line.\n4. Squeeze glutes hard at the top.\n5. Lower hips under control without touching ground.</string>
     <string name="seed_incline_bench">Incline Bench Press (Barbell)</string>
-    <string name="seed_incline_bench_desc">1. Set bench to 30-45 degree angle.\n2. Lie back, grip bar slightly wider than shoulders.\n3. Lower bar to upper chest.\n4. Press bar up and slightly back.\n5. Keep shoulder blades retracted throughout.</string>
+    <string name="seed_incline_bench_desc">1. Set bench to 30–45 degree angle.\n2. Lie back, grip bar slightly wider than shoulders.\n3. Lower bar to upper chest.\n4. Press bar up and slightly back.\n5. Keep shoulder blades retracted throughout.</string>
     <string name="seed_calf_raise">Calf Raise (Machine)</string>
     <string name="seed_calf_raise_desc">1. Position shoulders under pads, balls of feet on platform.\n2. Start with heels below platform level.\n3. Rise up onto toes as high as possible.\n4. Pause and squeeze calves at the top.\n5. Lower heels below platform for full stretch.</string>
     <string name="seed_skull_crusher">Skull Crushers (Barbell)</string>
@@ -158,12 +158,12 @@
     <string name="seed_hammer_curl">Hammer Curl (Dumbbell)</string>
     <string name="seed_hammer_curl_desc">1. Stand with dumbbells at sides, palms facing each other.\n2. Keep elbows close to torso.\n3. Curl weights up without rotating wrists.\n4. Maintain neutral grip throughout movement.\n5. Lower under control to starting position.</string>
     <string name="seed_shrugs">Shrugs (Dumbbell)</string>
-    <string name="seed_shrugs_desc">1. Stand holding dumbbells at sides with arms straight.\n2. Keep arms extended throughout movement.\n3. Elevate shoulders straight up toward ears.\n4. Hold peak contraction for 1-2 seconds.\n5. Lower shoulders under control.</string>
+    <string name="seed_shrugs_desc">1. Stand holding dumbbells at sides with arms straight.\n2. Keep arms extended throughout movement.\n3. Elevate shoulders straight up toward ears.\n4. Hold peak contraction for 1–2 seconds.\n5. Lower shoulders under control.</string>
     <string name="seed_bulgarian_split_squat">Bulgarian Split Squat (Dumbbell)</string>
     <string name="seed_bulgarian_split_squat_desc">1. Hold dumbbells at sides, place rear foot on bench behind you.\n2. Front foot far enough forward for comfortable stance.\n3. Lower hips by bending front knee to 90 degrees.\n4. Keep torso upright, weight on front heel.\n5. Drive through front heel to return to start.</string>
     <string name="seed_lunges">Walking Lunges (Dumbbell)</string>
     <string name="seed_lunges_desc">1. Hold dumbbells at sides, stand with feet together.\n2. Step forward with one leg into lunge position.\n3. Lower back knee toward ground, front thigh parallel to floor.\n4. Push through front heel to step forward with rear leg.\n5. Alternate legs with each forward step.</string>
-    <string name="seed_cable_tricep_pushdown">Cable Tricep Pushdown</string>
+    <string name="seed_cable_tricep_pushdown">Cable Triceps Pushdown</string>
     <string name="seed_cable_tricep_pushdown_desc">1. Stand facing cable machine with rope or bar attachment.\n2. Grip attachment with elbows at sides.\n3. Push down until arms are fully extended.\n4. Keep elbows stationary throughout movement.\n5. Return under control without letting elbows move forward.</string>
     <string name="seed_chest_supported_row">Chest Supported Row (Machine)</string>
     <string name="seed_chest_supported_row_desc">1. Lie face down on incline bench or machine pad.\n2. Grip handles with arms extended.\n3. Pull handles toward lower chest.\n4. Squeeze shoulder blades together at the top.\n5. Extend arms under control to starting position.</string>
@@ -196,7 +196,7 @@
     <string name="seed_concentration_curl">Concentration Curl (Dumbbell)</string>
     <string name="seed_concentration_curl_desc">1. Sit on bench, place elbow against inner thigh.\n2. Hold dumbbell with arm fully extended.\n3. Curl weight up toward shoulder.\n4. Focus on peak contraction at the top.\n5. Lower slowly, maintaining contact with thigh.</string>
     <string name="seed_decline_bench">Decline Bench Press (Barbell)</string>
-    <string name="seed_decline_bench_desc">1. Lie on decline bench (15-30 degrees), feet secured.\n2. Grip bar slightly wider than shoulders.\n3. Lower bar to lower chest.\n4. Press bar up and slightly back.\n5. Keep feet anchored and core tight throughout.</string>
+    <string name="seed_decline_bench_desc">1. Lie on decline bench (15–30 degrees), feet secured.\n2. Grip bar slightly wider than shoulders.\n3. Lower bar to lower chest.\n4. Press bar up and slightly back.\n5. Keep feet anchored and core tight throughout.</string>
     <string name="seed_arnold_press">Arnold Press (Dumbbell)</string>
     <string name="seed_arnold_press_desc">1. Sit with dumbbells at shoulder height, palms facing you.\n2. Press dumbbells up while rotating palms forward.\n3. Finish with palms forward, arms extended overhead.\n4. Reverse motion, rotating palms back toward you.\n5. Lower to starting position with palms facing in.</string>
     <string name="seed_goblet_squat">Goblet Squat (Dumbbell)</string>
@@ -210,7 +210,7 @@
     <string name="seed_dumbbell_fly">Dumbbell Fly</string>
     <string name="seed_dumbbell_fly_desc">1. Lie on bench holding dumbbells above chest.\n2. Keep slight bend in elbows throughout movement.\n3. Lower dumbbells out to sides in wide arc.\n4. Feel stretch in chest at bottom.\n5. Bring dumbbells back together above chest.</string>
     <string name="seed_incline_dumbbell_press">Incline Dumbbell Press</string>
-    <string name="seed_incline_dumbbell_press_desc">1. Set bench to 30-45 degree angle.\n2. Hold dumbbells at shoulder level, palms forward.\n3. Press dumbbells up until arms extended.\n4. Bring dumbbells together at top.\n5. Lower under control to shoulders.</string>
+    <string name="seed_incline_dumbbell_press_desc">1. Set bench to 30–45 degree angle.\n2. Hold dumbbells at shoulder level, palms forward.\n3. Press dumbbells up until arms extended.\n4. Bring dumbbells together at top.\n5. Lower under control to shoulders.</string>
     <string name="seed_cable_crossover">Cable Crossover</string>
     <string name="seed_cable_crossover_desc">1. Set cables to high position, grab handles.\n2. Step forward with staggered stance.\n3. Bring handles down and across body in arc motion.\n4. Cross hands in front of lower chest.\n5. Return under control keeping tension on cables.</string>
     <string name="seed_machine_row">Machine Row (Seated)</string>
@@ -222,7 +222,7 @@
     <string name="seed_dumbbell_overhead_press">Dumbbell Overhead Press (Standing)</string>
     <string name="seed_dumbbell_overhead_press_desc">1. Stand with dumbbells at shoulder height.\n2. Brace core, feet shoulder-width apart.\n3. Press dumbbells overhead until arms extended.\n4. Keep dumbbells aligned over shoulders.\n5. Lower under control to shoulders.</string>
     <string name="seed_barbell_shrug">Barbell Shrug</string>
-    <string name="seed_barbell_shrug_desc">1. Hold barbell at thigh level with overhand grip.\n2. Keep arms straight throughout movement.\n3. Elevate shoulders straight up toward ears.\n4. Hold peak contraction for 1-2 seconds.\n5. Lower shoulders under control.</string>
+    <string name="seed_barbell_shrug_desc">1. Hold barbell at thigh level with overhand grip.\n2. Keep arms straight throughout movement.\n3. Elevate shoulders straight up toward ears.\n4. Hold peak contraction for 1–2 seconds.\n5. Lower shoulders under control.</string>
     <string name="seed_front_raise">Front Raise (Dumbbell)</string>
     <string name="seed_front_raise_desc">1. Stand with dumbbells in front of thighs, palms facing body.\n2. Keep slight bend in elbows, core engaged.\n3. Raise dumbbells forward to shoulder height.\n4. Keep arms parallel to floor at top.\n5. Lower under control to starting position.</string>
     <string name="seed_t_bar_row">T-Bar Row</string>
@@ -267,7 +267,7 @@
     <string name="seed_straight_arm_pulldown_desc">1. Stand at cable machine with straight bar.\n2. Keep slight bend in elbows, arms extended.\n3. Pull bar down in arc motion to thighs.\n4. Focus on lat contraction, no elbow bend.\n5. Return under control to starting position.</string>
     <string name="seed_tricep_kickback">Tricep Kickback (Dumbbell)</string>
     <string name="seed_tricep_kickback_desc">1. Bend forward at hips, support with one hand.\n2. Hold dumbbell with elbow bent at 90 degrees.\n3. Extend arm back until fully straight.\n4. Squeeze tricep at full extension.\n5. Lower under control to starting position.</string>
-    <string name="seed_rope_tricep_extension">Rope Tricep Extension (Cable)</string>
+    <string name="seed_rope_tricep_extension">Rope Triceps Extension (Cable)</string>
     <string name="seed_rope_tricep_extension_desc">1. Attach rope to high cable pulley.\n2. Grip rope ends with neutral grip.\n3. Push down and out, separating rope at bottom.\n4. Fully extend arms, squeeze triceps.\n5. Return under control without letting elbows move.</string>
     <string name="seed_underhand_row">Underhand Barbell Row</string>
     <string name="seed_underhand_row_desc">1. Grip barbell with underhand (supinated) grip.\n2. Bend forward at hips, back straight.\n3. Pull bar to lower chest/upper abdomen.\n4. Emphasizes lower lats and biceps.\n5. Lower under control to full extension.</string>
@@ -275,7 +275,7 @@
     <string name="seed_neutral_grip_pullup_desc">1. Use parallel handles or V-bar attachment.\n2. Grip handles with palms facing each other.\n3. Pull up until chin clears handles.\n4. Easier on shoulders than overhand grip.\n5. Lower under control to full extension.</string>
     <string name="seed_cable_rear_delt_fly">Cable Rear Delt Fly</string>
     <string name="seed_cable_rear_delt_fly_desc">1. Set cables at shoulder height.\n2. Cross arms and grab opposite handles.\n3. Pull handles back and out to sides.\n4. Squeeze rear delts and shoulder blades.\n5. Return under control maintaining tension.</string>
-    <string name="seed_reverse_grip_tricep_pushdown">Reverse Grip Tricep Pushdown (Cable)</string>
+    <string name="seed_reverse_grip_tricep_pushdown">Reverse Grip Triceps Pushdown (Cable)</string>
     <string name="seed_reverse_grip_tricep_pushdown_desc">1. Use straight bar with underhand grip.\n2. Keep elbows at sides, palms facing up.\n3. Push bar down until arms fully extended.\n4. Emphasizes medial head of triceps.\n5. Return under control without moving elbows.</string>
     <string name="seed_rope_face_pull">Rope Face Pull (Cable)</string>
     <string name="seed_rope_face_pull_desc">1. Attach rope to high pulley.\n2. Grip rope ends, step back for tension.\n3. Pull rope toward face, separating ends.\n4. Focus on external rotation and rear delts.\n5. Return under control maintaining tension.</string>
@@ -296,7 +296,7 @@
     <string name="seed_zottman_curl">Zottman Curl (Dumbbell)</string>
     <string name="seed_zottman_curl_desc">1. Stand with dumbbells at sides, palms forward.\n2. Curl weights up with standard grip.\n3. At top, rotate wrists so palms face down.\n4. Lower with reverse grip for forearm emphasis.\n5. Rotate back to standard grip at bottom.</string>
     <string name="seed_paused_squat">Paused Squat (Barbell)</string>
-    <string name="seed_paused_squat_desc">1. Set up like standard back squat.\n2. Descend to parallel or below.\n3. Pause for 2-3 seconds at bottom.\n4. Eliminates bounce, builds strength from dead stop.\n5. Drive up explosively to standing.</string>
+    <string name="seed_paused_squat_desc">1. Set up like standard back squat.\n2. Descend to parallel or below.\n3. Pause for 2–3 seconds at bottom.\n4. Eliminates bounce, builds strength from dead stop.\n5. Drive up explosively to standing.</string>
     <string name="seed_glute_bridge">Glute Bridge</string>
     <string name="seed_glute_bridge_desc">1. Lie on back, knees bent, feet flat on floor.\n2. Place weight across hips if desired.\n3. Drive through heels, lifting hips toward ceiling.\n4. Squeeze glutes hard at top.\n5. Lower hips under control, repeat.</string>
     <string name="seed_glute_kickback">Glute Kickback (Cable)</string>
@@ -312,7 +312,7 @@
     <string name="seed_wide_grip_row">Wide Grip Cable Row</string>
     <string name="seed_wide_grip_row_desc">1. Use wide bar attachment on cable row.\n2. Sit with feet on platform, grip bar wide.\n3. Pull bar to upper chest with wide elbow position.\n4. Emphasizes upper back and rear delts.\n5. Extend arms under control.</string>
     <string name="seed_incline_bench_barbell">Incline Bench Press (Barbell)</string>
-    <string name="seed_incline_bench_barbell_desc">1. Set bench to 30-45 degree angle.\n2. Grip bar slightly wider than shoulders.\n3. Lower bar to upper chest.\n4. Press bar up and slightly back.\n5. Targets upper chest development.</string>
+    <string name="seed_incline_bench_barbell_desc">1. Set bench to 30–45 degree angle.\n2. Grip bar slightly wider than shoulders.\n3. Lower bar to upper chest.\n4. Press bar up and slightly back.\n5. Targets upper chest development.</string>
     <string name="seed_standing_calf_raise">Standing Calf Raise (Machine)</string>
     <string name="seed_standing_calf_raise_desc">1. Position shoulders under pads, balls of feet on platform.\n2. Stand tall, core engaged.\n3. Rise up onto toes as high as possible.\n4. Pause and squeeze calves at top.\n5. Lower heels below platform for full stretch.</string>
     <string name="seed_seated_calf_raise">Seated Calf Raise (Machine)</string>
@@ -380,7 +380,7 @@
     <string name="seed_pistol_squat">Pistol Squat</string>
     <string name="seed_pistol_squat_desc">1. Stand on one leg, other leg extended forward.\n2. Lower into squat on single leg.\n3. Keep extended leg off ground throughout.\n4. Descend as low as possible.\n5. Drive through heel to stand, advanced movement.</string>
     <string name="seed_smith_machine_incline_bench">Incline Bench Press (Smith Machine)</string>
-    <string name="seed_smith_machine_incline_bench_desc">1. Set bench to 30-45 degrees under Smith bar.\n2. Lie back, grip bar at shoulder width.\n3. Unrack and lower bar to upper chest.\n4. Fixed path targets upper chest safely.\n5. Press up and rotate to re-rack.</string>
+    <string name="seed_smith_machine_incline_bench_desc">1. Set bench to 30–45 degrees under Smith bar.\n2. Lie back, grip bar at shoulder width.\n3. Unrack and lower bar to upper chest.\n4. Fixed path targets upper chest safely.\n5. Press up and rotate to re-rack.</string>
     <string name="seed_smith_machine_decline_bench">Decline Bench Press (Smith Machine)</string>
     <string name="seed_smith_machine_decline_bench_desc">1. Set bench to decline under Smith bar.\n2. Secure feet, lie back and grip bar.\n3. Unrack and lower to lower chest.\n4. Fixed path targets lower chest.\n5. Press up and rotate to re-rack.</string>
     <string name="seed_incline_chest_press_machine">Incline Chest Press (Machine)</string>
@@ -475,7 +475,7 @@
     <!-- Active Workout Screen -->
     <string name="active_workout_training">Training</string>
     <string name="active_workout_configuration">Configuration</string>
-    <string name="active_workout_use_rpe">Use RPE (1-10)</string>
+    <string name="active_workout_use_rpe">Use RPE (1–10)</string>
     <string name="active_workout_use_rir">Use RIR (Reps in Reserve)</string>
     <string name="active_workout_hide_metric">Hide metric</string>
     <string name="active_workout_finish">Finish</string>
@@ -530,7 +530,7 @@
     <string name="folder_color_label">Color</string>
     <string name="folder_create">Create</string>
     <string name="folder_cancel">Cancel</string>
-    <string name="folder_move_to_title">Move to...</string>
+    <string name="folder_move_to_title">Move to…</string>
     <string name="folder_root">Workouts</string>
 
     <!-- Workout Screen - Actions -->
@@ -647,5 +647,6 @@
     <string name="empty_state_history_subtitle">Complete your first workout to see it here.</string>
     <string name="empty_state_exercises_title">No Exercises Found</string>
     <string name="empty_state_exercises_subtitle">Try a different search or add a custom exercise.</string>
+    <string name="active_workout_distance_km">km</string>
 </resources>
 

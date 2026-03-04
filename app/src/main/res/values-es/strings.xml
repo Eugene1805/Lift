@@ -81,7 +81,7 @@
     <string name="title_workout">Entrenamientos</string>
     <string name="title_settings">Configuración</string>
 
-    <string name="profile_bio_hint">Cuéntanos sobre ti...</string>
+    <string name="profile_bio_hint">Cuéntanos sobre ti…</string>
     <string name="seed_bench_press">Press de Banca (Barra)</string>
     <string name="seed_bench_desc">1. Túmbate en el banco con los ojos bajo la barra.\n2. Agarra la barra con una anchura superior a los hombros.\n3. Baja la barra hasta la mitad del pecho.\n4. Empuja explosivamente hacia arriba.</string>
     <string name="seed_squat">Sentadilla Trasera</string>
@@ -131,7 +131,7 @@
     <string name="seed_hip_thrust">Empuje de Cadera (Barra)</string>
     <string name="seed_hip_thrust_desc">1. Siéntate en el suelo con la espalda superior contra el banco, barra sobre las caderas.\n2. Planta los pies planos, al ancho de hombros.\n3. Empuja con los talones, elevando las caderas hasta formar línea recta.\n4. Aprieta los glúteos fuertemente en la parte superior.\n5. Baja las caderas controladamente sin tocar el suelo.</string>
     <string name="seed_incline_bench">Press de Banca Inclinado (Barra)</string>
-    <string name="seed_incline_bench_desc">1. Ajusta el banco a un ángulo de 30-45 grados.\n2. Acuéstate, agarra la barra ligeramente más ancha que los hombros.\n3. Baja la barra al pecho superior.\n4. Empuja la barra hacia arriba y ligeramente hacia atrás.\n5. Mantén los omóplatos retraídos durante todo el ejercicio.</string>
+    <string name="seed_incline_bench_desc">1. Ajusta el banco a un ángulo de 30–45 grados.\n2. Acuéstate, agarra la barra ligeramente más ancha que los hombros.\n3. Baja la barra al pecho superior.\n4. Empuja la barra hacia arriba y ligeramente hacia atrás.\n5. Mantén los omóplatos retraídos durante todo el ejercicio.</string>
     <string name="seed_calf_raise">Elevación de Gemelos (Máquina)</string>
     <string name="seed_calf_raise_desc">1. Posiciona los hombros bajo las almohadillas, puntas de pies en la plataforma.\n2. Comienza con los talones por debajo del nivel de la plataforma.\n3. Elévate sobre las puntas lo más alto posible.\n4. Pausa y aprieta los gemelos en la parte superior.\n5. Baja los talones bajo la plataforma para un estiramiento completo.</string>
     <string name="seed_skull_crusher">Rompecráneos (Barra)</string>
@@ -139,7 +139,7 @@
     <string name="seed_hammer_curl">Curl Martillo (Mancuernas)</string>
     <string name="seed_hammer_curl_desc">1. Párate con mancuernas a los lados, palmas enfrentadas.\n2. Mantén los codos cerca del torso.\n3. Lleva las pesas arriba sin rotar las muñecas.\n4. Mantén el agarre neutral durante todo el movimiento.\n5. Baja controladamente a la posición inicial.</string>
     <string name="seed_shrugs">Encogimientos (Mancuernas)</string>
-    <string name="seed_shrugs_desc">1. Párate sosteniendo mancuernas a los lados con brazos rectos.\n2. Mantén los brazos extendidos durante todo el movimiento.\n3. Eleva los hombros directamente hacia las orejas.\n4. Mantén la contracción máxima durante 1-2 segundos.\n5. Baja los hombros controladamente.</string>
+    <string name="seed_shrugs_desc">1. Párate sosteniendo mancuernas a los lados con brazos rectos.\n2. Mantén los brazos extendidos durante todo el movimiento.\n3. Eleva los hombros directamente hacia las orejas.\n4. Mantén la contracción máxima durante 1–2 segundos.\n5. Baja los hombros controladamente.</string>
     <string name="seed_bulgarian_split_squat">Sentadilla Búlgara (Mancuernas)</string>
     <string name="seed_bulgarian_split_squat_desc">1. Sostén mancuernas a los lados, coloca pie trasero en banco detrás de ti.\n2. Pie frontal lo suficientemente adelante para una postura cómoda.\n3. Baja las caderas doblando la rodilla frontal a 90 grados.\n4. Mantén el torso erguido, peso en el talón frontal.\n5. Empuja con el talón frontal para volver al inicio.</string>
     <string name="seed_lunges">Zancadas con Mancuernas</string>
@@ -177,7 +177,7 @@
     <string name="seed_concentration_curl">Curl Concentrado (Mancuerna)</string>
     <string name="seed_concentration_curl_desc">1. Siéntate en el banco, coloca el codo contra el muslo interno.\n2. Sostén la mancuerna con el brazo completamente extendido.\n3. Lleva el peso hacia el hombro.\n4. Enfócate en la contracción máxima en la parte superior.\n5. Baja lentamente, manteniendo contacto con el muslo.</string>
     <string name="seed_decline_bench">Press de Banca Declinado (Barra)</string>
-    <string name="seed_decline_bench_desc">1. Acuéstate en banco declinado (15-30 grados), pies asegurados.\n2. Agarra la barra ligeramente más ancha que los hombros.\n3. Baja la barra al pecho inferior.\n4. Empuja la barra arriba y ligeramente hacia atrás.\n5. Mantén los pies anclados y core apretado.</string>
+    <string name="seed_decline_bench_desc">1. Acuéstate en banco declinado (15–30 grados), pies asegurados.\n2. Agarra la barra ligeramente más ancha que los hombros.\n3. Baja la barra al pecho inferior.\n4. Empuja la barra arriba y ligeramente hacia atrás.\n5. Mantén los pies anclados y core apretado.</string>
     <string name="seed_arnold_press">Press Arnold (Mancuernas)</string>
     <string name="seed_arnold_press_desc">1. Siéntate con mancuernas a la altura de hombros, palmas hacia ti.\n2. Empuja las mancuernas arriba mientras rotas las palmas hacia adelante.\n3. Termina con palmas hacia adelante, brazos extendidos arriba.\n4. Invierte el movimiento, rotando palmas hacia ti.\n5. Baja a la posición inicial con palmas hacia dentro.</string>
     <string name="seed_goblet_squat">Sentadilla Cáliz (Mancuerna)</string>
@@ -191,7 +191,7 @@
     <string name="seed_dumbbell_fly">Aperturas con Mancuernas</string>
     <string name="seed_dumbbell_fly_desc">1. Acuéstate en el banco sosteniendo mancuernas sobre el pecho.\n2. Mantén ligera flexión en los codos durante el movimiento.\n3. Baja las mancuernas a los lados en arco amplio.\n4. Siente el estiramiento en el pecho en la parte inferior.\n5. Junta las mancuernas de vuelta sobre el pecho.</string>
     <string name="seed_incline_dumbbell_press">Press Inclinado con Mancuernas</string>
-    <string name="seed_incline_dumbbell_press_desc">1. Ajusta el banco a un ángulo de 30-45 grados.\n2. Sostén mancuernas a nivel de hombros, palmas hacia adelante.\n3. Empuja las mancuernas arriba hasta extender los brazos.\n4. Junta las mancuernas en la parte superior.\n5. Baja controladamente a los hombros.</string>
+    <string name="seed_incline_dumbbell_press_desc">1. Ajusta el banco a un ángulo de 30–45 grados.\n2. Sostén mancuernas a nivel de hombros, palmas hacia adelante.\n3. Empuja las mancuernas arriba hasta extender los brazos.\n4. Junta las mancuernas en la parte superior.\n5. Baja controladamente a los hombros.</string>
     <string name="seed_cable_crossover">Cruces en Polea</string>
     <string name="seed_cable_crossover_desc">1. Ajusta las poleas a posición alta, agarra las manijas.\n2. Da un paso adelante con postura escalonada.\n3. Lleva las manijas hacia abajo y a través del cuerpo en movimiento de arco.\n4. Cruza las manos frente al pecho inferior.\n5. Regresa controladamente manteniendo tensión en los cables.</string>
     <string name="seed_machine_row">Remo en Máquina (Sentado)</string>
@@ -203,7 +203,7 @@
     <string name="seed_dumbbell_overhead_press">Press de Hombros con Mancuernas (De Pie)</string>
     <string name="seed_dumbbell_overhead_press_desc">1. Párate con mancuernas a la altura de los hombros.\n2. Contrae el core, pies al ancho de hombros.\n3. Empuja las mancuernas arriba hasta extender los brazos.\n4. Mantén las mancuernas alineadas sobre los hombros.\n5. Baja controladamente a los hombros.</string>
     <string name="seed_barbell_shrug">Encogimientos con Barra</string>
-    <string name="seed_barbell_shrug_desc">1. Sostén la barra a nivel de muslos con agarre prono.\n2. Mantén los brazos rectos durante todo el movimiento.\n3. Eleva los hombros directamente hacia las orejas.\n4. Mantén la contracción máxima durante 1-2 segundos.\n5. Baja los hombros controladamente.</string>
+    <string name="seed_barbell_shrug_desc">1. Sostén la barra a nivel de muslos con agarre prono.\n2. Mantén los brazos rectos durante todo el movimiento.\n3. Eleva los hombros directamente hacia las orejas.\n4. Mantén la contracción máxima durante 1–2 segundos.\n5. Baja los hombros controladamente.</string>
     <string name="seed_front_raise">Elevación Frontal (Mancuernas)</string>
     <string name="seed_front_raise_desc">1. Párate con mancuernas frente a los muslos, palmas hacia el cuerpo.\n2. Mantén ligera flexión en codos, core activado.\n3. Eleva las mancuernas hacia adelante hasta altura de hombros.\n4. Mantén los brazos paralelos al suelo en la parte superior.\n5. Baja controladamente a la posición inicial.</string>
     <string name="seed_t_bar_row">Remo en T</string>
@@ -277,7 +277,7 @@
     <string name="seed_zottman_curl">Curl Zottman (Mancuernas)</string>
     <string name="seed_zottman_curl_desc">1. Párate con mancuernas a los lados, palmas adelante.\n2. Lleva pesas arriba con agarre estándar.\n3. Arriba, rota muñecas para que palmas miren abajo.\n4. Baja con agarre inverso para énfasis en antebrazos.\n5. Rota de vuelta a agarre estándar abajo.</string>
     <string name="seed_paused_squat">Sentadilla con Pausa (Barra)</string>
-    <string name="seed_paused_squat_desc">1. Prepárate como sentadilla trasera estándar.\n2. Desciende a paralelo o más abajo.\n3. Pausa 2-3 segundos en la parte inferior.\n4. Elimina rebote, construye fuerza desde paro muerto.\n5. Empuja explosivamente para pararte.</string>
+    <string name="seed_paused_squat_desc">1. Prepárate como sentadilla trasera estándar.\n2. Desciende a paralelo o más abajo.\n3. Pausa 2–3 segundos en la parte inferior.\n4. Elimina rebote, construye fuerza desde paro muerto.\n5. Empuja explosivamente para pararte.</string>
     <string name="seed_glute_bridge">Puente de Glúteos</string>
     <string name="seed_glute_bridge_desc">1. Acuéstate boca arriba, rodillas dobladas, pies planos.\n2. Coloca peso sobre caderas si deseas.\n3. Empuja con talones, levantando caderas hacia techo.\n4. Aprieta glúteos fuertemente arriba.\n5. Baja caderas controladamente, repite.</string>
     <string name="seed_glute_kickback">Patada de Glúteo (Polea)</string>
@@ -293,7 +293,7 @@
     <string name="seed_wide_grip_row">Remo en Polea Agarre Ancho</string>
     <string name="seed_wide_grip_row_desc">1. Usa barra ancha en remo de polea.\n2. Siéntate con pies en plataforma, agarra barra ancho.\n3. Lleva barra al pecho superior con posición amplia de codos.\n4. Enfatiza espalda superior y deltoides posteriores.\n5. Extiende brazos controladamente.</string>
     <string name="seed_incline_bench_barbell">Press de Banca Inclinado (Barra)</string>
-    <string name="seed_incline_bench_barbell_desc">1. Ajusta banco a ángulo de 30-45 grados.\n2. Agarra barra ligeramente más ancha que hombros.\n3. Baja barra al pecho superior.\n4. Empuja barra arriba y ligeramente hacia atrás.\n5. Trabaja desarrollo de pecho superior.</string>
+    <string name="seed_incline_bench_barbell_desc">1. Ajusta banco a ángulo de 30–45 grados.\n2. Agarra barra ligeramente más ancha que hombros.\n3. Baja barra al pecho superior.\n4. Empuja barra arriba y ligeramente hacia atrás.\n5. Trabaja desarrollo de pecho superior.</string>
     <string name="seed_standing_calf_raise">Elevación de Gemelos de Pie (Máquina)</string>
     <string name="seed_standing_calf_raise_desc">1. Posiciona hombros bajo almohadillas, puntas de pies en plataforma.\n2. Párate erguido, core activado.\n3. Elévate sobre las puntas lo más alto posible.\n4. Pausa y aprieta gemelos arriba.\n5. Baja talones bajo plataforma para estiramiento completo.</string>
     <string name="seed_seated_calf_raise">Elevación de Gemelos Sentado (Máquina)</string>
@@ -361,7 +361,7 @@
     <string name="seed_pistol_squat">Sentadilla Pistola</string>
     <string name="seed_pistol_squat_desc">1. Párate en una pierna, otra pierna extendida adelante.\n2. Baja en sentadilla en una sola pierna.\n3. Mantén pierna extendida fuera del suelo durante todo el ejercicio.\n4. Desciende lo más bajo posible.\n5. Empuja con talón para pararte, movimiento avanzado.</string>
     <string name="seed_smith_machine_incline_bench">Press Inclinado en Multipower</string>
-    <string name="seed_smith_machine_incline_bench_desc">1. Ajusta banco a 30-45 grados bajo barra de multipower.\n2. Acuéstate, agarra barra al ancho de hombros.\n3. Desancla y baja barra al pecho superior.\n4. Ruta fija trabaja pecho superior de forma segura.\n5. Empuja arriba y rota para volver a anclar.</string>
+    <string name="seed_smith_machine_incline_bench_desc">1. Ajusta banco a 30–45 grados bajo barra de multipower.\n2. Acuéstate, agarra barra al ancho de hombros.\n3. Desancla y baja barra al pecho superior.\n4. Ruta fija trabaja pecho superior de forma segura.\n5. Empuja arriba y rota para volver a anclar.</string>
     <string name="seed_smith_machine_decline_bench">Press Declinado en Multipower</string>
     <string name="seed_smith_machine_decline_bench_desc">1. Ajusta banco en decline bajo barra de multipower.\n2. Asegura pies, acuéstate y agarra barra.\n3. Desancla y baja al pecho inferior.\n4. Ruta fija trabaja pecho inferior.\n5. Empuja arriba y rota para volver a anclar.</string>
     <string name="seed_incline_chest_press_machine">Press de Pecho Inclinado (Máquina)</string>
@@ -369,7 +369,7 @@
     <string name="seed_decline_chest_press_machine">Press de Pecho Declinado (Máquina)</string>
     <string name="seed_decline_chest_press_machine_desc">1. Siéntate en máquina de press declinado.\n2. Ajusta asiento para manijas a nivel de pecho inferior.\n3. Empuja manijas adelante hasta brazos extendidos.\n4. Trabaja pecho inferior específicamente.\n5. Regresa controladamente a posición inicial.</string>
     <string name="seed_incline_cable_fly">Aperturas en Polea Inclinado</string>
-    <string name="seed_incline_cable_fly_desc">1. Ajusta banco a 30-45 grados entre poleas.\n2. Ajusta poleas a posición baja.\n3. Acuéstate, junta manijas sobre pecho superior.\n4. Trabaja pecho superior con movimiento de apertura.\n5. Baja en movimiento de arco manteniendo tensión.</string>
+    <string name="seed_incline_cable_fly_desc">1. Ajusta banco a 30–45 grados entre poleas.\n2. Ajusta poleas a posición baja.\n3. Acuéstate, junta manijas sobre pecho superior.\n4. Trabaja pecho superior con movimiento de apertura.\n5. Baja en movimiento de arco manteniendo tensión.</string>
     <string name="seed_decline_cable_fly">Aperturas en Polea Declinado</string>
     <string name="seed_decline_cable_fly_desc">1. Ajusta banco en decline entre poleas.\n2. Ajusta poleas a posición alta.\n3. Acuéstate, junta manijas en pecho inferior.\n4. Trabaja pecho inferior con movimiento de apertura.\n5. Baja en movimiento de arco manteniendo tensión.</string>
     <string name="seed_machine_fly">Aperturas en Máquina (Pec Fly)</string>
@@ -468,7 +468,7 @@
     <!-- Active Workout Screen -->
     <string name="active_workout_training">Entrenando</string>
     <string name="active_workout_configuration">Configuración</string>
-    <string name="active_workout_use_rpe">Usar RPE (1-10)</string>
+    <string name="active_workout_use_rpe">Usar RPE (1–10)</string>
     <string name="active_workout_use_rir">Usar RIR (Reps en reserva)</string>
     <string name="active_workout_hide_metric">Ocultar métrica</string>
     <string name="active_workout_finish">Terminar</string>
@@ -523,7 +523,7 @@
     <string name="folder_color_label">Color</string>
     <string name="folder_create">Crear</string>
     <string name="folder_cancel">Cancelar</string>
-    <string name="folder_move_to_title">Mover a...</string>
+    <string name="folder_move_to_title">Mover a…</string>
     <string name="folder_root">Entrenamientos</string>
 
     <!-- Workout Screen - Actions -->

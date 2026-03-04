@@ -66,6 +66,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -86,10 +87,10 @@ import com.eugene.lift.ui.components.WorkoutEmptyState
 import com.eugene.lift.domain.model.Folder
 import com.eugene.lift.domain.model.WorkoutTemplate
 import com.eugene.lift.ui.feature.workout.components.CreateFolderDialog
-import com.eugene.lift.ui.feature.workout.components.FolderChip
 import com.eugene.lift.ui.feature.workout.components.FolderRow
 import com.eugene.lift.ui.feature.workout.components.MoveToFolderDialog
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -146,13 +147,7 @@ fun WorkoutScreen(
 
     val pagerState = rememberPagerState(initialPage = uiState.selectedTab, pageCount = { 2 })
 
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }.collectLatest { page ->
-            if (page != uiState.selectedTab) {
-                onEvent(WorkoutUiEvent.TabSelected(page))
-            }
-        }
-    }
+
 
     DragContainer(dragState = uiState.dragState) {
         WorkoutContent(
@@ -248,9 +243,12 @@ private fun WorkoutContent(
     onFolderDeleteRequest: (String) -> Unit,
     onTemplateDeleteRequest: (WorkoutTemplate) -> Unit
 ) {
-    LaunchedEffect(uiState.selectedTab) {
-        if (pagerState.currentPage != uiState.selectedTab) {
-            pagerState.animateScrollToPage(uiState.selectedTab)
+    val coroutineScope = rememberCoroutineScope()
+
+    // Keep ViewModel in sync when the user swipes; tab clicks drive the pager directly below
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.settledPage }.collectLatest { page ->
+            onEvent(WorkoutUiEvent.TabSelected(page))
         }
     }
 
@@ -259,7 +257,7 @@ private fun WorkoutContent(
             selectedTab = pagerState.currentPage,
             onTabSelected = { index ->
                 if (index != pagerState.currentPage) {
-                    onEvent(WorkoutUiEvent.TabSelected(index))
+                    coroutineScope.launch { pagerState.animateScrollToPage(index) }
                 }
             },
             onToggleReorderMode = { onEvent(WorkoutUiEvent.ToggleReorderMode) }

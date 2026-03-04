@@ -1,5 +1,6 @@
 package com.eugene.lift.ui.feature.settings
 
+import android.app.Activity
 import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -77,6 +78,7 @@ fun SettingsScreen(
     onEvent: (SettingsUiEvent) -> Unit
 ) {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -129,7 +131,12 @@ fun SettingsScreen(
                     label = stringResource(R.string.label_language),
                     options = languages,
                     selectedOption = currentLangPair,
-                    onOptionSelected = { pair -> onEvent(SettingsUiEvent.LanguageChanged(pair.first)) },
+                    onOptionSelected = { pair ->
+                        onEvent(SettingsUiEvent.LanguageChanged(pair.first))
+                        // Recreate the Activity so attachBaseContext applies the new locale
+                        // to ALL windows (including DropdownMenus, dialogs, etc.)
+                        (context as? Activity)?.recreate()
+                    },
                     labelProvider = { it.second }
                 )
             }

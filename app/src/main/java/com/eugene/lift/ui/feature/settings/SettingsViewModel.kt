@@ -8,7 +8,9 @@ import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.usecase.settings.GetCurrentLanguageUseCase
 import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
+import com.eugene.lift.domain.usecase.settings.UpdateAutoTimerUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateDistanceUnitUseCase
+import com.eugene.lift.domain.usecase.settings.UpdateEffortMetricUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateLanguageUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateThemeUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateWeightUnitUseCase
@@ -28,6 +30,8 @@ class SettingsViewModel @Inject constructor(
     private val updateWeightUnitUseCase: UpdateWeightUnitUseCase,
     private val updateDistanceUnitUseCase: UpdateDistanceUnitUseCase,
     private val updateLanguageUseCase: UpdateLanguageUseCase,
+    private val updateEffortMetricUseCase: UpdateEffortMetricUseCase,
+    private val updateAutoTimerUseCase: UpdateAutoTimerUseCase,
     getCurrentLanguageUseCase: GetCurrentLanguageUseCase
 ) : ViewModel() {
 
@@ -45,7 +49,9 @@ class SettingsViewModel @Inject constructor(
             theme = current.theme,
             weightUnit = current.weightUnit,
             distanceUnit = current.distanceUnit,
-            languageCode = lang
+            languageCode = lang,
+            effortMetric = current.effortMetric,
+            autoTimerEnabled = current.autoTimerEnabled
         )
     }.stateIn(
         scope = viewModelScope,
@@ -59,6 +65,8 @@ class SettingsViewModel @Inject constructor(
             is SettingsUiEvent.WeightUnitChanged -> updateWeightUnit(event.unit)
             is SettingsUiEvent.DistanceUnitChanged -> updateDistanceUnit(event.unit)
             is SettingsUiEvent.LanguageChanged -> updateLanguage(event.code)
+            is SettingsUiEvent.EffortMetricChanged -> updateEffortMetric(event.metric)
+            is SettingsUiEvent.AutoTimerToggled -> updateAutoTimer(event.enabled)
             SettingsUiEvent.ContactUsClicked -> Unit
         }
     }
@@ -80,5 +88,13 @@ class SettingsViewModel @Inject constructor(
             viewModelScope.launch { updateLanguageUseCase(code) }
             this.languageCode.value = code
         }
+    }
+
+    private fun updateEffortMetric(metric: String?) {
+        viewModelScope.launch { updateEffortMetricUseCase(metric) }
+    }
+
+    private fun updateAutoTimer(enabled: Boolean) {
+        viewModelScope.launch { updateAutoTimerUseCase(enabled) }
     }
 }

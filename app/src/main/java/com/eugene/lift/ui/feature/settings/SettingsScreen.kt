@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -212,6 +213,81 @@ fun SettingsScreen(
                             }
                         }
                     }
+                }
+            }
+
+            HorizontalDivider()
+
+            // ── Workout Section ──────────────────────────────────────────
+            SettingsSection(title = stringResource(R.string.section_workout)) {
+
+                // Effort Metric picker
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(R.string.settings_effort_metric_label),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_effort_metric_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    val segmentedButtonColors = SegmentedButtonDefaults.colors(
+                        activeContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        activeContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        activeBorderColor = MaterialTheme.colorScheme.outline,
+                        inactiveContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        inactiveBorderColor = MaterialTheme.colorScheme.outline
+                    )
+                    val options = listOf("RPE", "RIR", null)
+                    val labels = listOf(
+                        stringResource(R.string.active_workout_use_rpe),
+                        stringResource(R.string.active_workout_use_rir),
+                        stringResource(R.string.active_workout_hide_metric)
+                    )
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        options.forEachIndexed { index, option ->
+                            SegmentedButton(
+                                selected = uiState.effortMetric == option,
+                                onClick = { onEvent(SettingsUiEvent.EffortMetricChanged(option)) },
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = index, count = options.size),
+                                colors = segmentedButtonColors
+                            ) {
+                                Text(labels[index], style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Auto-timer toggle
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.active_workout_auto_timer),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.settings_auto_timer_subtitle),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = uiState.autoTimerEnabled,
+                        onCheckedChange = { onEvent(SettingsUiEvent.AutoTimerToggled(it)) }
+                    )
                 }
             }
 

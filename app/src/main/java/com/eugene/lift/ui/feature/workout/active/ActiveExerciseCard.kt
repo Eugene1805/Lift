@@ -1,15 +1,20 @@
 package com.eugene.lift.ui.feature.workout.active
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Note
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -34,14 +39,24 @@ fun ActiveExerciseCard(
     callbacks: ExerciseCallbacks
 ) {
     val setsInDeleteMode = remember { mutableStateListOf<String>() }
+    // Show note field if there's already a note, or user picks "Add/Edit note" from menu
+    var showNoteField by remember(exercise.id) { mutableStateOf(!exercise.note.isNullOrEmpty()) }
 
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(modifier = Modifier.fillMaxWidth()) {
             ExerciseHeader(
                 title = exercise.exercise.name,
-                onClick = callbacks.onExerciseClick
+                hasNote = !exercise.note.isNullOrEmpty(),
+                onAddEditNote = { showNoteField = true },
+                onDelete = callbacks.onDeleteExercise,
+                onReplace = callbacks.onReplaceExercise
             )
-            SetHeaders(measureType = exercise.exercise.measureType, weightUnitLabel = weightUnitLabel, effortMetric = effortMetric, userSettings = userSettings)
+            SetHeaders(
+                measureType = exercise.exercise.measureType,
+                weightUnitLabel = weightUnitLabel,
+                effortMetric = effortMetric,
+                userSettings = userSettings
+            )
 
             exercise.sets.forEachIndexed { setIndex, set ->
                 val historySet = exerciseHistory.getOrNull(setIndex)
@@ -78,7 +93,15 @@ fun ActiveExerciseCard(
                 }
             }
 
-            ExerciseFooter(onAddSet = callbacks.onAddSet, note = exercise.note ?: "", onNoteChange = callbacks.onExerciseNoteChange)
+            ExerciseFooter(
+                onAddSet = callbacks.onAddSet,
+                showNoteField = showNoteField,
+                note = exercise.note ?: "",
+                onNoteChange = { value ->
+                    callbacks.onExerciseNoteChange(value)
+                    if (value.isEmpty()) showNoteField = false
+                }
+            )
         }
     }
 }
@@ -86,13 +109,17 @@ fun ActiveExerciseCard(
 @Composable
 private fun ExerciseHeader(
     title: String,
-    onClick: () -> Unit
+    hasNote: Boolean,
+    onAddEditNote: () -> Unit,
+    onDelete: () -> Unit,
+    onReplace: () -> Unit
 ) {
+    var menuExpanded by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -102,12 +129,73 @@ private fun ExerciseHeader(
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.weight(1f)
         )
-        Icon(
-            imageVector = Icons.Default.Info,
-            contentDescription = stringResource(R.string.active_workout_view_details),
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-            modifier = Modifier.size(20.dp)
-        )
+
+        Box {
+            IconButton(onClick = { menuExpanded = true }) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = stringResource(R.string.cd_more_options),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false }
+            ) {
+                // Add/Edit note
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            if (hasNote) stringResource(R.string.active_workout_edit_note)
+                            else stringResource(R.string.active_workout_add_note)
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(Icons.Default.Note, contentDescription = null)
+                    },
+                    onClick = {
+                        menuExpanded = false
+                        onAddEditNote()
+                    }
+                )
+
+                // Replace exercise
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.active_workout_replace_exercise)) },
+                    leadingIcon = {
+                        Icon(Icons.Default.SwapHoriz, contentDescription = null)
+                    },
+                    onClick = {
+                        menuExpanded = false
+                        onReplace()
+                    }
+                )
+
+                HorizontalDivider()
+
+                // Delete exercise
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(R.string.active_workout_delete_exercise),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    },
+                    onClick = {
+                        menuExpanded = false
+                        onDelete()
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -148,7 +236,12 @@ private fun SetHeaders(measureType: MeasureType, weightUnitLabel: String, effort
 }
 
 @Composable
-private fun ExerciseFooter(onAddSet: () -> Unit, note: String, onNoteChange: (String) -> Unit) {
+private fun ExerciseFooter(
+    onAddSet: () -> Unit,
+    showNoteField: Boolean,
+    note: String,
+    onNoteChange: (String) -> Unit
+) {
     TextButton(
         onClick = onAddSet,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
@@ -158,14 +251,21 @@ private fun ExerciseFooter(onAddSet: () -> Unit, note: String, onNoteChange: (St
         Text(stringResource(R.string.active_workout_add_set))
     }
 
-    Text(stringResource(R.string.active_workout_exercise_notes_label), modifier = Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.labelMedium)
-    CompactTextInput(
-        value = note,
-        onValueChange = onNoteChange,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        keyboardType = androidx.compose.ui.text.input.KeyboardType.Text,
-        filterInput = { it }
-    )
+    if (showNoteField) {
+        Text(
+            stringResource(R.string.active_workout_exercise_notes_label),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 0.dp),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        CompactTextInput(
+            value = note,
+            onValueChange = onNoteChange,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            keyboardType = androidx.compose.ui.text.input.KeyboardType.Text,
+            filterInput = { it }
+        )
+    }
 }
 
 private fun ExerciseCallbacks.asSetRowCallbacks(setIndex: Int): SetRowCallbacks =

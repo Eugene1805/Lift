@@ -194,7 +194,9 @@ data class ExerciseCallbacks(
     val onAddSet: () -> Unit,
     val onRemoveSet: (setIndex: Int) -> Unit,
     val onExerciseClick: () -> Unit,
-    val onExerciseNoteChange: (String) -> Unit
+    val onExerciseNoteChange: (String) -> Unit,
+    val onDeleteExercise: () -> Unit,
+    val onReplaceExercise: () -> Unit
 )
 
 data class SetRowCallbacks(

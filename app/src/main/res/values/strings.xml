@@ -416,6 +416,7 @@
 
     <string name="section_appearance">Appearance</string>
     <string name="section_units">Units</string>
+    <string name="section_workout">Workout</string>
     <string name="section_about">About</string>
     <string name="label_theme">Theme</string>
     <string name="label_language">Language</string>
@@ -475,8 +476,8 @@
     <!-- Active Workout Screen -->
     <string name="active_workout_training">Training</string>
     <string name="active_workout_configuration">Configuration</string>
-    <string name="active_workout_use_rpe">Use RPE (1–10)</string>
-    <string name="active_workout_use_rir">Use RIR (Reps in Reserve)</string>
+    <string name="active_workout_use_rpe">Use RPE</string>
+    <string name="active_workout_use_rir">Use RIR</string>
     <string name="active_workout_hide_metric">Hide metric</string>
     <string name="active_workout_finish">Finish</string>
     <string name="active_workout_add_exercise">Add Exercise</string>
@@ -491,6 +492,10 @@
     <!-- Notes labels -->
     <string name="active_workout_notes_label">Notes</string>
     <string name="active_workout_exercise_notes_label">Exercise notes</string>
+    <string name="active_workout_add_note">Add note</string>
+    <string name="active_workout_edit_note">Edit note</string>
+    <string name="active_workout_delete_exercise">Delete exercise</string>
+    <string name="active_workout_replace_exercise">Replace exercise</string>
     <string name="history_session_note_label">Session notes</string>
     <string name="history_exercise_note_label">Exercise notes</string>
 
@@ -546,6 +551,9 @@
     <!-- Active Workout - Additional -->
     <string name="active_workout_auto_timer">Auto-timer when finishing set</string>
     <string name="active_workout_time_label">TIME</string>
+    <string name="settings_effort_metric_label">Effort Metric</string>
+    <string name="settings_effort_metric_subtitle">Show RPE, RIR, or hide the effort column in workouts</string>
+    <string name="settings_auto_timer_subtitle">Start rest timer automatically after completing a set</string>
     <string name="exit_workout_title">Exit Workout?</string>
     <string name="exit_workout_message">Are you sure you want to exit? Your progress will be lost.</string>
     <string name="exit_workout_confirm">Exit</string>

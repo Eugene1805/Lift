@@ -68,10 +68,15 @@ interface WorkoutDao {
     @Query("""
         SELECT * FROM workout_sessions 
         WHERE id IN (SELECT sessionId FROM session_exercises WHERE exerciseId = :exerciseId)
+        AND (:templateId IS NULL OR templateId = :templateId)
         AND date < :currentDate
         ORDER BY date DESC LIMIT 1
     """)
-    suspend fun getLastSessionWithExercise(exerciseId: String, currentDate: LocalDateTime = LocalDateTime.now()): SessionComplete?
+    suspend fun getLastSessionWithExercise(
+        exerciseId: String,
+        templateId: String?,
+        currentDate: LocalDateTime = LocalDateTime.now()
+    ): SessionComplete?
     // --- Estadísticas y PRs ---
 
     // Obtener el set con mayor peso para un ejercicio dado

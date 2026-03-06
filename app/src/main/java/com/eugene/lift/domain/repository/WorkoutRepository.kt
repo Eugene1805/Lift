@@ -20,7 +20,7 @@ interface WorkoutRepository {
 
     fun getExerciseHistory(exerciseId: String): Flow<List<WorkoutSession>>
 
-    suspend fun getLastHistoryForExercise(exerciseId: String): WorkoutSession?
+    suspend fun getLastHistoryForExercise(exerciseId: String, templateId: String? = null): WorkoutSession?
 
     suspend fun getExerciseUsageCount(): Map<String, Int>
 

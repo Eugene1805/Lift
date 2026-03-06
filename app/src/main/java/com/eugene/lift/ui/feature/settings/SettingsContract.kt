@@ -8,7 +8,9 @@ data class SettingsUiState(
     val theme: AppTheme = AppTheme.SYSTEM,
     val weightUnit: WeightUnit = WeightUnit.KG,
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
-    val languageCode: String = "en"
+    val languageCode: String = "en",
+    val effortMetric: String? = null,
+    val autoTimerEnabled: Boolean = true
 )
 
 sealed interface SettingsUiEvent {
@@ -16,5 +18,7 @@ sealed interface SettingsUiEvent {
     data class WeightUnitChanged(val unit: WeightUnit) : SettingsUiEvent
     data class DistanceUnitChanged(val unit: DistanceUnit) : SettingsUiEvent
     data class LanguageChanged(val code: String) : SettingsUiEvent
+    data class EffortMetricChanged(val metric: String?) : SettingsUiEvent
+    data class AutoTimerToggled(val enabled: Boolean) : SettingsUiEvent
     data object ContactUsClicked : SettingsUiEvent
 }

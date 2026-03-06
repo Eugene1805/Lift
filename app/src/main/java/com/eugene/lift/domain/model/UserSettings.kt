@@ -16,5 +16,7 @@ data class UserSettings(
     val theme: AppTheme = AppTheme.SYSTEM,
     val weightUnit: WeightUnit = WeightUnit.KG,
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
-    val languageCode: String = "en"
+    val languageCode: String = "en",
+    val effortMetric: String? = null,   // "RPE", "RIR", or null (hidden)
+    val autoTimerEnabled: Boolean = true
 )

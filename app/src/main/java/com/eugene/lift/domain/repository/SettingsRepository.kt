@@ -18,6 +18,8 @@ interface SettingsRepository {
     suspend fun setOnboardingComplete(done: Boolean)
     fun isSwipeHintSeen(): Flow<Boolean>
     suspend fun setSwipeHintSeen()
+    suspend fun setEffortMetric(metric: String?)
+    suspend fun setAutoTimerEnabled(enabled: Boolean)
 }
 
 

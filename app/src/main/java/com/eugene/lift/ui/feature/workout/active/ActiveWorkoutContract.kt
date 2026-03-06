@@ -49,6 +49,8 @@ sealed interface ActiveWorkoutUiEvent {
     data class ExerciseNoteChanged(val exerciseIndex: Int, val value: String) : ActiveWorkoutUiEvent
     data class ExercisesReordered(val fromIndex: Int, val toIndex: Int) : ActiveWorkoutUiEvent
     data object ToggleReorderMode : ActiveWorkoutUiEvent
+    data class RemoveExercise(val exerciseIndex: Int) : ActiveWorkoutUiEvent
+    data class ReplaceExercise(val exerciseIndex: Int) : ActiveWorkoutUiEvent
 }
 
 sealed interface ActiveWorkoutEffect {

@@ -84,4 +84,12 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setSwipeHintSeen() {
         dataSource.setSwipeHintSeen()
     }
+
+    override suspend fun setEffortMetric(metric: String?) {
+        dataSource.setEffortMetric(metric)
+    }
+
+    override suspend fun setAutoTimerEnabled(enabled: Boolean) {
+        dataSource.setAutoTimerEnabled(enabled)
+    }
 }

@@ -87,7 +87,9 @@ fun WorkoutContent(
                     onAddSet = { onEvent(ActiveWorkoutUiEvent.AddSet(exIndex)) },
                     onRemoveSet = { setIdx -> onEvent(ActiveWorkoutUiEvent.RemoveSet(exIndex, setIdx)) },
                     onExerciseClick = { onEvent(ActiveWorkoutUiEvent.ExerciseClicked(exercise.exercise.id)) },
-                    onExerciseNoteChange = { onEvent(ActiveWorkoutUiEvent.ExerciseNoteChanged(exIndex, it)) }
+                    onExerciseNoteChange = { onEvent(ActiveWorkoutUiEvent.ExerciseNoteChanged(exIndex, it)) },
+                    onDeleteExercise = { onEvent(ActiveWorkoutUiEvent.RemoveExercise(exIndex)) },
+                    onReplaceExercise = { onEvent(ActiveWorkoutUiEvent.ReplaceExercise(exIndex)) }
                 )
 
                 @OptIn(ExperimentalFoundationApi::class)

@@ -141,12 +141,12 @@ fun ActiveWorkoutScreen(
             }
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             WorkoutContent(
                 uiState = uiState,
                 weightUnitLabel = weightUnitLabel,
                 onEvent = onEvent,
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier
             )
 
             ExerciseSnackbar(

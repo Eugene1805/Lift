@@ -468,8 +468,8 @@
     <!-- Active Workout Screen -->
     <string name="active_workout_training">Entrenando</string>
     <string name="active_workout_configuration">Configuración</string>
-    <string name="active_workout_use_rpe">Usar RPE (1–10)</string>
-    <string name="active_workout_use_rir">Usar RIR (Reps en reserva)</string>
+    <string name="active_workout_use_rpe">Usar RPE</string>
+    <string name="active_workout_use_rir">Usar RIR</string>
     <string name="active_workout_hide_metric">Ocultar métrica</string>
     <string name="active_workout_finish">Terminar</string>
     <string name="active_workout_add_exercise">Agregar Ejercicio</string>

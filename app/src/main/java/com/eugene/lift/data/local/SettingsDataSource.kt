@@ -39,6 +39,8 @@ class SettingsDataSource @Inject constructor(
         val TRACKED_EXERCISE_IDS = stringPreferencesKey("tracked_exercise_ids")
         val ONBOARDING_COMPLETE = booleanPreferencesKey("onboarding_complete")
         val SWIPE_HINT_SEEN = booleanPreferencesKey("swipe_hint_seen")
+        val EFFORT_METRIC = stringPreferencesKey("effort_metric") // "RPE", "RIR", or "NONE"
+        val AUTO_TIMER_ENABLED = booleanPreferencesKey("auto_timer_enabled")
     }
 
     // Leemos y convertimos los Strings guardados a Enums
@@ -47,14 +49,24 @@ class SettingsDataSource @Inject constructor(
         val weightName = preferences[Keys.WEIGHT_UNIT] ?: WeightUnit.KG.name
         val distanceName = preferences[Keys.DISTANCE_UNIT] ?: DistanceUnit.KM.name
         val langCode = preferences[Keys.LANGUAGE_CODE] ?: "en"
+        val effortRaw = preferences[Keys.EFFORT_METRIC] // null if never set
+        val effortMetric: String? = when (effortRaw) {
+            "RPE" -> "RPE"
+            "RIR" -> "RIR"
+            "NONE" -> null
+            else -> null // default: hidden
+        }
+        val autoTimer = preferences[Keys.AUTO_TIMER_ENABLED] ?: true
 
-        Log.d(TAG, "Reading settings from DataStore - theme: $themeName, weight: $weightName, distance: $distanceName, language: $langCode")
+        Log.d(TAG, "Reading settings from DataStore - theme: $themeName, weight: $weightName, distance: $distanceName, language: $langCode, effort: $effortRaw, autoTimer: $autoTimer")
 
         UserSettings(
             theme = runCatching { AppTheme.valueOf(themeName) }.getOrDefault(AppTheme.SYSTEM),
             weightUnit = runCatching { WeightUnit.valueOf(weightName) }.getOrDefault(WeightUnit.KG),
             distanceUnit = runCatching { DistanceUnit.valueOf(distanceName) }.getOrDefault(DistanceUnit.KM),
-            languageCode = langCode
+            languageCode = langCode,
+            effortMetric = effortMetric,
+            autoTimerEnabled = autoTimer
         )
     }
 
@@ -111,6 +123,18 @@ class SettingsDataSource @Inject constructor(
 
     suspend fun setTrackedExerciseIds(ids: List<String>) {
         dataStore.edit { prefs -> prefs[Keys.TRACKED_EXERCISE_IDS] = ids.joinToString(",") }
+    }
+
+    // ── Workout preferences ─────────────────────────────────────────────────
+
+    suspend fun setEffortMetric(metric: String?) {
+        dataStore.edit { prefs ->
+            prefs[Keys.EFFORT_METRIC] = metric ?: "NONE"
+        }
+    }
+
+    suspend fun setAutoTimerEnabled(enabled: Boolean) {
+        dataStore.edit { prefs -> prefs[Keys.AUTO_TIMER_ENABLED] = enabled }
     }
 
     // ── Onboarding ─────────────────────────────────────────────────────────

@@ -23,11 +23,13 @@ fun ActiveWorkoutScreenRoute(
     onNavigateBack: () -> Unit,
     onAddExerciseClick: () -> Unit,
     onExerciseClick: (String) -> Unit,
+    onReplaceExercise: (exerciseIndex: Int) -> Unit = {},
     viewModel: ActiveWorkoutViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val onExerciseClickState by rememberUpdatedState(newValue = onExerciseClick)
     val onAddExerciseState by rememberUpdatedState(newValue = onAddExerciseClick)
+    val onReplaceExerciseState by rememberUpdatedState(newValue = onReplaceExercise)
 
     LaunchedEffect(Unit) {
         viewModel.effects.collectLatest { effect ->
@@ -55,6 +57,7 @@ fun ActiveWorkoutScreenRoute(
         when (event) {
             ActiveWorkoutUiEvent.AddExerciseClicked -> onAddExerciseState()
             is ActiveWorkoutUiEvent.ExerciseClicked -> onExerciseClickState(event.exerciseId)
+            is ActiveWorkoutUiEvent.ReplaceExercise -> onReplaceExerciseState(event.exerciseIndex)
             else -> viewModel.onEvent(event)
         }
     }

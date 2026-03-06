@@ -212,9 +212,14 @@ private fun NavGraphBuilder.exercisePickerScreen(navController: NavHostControlle
                 navController.navigate(ExerciseAddRoute())
             },
             onExerciseClick = { exerciseId ->
-                navController.previousBackStackEntry
-                    ?.savedStateHandle
-                    ?.set("selected_exercise_id", exerciseId)
+                val previousEntry = navController.previousBackStackEntry
+                val replaceIndex = previousEntry?.savedStateHandle?.get<Int>("replace_exercise_index")
+                if (replaceIndex != null) {
+                    // Replace mode: hand back a single exercise id for replacement
+                    previousEntry.savedStateHandle["replace_exercise_id"] = exerciseId
+                } else {
+                    previousEntry?.savedStateHandle?.set("selected_exercise_id", exerciseId)
+                }
                 navController.popBackStack()
             },
             onExercisesSelected = { ids ->
@@ -272,12 +277,24 @@ private fun NavGraphBuilder.activeWorkoutScreen(navController: NavHostController
     composable<ActiveWorkoutRoute> { backStackEntry ->
         val viewModel: ActiveWorkoutViewModel = hiltViewModel()
         val savedStateHandle = backStackEntry.savedStateHandle
-        val selectedExerciseIds = savedStateHandle.get<List<String>>("selected_exercise_ids_active")
 
+        // --- Add exercises (existing flow) ---
+        val selectedExerciseIds = savedStateHandle.get<List<String>>("selected_exercise_ids_active")
         LaunchedEffect(selectedExerciseIds) {
             selectedExerciseIds?.let { ids ->
                 viewModel.onAddExercisesToSession(ids)
                 savedStateHandle.remove<List<String>>("selected_exercise_ids_active")
+            }
+        }
+
+        // --- Replace exercise (new flow) ---
+        val replaceExerciseId = savedStateHandle.get<String>("replace_exercise_id")
+        val replaceExerciseIndex = savedStateHandle.get<Int>("replace_exercise_index")
+        LaunchedEffect(replaceExerciseId, replaceExerciseIndex) {
+            if (replaceExerciseId != null && replaceExerciseIndex != null) {
+                viewModel.replaceExerciseInSession(replaceExerciseIndex, replaceExerciseId)
+                savedStateHandle.remove<String>("replace_exercise_id")
+                savedStateHandle.remove<Int>("replace_exercise_index")
             }
         }
 
@@ -288,6 +305,11 @@ private fun NavGraphBuilder.activeWorkoutScreen(navController: NavHostController
             },
             onExerciseClick = { exerciseId ->
                 navController.navigate(ExerciseDetailRoute(exerciseId))
+            },
+            onReplaceExercise = { exerciseIndex ->
+                // Store which slot to replace, then open picker
+                backStackEntry.savedStateHandle["replace_exercise_index"] = exerciseIndex
+                navController.navigate(ExercisePickerRoute)
             }
         )
     }

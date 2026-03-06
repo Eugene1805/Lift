@@ -112,9 +112,9 @@ class WorkoutRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getLastHistoryForExercise(exerciseId: String): WorkoutSession? {
+    override suspend fun getLastHistoryForExercise(exerciseId: String, templateId: String?): WorkoutSession? {
         // Mapeamos el resultado del DAO al Dominio
-        val sessionComplete = dao.getLastSessionWithExercise(exerciseId) ?: return null
+        val sessionComplete = dao.getLastSessionWithExercise(exerciseId, templateId) ?: return null
         val unit = currentWeightUnit()
         return convertSessionToPreference(sessionComplete.toDomain(), unit)
     }

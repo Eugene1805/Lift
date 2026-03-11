@@ -23,7 +23,10 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
+import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -257,44 +260,35 @@ class ProfileViewModel @Inject constructor(
             session.date.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
         }
 
-        val durationData = groupedByWeek.map { (weekStart, weekSessions) ->
-            val totalMinutes = weekSessions.sumOf { it.durationSeconds } / 60.0
-            HistogramDataPoint(
-                label = "${weekStart.dayOfMonth}/${weekStart.monthValue}",
-                value = totalMinutes
-            )
-        }.sortedBy { it.label }
+        val sortedWeeks = groupedByWeek.entries.sortedBy { it.key }
+        val weekLabelFmt = DateTimeFormatter.ofPattern("MMM d", Locale.getDefault())
 
-        val volumeData = groupedByWeek.map { (weekStart, weekSessions) ->
+        val durationData = sortedWeeks.map { (weekStart, weekSessions) ->
+            val totalMinutes = weekSessions.sumOf { it.durationSeconds } / 60.0
+            HistogramDataPoint(label = weekStart.format(weekLabelFmt), value = totalMinutes)
+        }
+
+        val volumeData = sortedWeeks.map { (weekStart, weekSessions) ->
             val totalVolume = weekSessions.sumOf { session ->
                 session.exercises.flatMap { it.sets }
                     .filter { it.completed }
                     .sumOf { it.weight * it.reps }
             }
-            HistogramDataPoint(
-                label = "${weekStart.dayOfMonth}/${weekStart.monthValue}",
-                value = totalVolume
-            )
-        }.sortedBy { it.label }
+            HistogramDataPoint(label = weekStart.format(weekLabelFmt), value = totalVolume)
+        }
 
-        val repsData = groupedByWeek.map { (weekStart, weekSessions) ->
+        val repsData = sortedWeeks.map { (weekStart, weekSessions) ->
             val totalReps = weekSessions.sumOf { session ->
                 session.exercises.flatMap { it.sets }
                     .filter { it.completed }
                     .sumOf { it.reps }
             }
-            HistogramDataPoint(
-                label = "${weekStart.dayOfMonth}/${weekStart.monthValue}",
-                value = totalReps.toDouble()
-            )
-        }.sortedBy { it.label }
+            HistogramDataPoint(label = weekStart.format(weekLabelFmt), value = totalReps.toDouble())
+        }
 
-        val workoutsPerWeek = groupedByWeek.map { (weekStart, weekSessions) ->
-            HistogramDataPoint(
-                label = "${weekStart.dayOfMonth}/${weekStart.monthValue}",
-                value = weekSessions.size.toDouble()
-            )
-        }.sortedBy { it.label }
+        val workoutsPerWeek = sortedWeeks.map { (weekStart, weekSessions) ->
+            HistogramDataPoint(label = weekStart.format(weekLabelFmt), value = weekSessions.size.toDouble())
+        }
 
         val avgWorkoutsPerWeek = if (groupedByWeek.isNotEmpty()) {
             sessions.size.toDouble() / groupedByWeek.size

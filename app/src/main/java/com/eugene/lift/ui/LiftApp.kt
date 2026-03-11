@@ -6,9 +6,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.eugene.lift.common.localization.createLocalizedContext
@@ -38,8 +38,8 @@ fun LiftApp(
 ) {
     // Observe user settings
     val settingsState by getSettingsUseCase()
-        .collectAsState(
-            initial = UserSettings(
+        .collectAsStateWithLifecycle(
+            initialValue = UserSettings(
                 theme = AppTheme.SYSTEM,
                 weightUnit = WeightUnit.KG,
                 distanceUnit = DistanceUnit.KM,

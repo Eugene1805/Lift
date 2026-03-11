@@ -1,5 +1,6 @@
 package com.eugene.lift.ui.feature.workout.active
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -47,6 +48,7 @@ fun ActiveExerciseCard(
             ExerciseHeader(
                 title = exercise.exercise.name,
                 hasNote = !exercise.note.isNullOrEmpty(),
+                onExerciseClick = callbacks.onExerciseClick,
                 onAddEditNote = { showNoteField = true },
                 onDelete = callbacks.onDeleteExercise,
                 onReplace = callbacks.onReplaceExercise
@@ -110,6 +112,7 @@ fun ActiveExerciseCard(
 private fun ExerciseHeader(
     title: String,
     hasNote: Boolean,
+    onExerciseClick: () -> Unit,
     onAddEditNote: () -> Unit,
     onDelete: () -> Unit,
     onReplace: () -> Unit
@@ -127,7 +130,9 @@ private fun ExerciseHeader(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .clickable(onClick = onExerciseClick)
         )
 
         Box {

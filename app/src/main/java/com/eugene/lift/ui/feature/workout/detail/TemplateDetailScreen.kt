@@ -138,7 +138,7 @@ private fun TemplateDetailContent(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
-            items(template.exercises) { item ->
+            items(template.exercises, key = { it.exercise.id }) { item ->
                 TemplateExerciseReadOnlyCard(
                     item = item,
                     onClick = { onExerciseClick(item.exercise.id) }

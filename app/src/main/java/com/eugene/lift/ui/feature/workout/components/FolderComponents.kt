@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -146,8 +147,8 @@ fun CreateFolderDialog(
     onDismiss: () -> Unit,
     onCreate: (String, String) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var selectedColor by remember { mutableStateOf(FolderColors.first()) }
+    var name by rememberSaveable { mutableStateOf("") }
+    var selectedColor by rememberSaveable { mutableStateOf(FolderColors.first()) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -218,7 +219,7 @@ fun MoveToFolderDialog(
                         modifier = Modifier.clickable { onSelectFolder(null) }
                     )
                 }
-                items(folders) { folder ->
+                items(folders, key = { it.id }) { folder ->
                     ListItem(
                         headlineContent = { Text(folder.name) },
                         leadingContent = { Icon(Icons.Default.Folder, null, tint = folder.color.toColor()) },

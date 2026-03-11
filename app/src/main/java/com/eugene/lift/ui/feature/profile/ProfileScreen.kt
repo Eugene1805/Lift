@@ -18,20 +18,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -45,11 +38,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -57,6 +53,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.eugene.lift.R
 import com.eugene.lift.domain.model.UserProfile
 
@@ -230,7 +228,7 @@ private fun ProfileHeader(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${profile?.totalWorkouts ?: 0} workouts",
+                        text = stringResource(R.string.profile_workouts_count, profile?.totalWorkouts ?: 0),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -248,7 +246,11 @@ private fun HistogramSection(
     onTimeRangeChange: (TimeRange) -> Unit
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Duration", "Volume", "Reps")
+    val tabs = listOf(
+        stringResource(R.string.profile_tab_duration),
+        stringResource(R.string.profile_tab_volume),
+        stringResource(R.string.profile_tab_reps)
+    )
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
@@ -261,7 +263,7 @@ private fun HistogramSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Statistics",
+                    text = stringResource(R.string.profile_statistics),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -294,12 +296,6 @@ private fun HistogramSection(
                 else -> stats.repsData
             }
 
-            val unit = when (selectedTabIndex) {
-                0 -> "min"
-                1 -> "kg"
-                else -> "reps"
-            }
-
             if (data.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -308,7 +304,7 @@ private fun HistogramSection(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No data for this period",
+                        text = stringResource(R.string.profile_no_data),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -316,7 +312,6 @@ private fun HistogramSection(
             } else {
                 SimpleBarChart(
                     data = data,
-                    unit = unit,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(150.dp)
@@ -327,41 +322,31 @@ private fun HistogramSection(
 }
 
 @Composable
+private fun timeRangeLabel(range: TimeRange): String = when (range) {
+    TimeRange.WEEK -> stringResource(R.string.profile_time_week)
+    TimeRange.MONTH -> stringResource(R.string.profile_time_month)
+    TimeRange.THREE_MONTHS -> stringResource(R.string.profile_time_3months)
+    TimeRange.SIX_MONTHS -> stringResource(R.string.profile_time_6months)
+    TimeRange.YEAR -> stringResource(R.string.profile_time_year)
+    TimeRange.ALL_TIME -> stringResource(R.string.profile_time_all)
+}
+
+@Composable
 private fun TimeRangeDropdown(
     selectedRange: TimeRange,
     onRangeSelected: (TimeRange) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
 
     Box {
         TextButton(onClick = { expanded = true }) {
-            Text(
-                text = when (selectedRange) {
-                    TimeRange.WEEK -> "This Week"
-                    TimeRange.MONTH -> "Last Month"
-                    TimeRange.THREE_MONTHS -> "3 Months"
-                    TimeRange.SIX_MONTHS -> "6 Months"
-                    TimeRange.YEAR -> "1 Year"
-                    TimeRange.ALL_TIME -> "All Time"
-                }
-            )
+            Text(text = timeRangeLabel(selectedRange))
         }
 
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             TimeRange.entries.forEach { range ->
                 DropdownMenuItem(
-                    text = {
-                        Text(
-                            when (range) {
-                                TimeRange.WEEK -> "This Week"
-                                TimeRange.MONTH -> "Last Month"
-                                TimeRange.THREE_MONTHS -> "3 Months"
-                                TimeRange.SIX_MONTHS -> "6 Months"
-                                TimeRange.YEAR -> "1 Year"
-                                TimeRange.ALL_TIME -> "All Time"
-                            }
-                        )
-                    },
+                    text = { Text(timeRangeLabel(range)) },
                     onClick = {
                         onRangeSelected(range)
                         expanded = false
@@ -375,38 +360,39 @@ private fun TimeRangeDropdown(
 @Composable
 private fun SimpleBarChart(
     data: List<HistogramDataPoint>,
-    unit: String,
     modifier: Modifier = Modifier
 ) {
     val maxValue = data.maxOfOrNull { it.value } ?: 1.0
 
+    val displayData = data.takeLast(8)
+
     Column(modifier = modifier) {
-        // Bars
+        // Bars row — each column takes equal weight so bars align with labels
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.Bottom
         ) {
-            data.takeLast(8).forEach { point ->
+            displayData.forEach { point ->
+                val barHeight = if (maxValue > 0) (point.value / maxValue) else 0.0
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.weight(1f)
                 ) {
-                    val barHeight = if (maxValue > 0) (point.value / maxValue) else 0.0
-
                     Text(
                         text = point.value.toInt().toString(),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
 
                     Box(
                         modifier = Modifier
-                            .width(24.dp)
                             .fillMaxWidth()
                             .height((80 * barHeight).dp.coerceAtLeast(4.dp))
                             .background(
@@ -418,20 +404,21 @@ private fun SimpleBarChart(
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
-        // Labels
+        // X-axis labels — same weight(1f) so they line up with bars above
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            data.takeLast(8).forEach { point ->
+            displayData.forEach { point ->
                 Text(
                     text = point.label,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    maxLines = 1
                 )
             }
         }
@@ -439,13 +426,13 @@ private fun SimpleBarChart(
 }
 
 @Composable
-private fun DashboardSection(stats: ProfileStats) {
+fun DashboardSection(stats: ProfileStats) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Workouts per Week",
+                text = stringResource(R.string.profile_workouts_per_week),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -459,12 +446,12 @@ private fun DashboardSection(stats: ProfileStats) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Average",
+                    text = stringResource(R.string.profile_average),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "%.1f workouts/week".format(stats.averageWorkoutsPerWeek),
+                    text = stringResource(R.string.profile_workouts_week_format, stats.averageWorkoutsPerWeek),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -476,7 +463,6 @@ private fun DashboardSection(stats: ProfileStats) {
 
                 SimpleBarChart(
                     data = stats.workoutsPerWeek,
-                    unit = "workouts",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp)
@@ -488,7 +474,7 @@ private fun DashboardSection(stats: ProfileStats) {
 
 
 @Composable
-private fun ProfileSkeletonLoader(modifier: Modifier = Modifier) {
+fun ProfileSkeletonLoader(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -548,4 +534,6 @@ private fun ProfileSkeletonLoader(modifier: Modifier = Modifier) {
         }
     }
 }
+
+
 

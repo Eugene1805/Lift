@@ -48,6 +48,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -444,7 +445,7 @@ private fun PrHistoryList(
     records: List<PrRecord>,
     weightUnit: String
 ) {
-    val showAll = remember { mutableStateOf(false) }
+    val showAll = rememberSaveable { mutableStateOf(false) }
     val displayRecords = if (showAll.value || records.size <= 3) records else records.take(3)
 
     Column {
@@ -551,7 +552,7 @@ private fun ExercisePickerDialog(
     onToggle: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var query by remember { mutableStateOf("") }
+    var query by rememberSaveable { mutableStateOf("") }
     val filtered = remember(query, allExercises) {
         if (query.isBlank()) allExercises
         else allExercises.filter { it.name.contains(query, ignoreCase = true) }

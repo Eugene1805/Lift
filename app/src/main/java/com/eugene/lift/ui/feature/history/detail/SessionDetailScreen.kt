@@ -333,11 +333,8 @@ private fun formatSetSummary(
     repsLabel: String,
     distanceLabel: String
 ): String {
-    val displayWeight = if (userSettings.weightUnit == WeightUnit.LBS) {
-        WeightConverter.kgToLbs(workoutSet.weight)
-    } else {
-        workoutSet.weight
-    }
+    // weight is already in display units (kg or lbs) as returned by the repository
+    val displayWeight = workoutSet.weight
 
     val hasWeight = workoutSet.weight > 0
     val hasReps = workoutSet.reps > 0
@@ -382,14 +379,10 @@ private fun buildSessionSummary(session: WorkoutSession, userSettings: UserSetti
     val dateText = session.date.format(DateTimeFormatter.ofPattern("EEE, MMM d • HH:mm"))
     val durationText = formatDurationSimple(session.durationSeconds)
     val prCount = session.exercises.flatMap { it.sets }.count { it.isPr }
-    val totalVolumeKg = session.exercises.flatMap { it.sets }
+    val totalVolume = session.exercises.flatMap { it.sets }
         .filter { it.completed }
         .sumOf { it.weight * it.reps }
-    val totalVolume = if (userSettings.weightUnit == WeightUnit.LBS) {
-        WeightConverter.kgToLbs(totalVolumeKg)
-    } else {
-        totalVolumeKg
-    }
+    // weight is already in display units (kg or lbs) as returned by the repository
     val volumeText = if (totalVolume > 0) "${formatWeight(totalVolume)} $weightLabel" else "-"
 
     return SessionDetailSummary(

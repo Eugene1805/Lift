@@ -14,6 +14,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -26,7 +28,7 @@ import com.eugene.lift.R
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.model.WorkoutSession
-import com.eugene.lift.domain.util.WeightConverter
+
 import com.eugene.lift.ui.components.HistoryEmptyState
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -108,23 +110,29 @@ fun HistoryScreen(
                 contentPadding = PaddingValues(bottom = 16.dp),
                 modifier = Modifier.padding(innerPadding).fillMaxSize()
             ) {
-                // Iteramos sobre la lista polimórfica (Header o Session)
-                historyItems.forEach { item ->
+                // Using items/stickyHeader DSL for proper recycling
+                items(
+                    items = historyItems,
+                    key = { item ->
+                        when (item) {
+                            is HistoryUiItem.Header -> "header_${item.title}"
+                            is HistoryUiItem.SessionItem -> item.session.id
+                        }
+                    },
+                    contentType = { item ->
+                        when (item) {
+                            is HistoryUiItem.Header -> "header"
+                            is HistoryUiItem.SessionItem -> "session"
+                        }
+                    }
+                ) { item ->
                     when (item) {
-                        is HistoryUiItem.Header -> {
-                            stickyHeader(key = item.title) {
-                                HistoryHeader(title = item.title)
-                            }
-                        }
-                        is HistoryUiItem.SessionItem -> {
-                            item(key = item.session.id) {
-                                HistorySessionCard(
-                                    session = item.session,
-                                    userSettings = userSettings,
-                                    onClick = { onSessionClick(item.session.id) }
-                                )
-                            }
-                        }
+                        is HistoryUiItem.Header -> HistoryHeader(title = item.title)
+                        is HistoryUiItem.SessionItem -> HistorySessionCard(
+                            session = item.session,
+                            userSettings = userSettings,
+                            onClick = { onSessionClick(item.session.id) }
+                        )
                     }
                 }
             }
@@ -154,20 +162,21 @@ fun HistorySessionCard(
     userSettings: UserSettings,
     onClick: () -> Unit
 ) {
-    val totalVolumeKg = session.exercises.flatMap { it.sets }
-        .filter { it.completed }
-        .sumOf { it.weight * it.reps }
-    val totalVolume = if (userSettings.weightUnit == WeightUnit.LBS) {
-        WeightConverter.kgToLbs(totalVolumeKg)
-    } else {
-        totalVolumeKg
+    // Expensive aggregations cached — only rerun when exercises list reference changes
+    val totalVolume = remember(session.exercises) {
+        session.exercises.flatMap { it.sets }
+            .filter { it.completed }
+            .sumOf { it.weight * it.reps }
+        // weights already in display units (kg or lbs) from the repository
     }
     val weightLabel = if (userSettings.weightUnit == WeightUnit.LBS) {
         stringResource(R.string.unit_lbs)
     } else {
         stringResource(R.string.unit_kg)
     }
-    val prCount = session.exercises.flatMap { it.sets }.count { it.isPr }
+    val prCount = remember(session.exercises) {
+        session.exercises.flatMap { it.sets }.count { it.isPr }
+    }
     val repsLabel = stringResource(R.string.unit_reps)
 
     Card(
@@ -280,7 +289,7 @@ private fun PrStat(prCount: Int) {
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
-            text = "$prCount ${stringResource(R.string.history_detail_prs)}",
+            text = remember(prCount) { "$prCount" } + " ${stringResource(R.string.history_detail_prs)}",
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -504,11 +513,8 @@ fun getBestSetString(
         .maxWithOrNull(compareBy({ it.weight }, { it.reps }))
         ?: return "-"
 
-    val displayWeight = if (userSettings.weightUnit == WeightUnit.LBS) {
-        WeightConverter.kgToLbs(bestSet.weight)
-    } else {
-        bestSet.weight
-    }
+    // Weights are already in the user's display unit (kg or lbs) from the repository layer.
+    val displayWeight = bestSet.weight
 
     return when {
         displayWeight > 0 -> "${formatWeight(displayWeight)}$kgLabel × ${bestSet.reps}"

@@ -658,7 +658,7 @@ fun WorkoutSkeletonList(modifier: Modifier = Modifier) {
         }
         item { Spacer(Modifier.height(4.dp)) }
         // Template card skeletons
-        items(5) {
+        items(5, key = { it }) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),

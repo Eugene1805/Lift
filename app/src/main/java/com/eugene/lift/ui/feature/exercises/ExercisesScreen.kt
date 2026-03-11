@@ -47,6 +47,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -474,7 +475,7 @@ private fun ExerciseSupportingContent(exercise: Exercise) {
     val bodyPartStrings = exercise.bodyParts.map { part ->
         stringResource(part.labelRes)
     }
-    val bodyPartsString = bodyPartStrings.joinToString(", ")
+    val bodyPartsString = remember(exercise.id, bodyPartStrings) { bodyPartStrings.joinToString(", ") }
 
     Text(
         text = "$bodyPartsString • ${stringResource(exercise.category.labelRes)}",

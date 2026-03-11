@@ -79,13 +79,7 @@ interface UserProfileDao {
     @Query("UPDATE user_profiles SET username = :username, updatedAt = :updatedAt WHERE id = :id")
     suspend fun updateUsername(id: String, username: String, updatedAt: LocalDateTime)
 
-    // Social updates (for future use)
-    @Query("UPDATE user_profiles SET followersCount = followersCount + :delta WHERE id = :id")
-    suspend fun updateFollowersCount(id: String, delta: Int)
-
-    @Query("UPDATE user_profiles SET followingCount = followingCount + :delta WHERE id = :id")
-    suspend fun updateFollowingCount(id: String, delta: Int)
-
-    @Query("UPDATE user_profiles SET isPublic = :isPublic, updatedAt = :updatedAt WHERE id = :id")
-    suspend fun updatePrivacy(id: String, isPublic: Boolean, updatedAt: LocalDateTime)
+    // Social / Privacy fields (followersCount, followingCount, isPublic) are reserved
+    // for a future social feature and are not yet wired to any UI or use case.
+    // updateFollowersCount, updateFollowingCount, updatePrivacy removed until implemented.
 }

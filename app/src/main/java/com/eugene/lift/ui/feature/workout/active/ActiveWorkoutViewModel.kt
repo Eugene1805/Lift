@@ -55,7 +55,7 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val getExerciseDetailUseCase: GetExerciseDetailUseCase,
     private val getLastHistoryForExerciseUseCase: GetLastHistoryForExerciseUseCase,
     private val getPersonalRecordUseCase: GetPersonalRecordUseCase,
-    getSettingsUseCase: GetSettingsUseCase,
+    private val getSettingsUseCase: GetSettingsUseCase,  // kept private to call cold flow on init
     private val updateEffortMetricUseCase: UpdateEffortMetricUseCase,
     private val updateAutoTimerUseCase: UpdateAutoTimerUseCase,
     private val serviceManager: ActiveWorkoutServiceManager
@@ -76,6 +76,8 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val _elapsedTimeSeconds = MutableStateFlow(0L)
     private val _reorderState = MutableStateFlow(ReorderUiState())
 
+    // Hot StateFlow used by the combine below — the initial value is only a placeholder;
+    // actual persisted prefs are eagerly loaded in init via the cold flow.
     private val userSettings: StateFlow<UserSettings> = getSettingsUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UserSettings())
 
@@ -88,9 +90,10 @@ class ActiveWorkoutViewModel @Inject constructor(
     val effects: SharedFlow<ActiveWorkoutEffect> = _effects
 
     init {
-        // Seed preferences from DataStore before UI is built
+        // Seed preferences from the COLD upstream flow so we actually suspend
+        // until DataStore emits the real persisted value (not the StateFlow initialValue).
         viewModelScope.launch {
-            val saved = userSettings.firstOrNull()
+            val saved = getSettingsUseCase().firstOrNull()
             if (saved != null) {
                 _effortMetric.value = saved.effortMetric
                 _isAutoTimerEnabled.value = saved.autoTimerEnabled

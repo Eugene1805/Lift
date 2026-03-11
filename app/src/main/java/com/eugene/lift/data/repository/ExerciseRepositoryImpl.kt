@@ -38,4 +38,24 @@ class ExerciseRepositoryImpl @Inject constructor(
     override suspend fun getCount(): Int {
         return dao.getExerciseCount()
     }
+
+    override suspend fun getExercisesWithoutImage(): List<Exercise> {
+        return dao.getExercisesWithoutImage().map { entity ->
+            // ExerciseEntity doesn't carry bodyParts directly; we map with an empty list
+            // since bodyParts are not needed for image assignment.
+            Exercise(
+                id = entity.id,
+                name = entity.name,
+                category = entity.category,
+                measureType = entity.measureType,
+                instructions = entity.instructions,
+                imagePath = entity.imagePath,
+                bodyParts = emptyList()
+            )
+        }
+    }
+
+    override suspend fun updateImagePath(exerciseId: String, imagePath: String) {
+        dao.updateImagePath(exerciseId, imagePath)
+    }
 }

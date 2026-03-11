@@ -8,7 +8,9 @@ import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
 import com.eugene.lift.domain.usecase.settings.GetCurrentLanguageUseCase
+import com.eugene.lift.domain.usecase.settings.UpdateAutoTimerUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateDistanceUnitUseCase
+import com.eugene.lift.domain.usecase.settings.UpdateEffortMetricUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateLanguageUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateThemeUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateWeightUnitUseCase
@@ -35,6 +37,8 @@ class SettingsViewModelTest {
     private lateinit var updateWeightUnitUseCase: UpdateWeightUnitUseCase
     private lateinit var updateDistanceUnitUseCase: UpdateDistanceUnitUseCase
     private lateinit var updateLanguageUseCase: UpdateLanguageUseCase
+    private lateinit var updateEffortMetricUseCase: UpdateEffortMetricUseCase
+    private lateinit var updateAutoTimerUseCase: UpdateAutoTimerUseCase
     private lateinit var getCurrentLanguageUseCase: GetCurrentLanguageUseCase
     private lateinit var viewModel: SettingsViewModel
 
@@ -57,6 +61,8 @@ class SettingsViewModelTest {
         updateWeightUnitUseCase = mockk(relaxed = true)
         updateDistanceUnitUseCase = mockk(relaxed = true)
         updateLanguageUseCase = mockk(relaxed = true)
+        updateEffortMetricUseCase = mockk(relaxed = true)
+        updateAutoTimerUseCase = mockk(relaxed = true)
         getCurrentLanguageUseCase = mockk()
 
         coEvery { getSettingsUseCase() } returns flowOf(defaultSettings)
@@ -70,6 +76,8 @@ class SettingsViewModelTest {
             updateWeightUnitUseCase,
             updateDistanceUnitUseCase,
             updateLanguageUseCase,
+            updateEffortMetricUseCase,
+            updateAutoTimerUseCase,
             getCurrentLanguageUseCase
         )
     }

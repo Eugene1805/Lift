@@ -9,5 +9,6 @@ interface ExerciseRepository {
     suspend fun saveExercise(exercise: Exercise)
     suspend fun deleteExercise(exerciseId: String)
     suspend fun getCount(): Int
-
+    suspend fun getExercisesWithoutImage(): List<Exercise>
+    suspend fun updateImagePath(exerciseId: String, imagePath: String)
 }

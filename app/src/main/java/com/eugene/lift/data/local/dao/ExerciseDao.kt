@@ -73,4 +73,14 @@ interface ExerciseDao {
         deleteCrossRefs(exerciseId)
         deleteExerciseBase(exerciseId)
     }
+
+    // --- Image assignment helpers ---
+
+    /** Returns entities that still have no image assigned. */
+    @Query("SELECT * FROM exercises WHERE imagePath IS NULL")
+    suspend fun getExercisesWithoutImage(): List<ExerciseEntity>
+
+    /** Updates the imagePath for a single exercise row. */
+    @Query("UPDATE exercises SET imagePath = :imagePath WHERE id = :exerciseId")
+    suspend fun updateImagePath(exerciseId: String, imagePath: String)
 }

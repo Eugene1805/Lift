@@ -69,6 +69,19 @@ import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.usecase.exercise.SortOrder
 import com.eugene.lift.ui.components.ExercisesEmptyState
 
+/**
+ * Resolves a drawable resource name (e.g. "bench_press") to an
+ * android.resource URI that Coil can load.
+ * Returns null if the name is null or the resource does not exist.
+ */
+@Composable
+private fun drawableUriOrNull(drawableName: String?): String? {
+    if (drawableName == null) return null
+    val context = LocalContext.current
+    val resId = context.resources.getIdentifier(drawableName, "drawable", context.packageName)
+    return if (resId != 0) "android.resource://${context.packageName}/$resId" else null
+}
+
 @Composable
 fun ExercisesRoute(
     onAddClick: () -> Unit,
@@ -432,17 +445,33 @@ fun ExerciseItemCard(
             },
             leadingContent = {
                 if (exercise.imagePath != null) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(exercise.imagePath)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                    )
+                    val imageUri = drawableUriOrNull(exercise.imagePath)
+                    if (imageUri != null) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(imageUri)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = exercise.name.take(1),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 } else {
                     Box(
                         modifier = Modifier

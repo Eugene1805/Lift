@@ -12,10 +12,14 @@ import java.util.UUID
 import javax.inject.Inject
 
 /**
- * Helper that returns the drawable name for a given exercise name at seeding time.
- * Delegates to [ExerciseImageMapper] so image assignments are always consistent.
+ * Utility function to resolve imagery during the initial database population.
+ *
+ * By delegating to the [ExerciseImageMapper], we ensure that the image assignment
+ * logic remains consistent between the initial seed and any subsequent background
+ * update processes.
  */
 private fun imageFor(name: String): String? = ExerciseImageMapper.getDrawable(name)
+
 
 class ExerciseSeeder @Inject constructor(
     private val repository: ExerciseRepository,

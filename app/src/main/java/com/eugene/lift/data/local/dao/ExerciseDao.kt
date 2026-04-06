@@ -75,12 +75,24 @@ interface ExerciseDao {
     }
 
     // --- Image assignment helpers ---
+    // These methods support the automated background process of enriching exercise
+    // data with visual assets without requiring a full record rewrite.
 
-    /** Returns entities that still have no image assigned. */
+    /**
+     * Identifies exercises that are currently missing a visual representation.
+     *
+     * Used by the background assignment pipeline to determine which records need
+     * a mapping lookup.
+     */
     @Query("SELECT * FROM exercises WHERE imagePath IS NULL")
     suspend fun getExercisesWithoutImage(): List<ExerciseEntity>
 
-    /** Updates the imagePath for a single exercise row. */
+    /**
+     * Updates only the visual asset path for a specific exercise.
+     *
+     * This targeted update avoids the complexity of a full record replacement
+     * and preserves all other exercise attributes (body parts, instructions, etc).
+     */
     @Query("UPDATE exercises SET imagePath = :imagePath WHERE id = :exerciseId")
     suspend fun updateImagePath(exerciseId: String, imagePath: String)
-}
+}

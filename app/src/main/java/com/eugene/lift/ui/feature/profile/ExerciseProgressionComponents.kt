@@ -7,14 +7,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,7 +32,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,23 +44,24 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.eugene.lift.R
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseProgression
 import com.eugene.lift.domain.model.MeasureType
@@ -108,7 +105,7 @@ fun ExerciseProgressionSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Exercise Progression",
+                    text = stringResource(R.string.profile_exercise_progression),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -117,7 +114,7 @@ fun ExerciseProgressionSection(
                     IconButton(onClick = onAddClick) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Track exercise",
+                            contentDescription = stringResource(R.string.profile_track_exercise),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -241,7 +238,7 @@ private fun ExerciseProgressionDetail(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Stop tracking", style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(R.string.profile_stop_tracking), style = MaterialTheme.typography.labelMedium)
             }
         }
     }
@@ -261,27 +258,27 @@ private fun PrBadge(pr: PrRecord, weightUnit: String) {
     ) {
         Icon(
             imageVector = Icons.Default.EmojiEvents,
-            contentDescription = "Personal Record",
+            contentDescription = stringResource(R.string.profile_personal_record),
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Personal Record",
+                text = stringResource(R.string.profile_personal_record),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
             if (pr.weight > 0) {
                 Text(
-                    text = "${formatWeight(pr.weight)} $weightUnit × ${pr.reps} reps",
+                    text = "${formatWeight(pr.weight)} $weightUnit × ${pr.reps}",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             } else {
                 Text(
-                    text = "${pr.reps} reps",
+                    text = "${pr.reps}",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -423,14 +420,17 @@ private fun ProgressionLineChart(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = if (isWeightBased) "e1RM: ${formatWeight(minValue)} $weightUnit"
-                else "Min: ${minValue.toInt()} reps",
+                text = if (isWeightBased) stringResource(
+                    R.string.profile_e1rm_label,
+                    formatWeight(minValue),
+                    weightUnit
+                ) else stringResource(R.string.profile_min_reps, minValue.toInt()),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
             Text(
                 text = if (isWeightBased) "${formatWeight(maxValue)} $weightUnit"
-                else "${maxValue.toInt()} reps",
+                else maxValue.toInt().toString(),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
@@ -450,7 +450,7 @@ private fun PrHistoryList(
 
     Column {
         Text(
-            text = "PR History",
+            text = stringResource(R.string.profile_pr_history),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface
@@ -471,7 +471,7 @@ private fun PrHistoryList(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text(
-                    if (showAll.value) "Show less" else "Show all ${records.size} PRs",
+                    if (showAll.value) stringResource(R.string.profile_show_less) else stringResource(R.string.profile_show_all_prs, records.size),
                     style = MaterialTheme.typography.labelMedium
                 )
             }
@@ -512,14 +512,14 @@ private fun PrHistoryRow(record: PrRecord, weightUnit: String, rank: Int) {
         Column(modifier = Modifier.weight(1f)) {
             if (record.weight > 0) {
                 Text(
-                    text = "${formatWeight(record.weight)} $weightUnit × ${record.reps} reps",
+                    text = "${formatWeight(record.weight)} $weightUnit × ${record.reps}",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             } else {
                 Text(
-                    text = "${record.reps} reps",
+                    text = "${record.reps}",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface
@@ -563,9 +563,9 @@ private fun ExercisePickerDialog(
         onDismissRequest = onDismiss,
         title = {
             Column {
-                Text("Track Exercise")
+                Text(stringResource(R.string.profile_track_exercise))
                 Text(
-                    text = "${trackedIds.size}/${GetExerciseProgressionUseCase.MAX_TRACKED} tracked",
+                    text = stringResource(R.string.profile_tracked_count, trackedIds.size, GetExerciseProgressionUseCase.MAX_TRACKED),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -576,7 +576,7 @@ private fun ExercisePickerDialog(
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it },
-                    placeholder = { Text("Search exercises…") },
+                    placeholder = { Text(stringResource(R.string.profile_search_exercises_placeholder)) },
                     leadingIcon = {
                         Icon(Icons.Default.Search, contentDescription = null)
                     },
@@ -600,7 +600,7 @@ private fun ExercisePickerDialog(
                     if (filtered.isEmpty()) {
                         item {
                             Text(
-                                text = "No exercises found",
+                                text = stringResource(R.string.profile_no_exercises_found),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier
@@ -614,7 +614,7 @@ private fun ExercisePickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Done") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.profile_done)) }
         }
     )
 }
@@ -664,7 +664,7 @@ private fun ExercisePickerRow(
         if (isTracked) {
             Icon(
                 imageVector = Icons.Default.CheckCircle,
-                contentDescription = "Tracked",
+                contentDescription = stringResource(R.string.cd_tracked),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
             )
@@ -684,7 +684,7 @@ private fun EmptyProgressionState(onAddClick: () -> Unit) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "Tap + to track an exercise's progression over time",
+                text = stringResource(R.string.profile_add_exercise_chart),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -702,7 +702,7 @@ private fun SingleDataPointNote() {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Complete one more session with this exercise to see the chart",
+            text = stringResource(R.string.profile_chart_more_sessions_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -719,7 +719,7 @@ private fun NoDataNote() {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "No completed sets found yet. Start training!",
+            text = stringResource(R.string.profile_no_completed_sets),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

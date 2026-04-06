@@ -1,20 +1,20 @@
 package com.eugene.lift.data.local
 
 /**
- * Maps seeded exercise names (English, as stored in the DB) to their
- * corresponding drawable resource names (without extension).
+ * Centralizes the association between exercise naming conventions and visual assets.
  *
- * To add support for a new drawable in the future:
- *  1. Add the WebP file to res/drawable/
- *  2. Add a new entry here: "Exact Exercise Name" to "drawable_file_name"
+ * This exists as a decoupling layer so that the database and localized strings can remain
+ * agnostic of the specific drawable resource names. By using English names as keys, we
+ * ensure a stable identifier that persists even when the user changes the app's display
+ * language.
  *
- * Matching is case-insensitive (trimmed) to be resilient against minor
- * whitespace differences.
+ * Case-insensitivity and trimming are enforced to handle potential discrepancies in
+ * manual data entry or slight name variations in future seed data.
  */
 object ExerciseImageMapper {
 
     private val nameToDrawable: Map<String, String> = mapOf(
-        // Barbell exercises
+        // Grouped by equipment to facilitate bulk asset updates or style consistency checks
         "bench press (barbell)"                      to "bench_press",
         "back squat"                                 to "back_squat",
         "deadlift (barbell)"                         to "deadlift",
@@ -22,17 +22,14 @@ object ExerciseImageMapper {
         "barbell row"                                to "barbell_row",
         "hip thrust (barbell)"                       to "hip_thrust",
 
-        // Dumbbell exercises
         "dumbbell shoulder press"                    to "dumbell_shoulder_press",
         "bulgarian split squat (dumbbell)"           to "dumbell_bulgarian_split_squat",
         "incline dumbbell press"                     to "dumbell_incline_chest_press",
         "bicep curl (dumbbell)"                      to "dumbell_biceps_curl",
 
-        // Bodyweight / Weighted-bodyweight
         "pull-ups"                                   to "pull_up",
         "weighted dips"                              to "weigthed_dips",
 
-        // Machine exercises
         "leg extension (machine)"                    to "leg_extension",
         "preacher curl (machine)"                    to "machine_preacher_curl",
         "cable lateral raise"                        to "cable_lateral_raise",
@@ -40,24 +37,23 @@ object ExerciseImageMapper {
         "standing calf raise (machine)"              to "machine_standing_calf_raises",
         "hip abduction (machine)"                    to "abductors",
 
-        // Smith machine
         "bulgarian split squat (smith machine)"      to "smith_machine_bulgarian_split_squat",
 
-        // Forearms
-        "wrist curl (barbell)"                       to "wrist_curl",
+        "wrist_curl (barbell)"                       to "wrist_curl",
 
-        // Tricep single-arm (no seed exercise with this exact name currently,
-        // adding for future use when the exercise is seeded)
+        // Pre-emptive mapping for exercises not yet in the default seed data but for
+        // which assets already exist in the drawable folder.
         "single arm triceps extension"               to "single_arm_triceps_extension",
     )
 
     /**
-     * Returns the drawable resource name for the given exercise name, or null
-     * if no mapping exists.
+     * Resolves a human-readable exercise name to its corresponding technical asset identifier.
      *
-     * @param exerciseName The name of the exercise as stored in the database.
+     * @param exerciseName The canonical English name used as a key.
+     * @return The drawable resource name (WebP) or null if no visual is available for this entry.
      */
     fun getDrawable(exerciseName: String): String? {
         return nameToDrawable[exerciseName.trim().lowercase()]
     }
 }
+

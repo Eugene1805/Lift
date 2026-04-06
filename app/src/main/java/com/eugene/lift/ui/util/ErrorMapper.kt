@@ -1,14 +1,35 @@
 package com.eugene.lift.ui.util
 
+import android.content.Context
+import com.eugene.lift.R
 import com.eugene.lift.domain.error.AppError
 
+fun AppError.toMessage(context: Context): String {
+    val resId = when (this) {
+        AppError.Database -> R.string.error_database
+        AppError.Constraint -> R.string.error_constraint
+        AppError.Validation -> R.string.error_validation
+        AppError.Auth -> R.string.error_auth
+        AppError.Network -> R.string.error_network
+        is AppError.Unknown -> null
+    }
+
+    return resId?.let(context::getString)
+        ?: (this as? AppError.Unknown)?.message
+        ?: context.getString(R.string.error_unexpected)
+}
+
+/**
+ * Fallback for contexts where Android resources are not available.
+ * Prefer [toMessage] with Context whenever possible.
+ */
 fun AppError.toMessage(): String {
     return when (this) {
-        AppError.Database -> "A database error occurred. Please try again."
-        AppError.Constraint -> "This item already exists."
-        AppError.Validation -> "Invalid input. Please check your data."
-        AppError.Auth -> "Authentication failed."
-        AppError.Network -> "No internet connection."
-        is AppError.Unknown -> this.message ?: "An unexpected error occurred."
+        AppError.Database -> "Database error"
+        AppError.Constraint -> "Constraint error"
+        AppError.Validation -> "Validation error"
+        AppError.Auth -> "Auth error"
+        AppError.Network -> "Network error"
+        is AppError.Unknown -> this.message ?: "Unexpected error"
     }
 }

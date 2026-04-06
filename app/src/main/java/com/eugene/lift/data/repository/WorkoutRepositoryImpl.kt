@@ -113,13 +113,20 @@ class WorkoutRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getLastHistoryForExercise(exerciseId: String, templateId: String?): WorkoutSession? {
-        // 1st try: same routine (templateId match) — gives the most relevant pre-fill values
+        // Prefill preference:
+        // 1) Latest performed (has completed sets) from same template
+        // 2) Latest performed overall
+        // 3) Latest session from same template (even if no completed sets)
+        // 4) Latest session overall
+
         val sessionComplete = if (templateId != null) {
-            dao.getLastSessionWithExercise(exerciseId, templateId)
-                // 2nd try (fallback): any session — used when the exercise was never done from this template
+            dao.getLastPerformedSessionWithExercise(exerciseId, templateId)
+                ?: dao.getLastPerformedSessionWithExercise(exerciseId, null)
+                ?: dao.getLastSessionWithExercise(exerciseId, templateId)
                 ?: dao.getLastSessionWithExercise(exerciseId, null)
         } else {
-            dao.getLastSessionWithExercise(exerciseId, null)
+            dao.getLastPerformedSessionWithExercise(exerciseId, null)
+                ?: dao.getLastSessionWithExercise(exerciseId, null)
         } ?: return null
 
         val unit = currentWeightUnit()

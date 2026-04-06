@@ -86,7 +86,9 @@ fun EditProfileRoute(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is UiEvent.ShowSnackbar -> snackbarHostState.showSnackbar("An error occurred. Please try again.")
+                is UiEvent.ShowSnackbar -> snackbarHostState.showSnackbar(
+                    context.getString(R.string.error_generic_try_again)
+                )
             }
         }
     }
@@ -404,7 +406,7 @@ private fun AvatarPicker(
             ) {
                 Icon(
                     imageVector = Icons.Default.AddAPhoto,
-                    contentDescription = "Change avatar",
+                    contentDescription = stringResource(R.string.cd_change_avatar),
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(18.dp)
                 )
@@ -427,8 +429,8 @@ private fun UsernameSection(
         OutlinedTextField(
             value = username,
             onValueChange = onUsernameChange,
-            label = { Text("Username") },
-            prefix = { Text("@") },
+            label = { Text(stringResource(R.string.profile_username_label)) },
+            prefix = { Text(stringResource(R.string.profile_username_prefix)) },
             singleLine = true,
             isError = usernameError != null,
             supportingText = {
@@ -447,7 +449,7 @@ private fun UsernameSection(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "Suggestions",
+                text = stringResource(R.string.profile_username_suggestions),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -457,7 +459,7 @@ private fun UsernameSection(
             ) {
                 Icon(
                     imageVector = Icons.Default.Refresh,
-                    contentDescription = "Refresh suggestions",
+                    contentDescription = stringResource(R.string.cd_refresh_suggestions),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp)
                 )
@@ -488,7 +490,7 @@ private fun ImageSourceDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Change Profile Photo") },
+        title = { Text(stringResource(R.string.profile_change_photo_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 // Camera option
@@ -506,7 +508,7 @@ private fun ImageSourceDialog(
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.width(16.dp))
-                    Text("Take a photo", style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.profile_take_photo), style = MaterialTheme.typography.bodyLarge)
                 }
                 // Gallery option — using material icon alias
                 Row(
@@ -523,13 +525,13 @@ private fun ImageSourceDialog(
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.width(16.dp))
-                    Text("Choose from gallery", style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.profile_choose_from_gallery), style = MaterialTheme.typography.bodyLarge)
                 }
             }
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.component_cancel)) }
         }
     )
 }

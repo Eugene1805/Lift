@@ -280,14 +280,17 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private fun updateExerciseWithHistory(sessionExercise: SessionExercise): SessionExercise {
         val historySets = _historyState.value[sessionExercise.exercise.id]
-        val lastHistorySet = historySets?.lastOrNull()
+        // Prefill should match what the user sees in History:
+        // pick the best completed set (max weight, then max reps).
+        // Sets are already in display units.
+        val prefillSource = pickPrefillSet(historySets)
 
-        return if (lastHistorySet == null) {
+        return if (prefillSource == null) {
             sessionExercise // No history, leave as is
         } else {
             // History is already in display units (converted in loadHistoryFor)
-            val weightFromHistory = lastHistorySet.weight
-            val repsFromHistory = lastHistorySet.reps
+            val weightFromHistory = prefillSource.weight
+            val repsFromHistory = prefillSource.reps
 
             val updatedSets = sessionExercise.sets.map { currentSet ->
                 // If the set is "empty" (0/0), fill with history (in display units)
@@ -325,6 +328,19 @@ class ActiveWorkoutViewModel @Inject constructor(
                 _historyState.value = currentMap
             }
         }
+    }
+
+    /**
+     * Prefill strategy (strict):
+     * 1) Prefer last completed set from the most relevant previous session.
+     * 2) If none completed in that session, fall back to the last completed set from that session's sets (none)
+     *    -> handled by [pickPrefillSet].
+     */
+    private fun pickPrefillSet(sets: List<WorkoutSet>?): WorkoutSet? {
+        if (sets.isNullOrEmpty()) return null
+
+        val completed = sets.filter { it.completed }
+        return completed.maxWithOrNull(compareBy({ it.weight }, { it.reps }))
     }
 
     private fun updateSetState(exerciseIndex: Int, setIndex: Int, update: (WorkoutSet) -> WorkoutSet) {
@@ -603,11 +619,11 @@ class ActiveWorkoutViewModel @Inject constructor(
     }
 
     private fun getInitialSetDataFromHistory(exerciseId: String): Pair<Double, Int> {
-        val lastHistorySet = _historyState.value[exerciseId]?.lastOrNull()
+        val prefillSet = pickPrefillSet(_historyState.value[exerciseId])
 
-        return if (lastHistorySet != null) {
+        return if (prefillSet != null) {
             // History ya está en unidades de presentación; mantener tal cual
-            lastHistorySet.weight to lastHistorySet.reps
+            prefillSet.weight to prefillSet.reps
         } else {
             0.0 to 0
         }

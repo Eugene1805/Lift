@@ -41,8 +41,10 @@ class ExerciseRepositoryImpl @Inject constructor(
 
     override suspend fun getExercisesWithoutImage(): List<Exercise> {
         return dao.getExercisesWithoutImage().map { entity ->
-            // ExerciseEntity doesn't carry bodyParts directly; we map with an empty list
-            // since bodyParts are not needed for image assignment.
+            // We provide an empty list for bodyParts here because the image mapping
+            // logic only requires the exercise ID and name. This avoids the
+            // performance cost of performing a multi-table join for this specific
+            // background operation.
             Exercise(
                 id = entity.id,
                 name = entity.name,
@@ -56,6 +58,7 @@ class ExerciseRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateImagePath(exerciseId: String, imagePath: String) {
+        // Leverages the targeted DAO update to minimize write amplification.
         dao.updateImagePath(exerciseId, imagePath)
     }
-}
+}

@@ -95,6 +95,23 @@
     <string name="profile_workouts_week_format">%.1f workouts/week</string>
     <string name="profile_exercise_progression">Exercise Progression</string>
     <string name="profile_add_exercise_chart">Tap + to track an exercise\'s progression over time</string>
+    <string name="profile_track_exercise">Track exercise</string>
+    <string name="profile_tracked_count">%1$d of %2$d tracked</string>
+    <string name="profile_search_exercises_placeholder">Search exercises…</string>
+    <string name="profile_no_exercises_found">No exercises found</string>
+    <string name="profile_done">Done</string>
+
+    <string name="profile_personal_record">Personal record</string>
+    <string name="profile_pr_history">PR history</string>
+    <string name="profile_stop_tracking">Stop tracking</string>
+    <string name="profile_show_less">Show less</string>
+    <string name="profile_show_all_prs">Show all (%1$d)</string>
+    <string name="profile_min_reps">Min: %1$d</string>
+    <string name="profile_e1rm_label">e1RM: %1$s %2$s</string>
+    <string name="profile_chart_more_sessions_hint">Complete a few more sessions to see a chart</string>
+    <string name="profile_no_completed_sets">No completed sets yet</string>
+
+    <string name="cd_tracked">Tracked</string>
     <string name="profile_edit_title">Edit Profile</string>
     <string name="profile_avatar_color">Avatar Color</string>
     <string name="profile_display_name">Display Name</string>
@@ -656,5 +673,27 @@
     <string name="empty_state_exercises_title">No Exercises Found</string>
     <string name="empty_state_exercises_subtitle">Try a different search or add a custom exercise.</string>
     <string name="active_workout_distance_km">km</string>
+
+    <!-- Profile - Edit / Avatar -->
+    <string name="error_generic_try_again">An error occurred. Please try again.</string>
+    <string name="cd_change_avatar">Change profile photo</string>
+    <string name="profile_username_label">Username</string>
+    <string name="profile_username_prefix">@</string>
+    <string name="profile_username_suggestions">Suggestions</string>
+    <string name="cd_refresh_suggestions">Refresh suggestions</string>
+    <string name="profile_change_photo_title">Change Profile Photo</string>
+    <string name="profile_take_photo">Take a photo</string>
+    <string name="profile_choose_from_gallery">Choose from gallery</string>
+
+    <!-- Errors (localized) -->
+    <string name="error_database">A database error occurred. Please try again.</string>
+    <string name="error_constraint">This item already exists.</string>
+    <string name="error_validation">Invalid input. Please check your data.</string>
+    <string name="error_auth">Authentication failed.</string>
+    <string name="error_network">No internet connection.</string>
+    <string name="error_unexpected">An unexpected error occurred.</string>
+
+    <!-- History formatting -->
+    <string name="history_reps_format">%1$d reps</string>
 </resources>
 

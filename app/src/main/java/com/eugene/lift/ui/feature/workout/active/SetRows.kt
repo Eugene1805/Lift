@@ -114,12 +114,8 @@ private fun RowScope.RepsOnlyRow(set: WorkoutSet, context: SetRowContext, callba
             placeholder = { Text("0") },
             enabled = !set.completed
         )
+        context.historySet?.reps?.let {
         context.historySet?.reps?.let { HistoryText("$it reps", Modifier.align(Alignment.CenterHorizontally)) }
-    }
-}
-
-@Composable
-private fun RowScope.DistanceTimeRow(set: WorkoutSet, context: SetRowContext, callbacks: SetRowCallbacks) {
     Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
         val distanceValue = set.distance ?: 0.0
         CompactDecimalInput(
@@ -129,18 +125,16 @@ private fun RowScope.DistanceTimeRow(set: WorkoutSet, context: SetRowContext, ca
             enabled = !set.completed
         )
         context.historySet?.let { hist ->
+            val distUnitLabel = if (context.userSettings.distanceUnit == DistanceUnit.KM)
+                stringResource(R.string.unit_km)
+            else
+                stringResource(R.string.unit_miles)
             val distUnitLabel = if (context.userSettings.distanceUnit == DistanceUnit.KM) "km" else "mi"
-            HistoryText("${hist.distance?.let(::formatWeight) ?: "-"} $distUnitLabel")
-        }
-    }
-    Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
-        CompactNumberInput(
-            value = set.timeSeconds?.takeIf { it > 0 }?.toString() ?: "",
             onValueChange = callbacks.onTimeChange,
             placeholder = { Text("0") },
             enabled = !set.completed
         )
-        context.historySet?.timeSeconds?.let { HistoryText("$it s") }
+        context.historySet?.timeSeconds?.let { HistoryText("$it ${stringResource(R.string.unit_seconds_short)}") }
     }
 }
 
@@ -149,7 +143,7 @@ private fun RowScope.TimeRow(set: WorkoutSet, context: SetRowContext, callbacks:
     Column(modifier = Modifier.weight(2f).padding(horizontal = 4.dp)) {
         CompactNumberInput(
             value = set.timeSeconds?.takeIf { it > 0 }?.toString() ?: "",
-            onValueChange = callbacks.onTimeChange,
+        context.historySet?.timeSeconds?.let { HistoryText("$it s") }
             placeholder = { Text("0") },
             enabled = !set.completed
         )

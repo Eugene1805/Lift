@@ -397,6 +397,7 @@
 
     <string name="section_appearance">Apariencia</string>
     <string name="section_units">Unidades</string>
+    <string name="section_workout">Entrenamiento</string>
     <string name="section_about">Acerca de</string>
     <string name="label_theme">Tema</string>
     <string name="label_language">Idioma</string>
@@ -484,6 +485,10 @@
     <string name="active_workout_complete">Completar</string>
     <string name="active_workout_notes_label">Notas</string>
     <string name="active_workout_exercise_notes_label">Notas del ejercicio</string>
+    <string name="active_workout_add_note">Agregar nota</string>
+    <string name="active_workout_edit_note">Editar nota</string>
+    <string name="active_workout_delete_exercise">Eliminar ejercicio</string>
+    <string name="active_workout_replace_exercise">Reemplazar ejercicio</string>
 
     <!-- Template Detail Screen -->
     <string name="template_detail_edit_template">Editar Plantilla</string>
@@ -538,6 +543,9 @@
 
     <!-- Active Workout - Additional -->
     <string name="active_workout_auto_timer">Auto-timer al finalizar serie</string>
+    <string name="settings_effort_metric_label">Métrica de esfuerzo</string>
+    <string name="settings_effort_metric_subtitle">Muestra RPE, RIR o oculta la columna de esfuerzo en los entrenamientos</string>
+    <string name="settings_auto_timer_subtitle">Inicia el temporizador de descanso automáticamente al completar una serie</string>
     <string name="active_workout_time_label">TIEMPO</string>
     <string name="active_workout_distance_km">km</string>
     <string name="active_workout_time_s">s</string>
@@ -581,6 +589,23 @@
     <string name="profile_workouts_week_format">%.1f entrenamientos/semana</string>
     <string name="profile_exercise_progression">Progreso de ejercicio</string>
     <string name="profile_add_exercise_chart">"Presiona + para registrar el progrso de un ejercicio en el tiempo "</string>
+    <string name="profile_track_exercise">Registrar ejercicio</string>
+    <string name="profile_tracked_count">%1$d de %2$d registrados</string>
+    <string name="profile_search_exercises_placeholder">Buscar ejercicios…</string>
+    <string name="profile_no_exercises_found">No se encontraron ejercicios</string>
+    <string name="profile_done">Listo</string>
+
+    <string name="profile_personal_record">Récord personal</string>
+    <string name="profile_pr_history">Historial de PR</string>
+    <string name="profile_stop_tracking">Dejar de registrar</string>
+    <string name="profile_show_less">Mostrar menos</string>
+    <string name="profile_show_all_prs">Mostrar todo (%1$d)</string>
+    <string name="profile_min_reps">Mín: %1$d</string>
+    <string name="profile_e1rm_label">e1RM: %1$s %2$s</string>
+    <string name="profile_chart_more_sessions_hint">Completa algunas sesiones más para ver el gráfico</string>
+    <string name="profile_no_completed_sets">Aún no hay series completadas</string>
+
+    <string name="cd_tracked">Registrado</string>
     <string name="profile_edit_title">Editar perfil</string>
     <string name="profile_avatar_color">Color del Avatar</string>
     <string name="profile_display_name">Nombre de usuario</string>
@@ -644,5 +669,27 @@
     <string name="empty_state_history_subtitle">Completa tu primer entrenamiento para verlo aquí.</string>
     <string name="empty_state_exercises_title">No se encontraron ejercicios</string>
     <string name="empty_state_exercises_subtitle">Intenta otra búsqueda o añade un ejercicio personalizado.</string>
+
+    <!-- Profile - Edit / Avatar -->
+    <string name="error_generic_try_again">Ocurrió un error. Inténtalo de nuevo.</string>
+    <string name="cd_change_avatar">Cambiar foto de perfil</string>
+    <string name="profile_username_label">Nombre de usuario</string>
+    <string name="profile_username_prefix">@</string>
+    <string name="profile_username_suggestions">Sugerencias</string>
+    <string name="cd_refresh_suggestions">Actualizar sugerencias</string>
+    <string name="profile_change_photo_title">Cambiar foto de perfil</string>
+    <string name="profile_take_photo">Tomar una foto</string>
+    <string name="profile_choose_from_gallery">Elegir de la galería</string>
+
+    <!-- Errors (localized) -->
+    <string name="error_database">Ocurrió un error de base de datos. Inténtalo de nuevo.</string>
+    <string name="error_constraint">Este elemento ya existe.</string>
+    <string name="error_validation">Entrada inválida. Revisa tus datos.</string>
+    <string name="error_auth">La autenticación falló.</string>
+    <string name="error_network">No hay conexión a internet.</string>
+    <string name="error_unexpected">Ocurrió un error inesperado.</string>
+
+    <!-- History formatting -->
+    <string name="history_reps_format">%1$d reps</string>
 </resources>
 

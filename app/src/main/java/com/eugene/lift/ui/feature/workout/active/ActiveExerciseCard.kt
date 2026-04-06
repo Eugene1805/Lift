@@ -3,10 +3,10 @@ package com.eugene.lift.ui.feature.workout.active
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Note
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Note
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -157,7 +157,7 @@ private fun ExerciseHeader(
                         )
                     },
                     leadingIcon = {
-                        Icon(Icons.Default.Note, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.Note, contentDescription = null)
                     },
                     onClick = {
                         menuExpanded = false

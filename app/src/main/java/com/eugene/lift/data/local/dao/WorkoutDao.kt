@@ -77,6 +77,34 @@ interface WorkoutDao {
         templateId: String?,
         currentDate: LocalDateTime = LocalDateTime.now()
     ): SessionComplete?
+
+    /**
+     * Same as [getLastSessionWithExercise] but only returns sessions where the exercise has at least
+     * one completed set (i.e., it was actually performed).
+     */
+    @Transaction
+    @Query("""
+        SELECT * FROM workout_sessions
+        WHERE id IN (
+            SELECT se.sessionId
+            FROM session_exercises se
+            WHERE se.exerciseId = :exerciseId
+            AND EXISTS (
+                SELECT 1
+                FROM workout_sets s
+                WHERE s.sessionExerciseId = se.id
+                AND s.completed = 1
+            )
+        )
+        AND (:templateId IS NULL OR templateId = :templateId)
+        AND date < :currentDate
+        ORDER BY date DESC LIMIT 1
+    """)
+    suspend fun getLastPerformedSessionWithExercise(
+        exerciseId: String,
+        templateId: String?,
+        currentDate: LocalDateTime = LocalDateTime.now()
+    ): SessionComplete?
     // --- Estadísticas y PRs ---
 
     // Obtener el set con mayor peso para un ejercicio dado

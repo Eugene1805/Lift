@@ -55,9 +55,8 @@ import coil.request.ImageRequest
 import com.eugene.lift.R
 
 /**
- * Resolves a drawable resource name (e.g. "bench_press") to an
- * android.resource URI that Coil can load.
- * Returns null if the name is null or the resource does not exist.
+ * Translates a stored drawable string name into a URI that the Coil image loading
+ * library can resolve.
  */
 @Composable
 private fun drawableUriOrNull(drawableName: String?): String? {
@@ -68,8 +67,13 @@ private fun drawableUriOrNull(drawableName: String?): String? {
 }
 
 /**
- * Loads an image from [imageUri] and extracts a dominant color via Palette.
- * Animates the background smoothly from white to the extracted color.
+ * An intelligent image container that blends a categorical image with its surrounding UI.
+ *
+ * This component solves the "pillarbox/letterbox" aesthetic issue by extracting the dominant
+ * color from the image using the Palette API and applying it as the container's background.
+ *
+ * To ensure the best UX, the background color transition is animated, preventing a jarring
+ * swap when the async image load completes.
  */
 @Composable
 private fun DynamicColorImageBox(
@@ -83,16 +87,22 @@ private fun DynamicColorImageBox(
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(context)
             .data(imageUri)
-            .allowHardware(false) // required for Palette bitmap access
+            // Hardware bitmaps are optimized for memory but their pixel data is inaccessible
+            // on the CPU. We disable them here so the Palette API can read the image data.
+            .allowHardware(false) 
             .crossfade(true)
             .build()
     )
 
-    // Extract Palette once the image finishes loading
+    // Palette extraction is an expensive I/O and CPU operation; we launch it only
+    // after the AsyncImagePainter successfully decodes the image.
     LaunchedEffect(painter.state) {
         val success = painter.state as? AsyncImagePainter.State.Success ?: return@LaunchedEffect
         val bitmap = (success.result.drawable as? BitmapDrawable)?.bitmap ?: return@LaunchedEffect
+        
         val palette = Palette.from(bitmap).generate()
+        // We prioritize the dominant swatch to ensure the background most closely
+        // matches the largest color area of the diagram, with fallback steps for safety.
         val swatch = palette.dominantSwatch
             ?: palette.lightVibrantSwatch
             ?: palette.lightMutedSwatch
@@ -109,6 +119,7 @@ private fun DynamicColorImageBox(
         modifier = modifier.background(animatedBg),
         contentAlignment = Alignment.Center
     ) {
+
         Image(
             painter = painter,
             contentDescription = contentDescription,

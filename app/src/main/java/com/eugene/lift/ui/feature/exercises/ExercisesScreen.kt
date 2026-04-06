@@ -58,7 +58,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -70,17 +69,24 @@ import com.eugene.lift.domain.usecase.exercise.SortOrder
 import com.eugene.lift.ui.components.ExercisesEmptyState
 
 /**
- * Resolves a drawable resource name (e.g. "bench_press") to an
- * android.resource URI that Coil can load.
- * Returns null if the name is null or the resource does not exist.
+ * Translates a stored drawable string name into a URI that the Coil image loading
+ * library can resolve.
+ *
+ * This bridge is necessary because we store technical asset names as strings in the
+ * database (to allow for easy updates via the Mapper) rather than hardcoded resource IDs.
+ *
+ * @return A resource URI string or null if the asset cannot be identified, allowing
+ * the UI to fall back to a placeholder.
  */
 @Composable
 private fun drawableUriOrNull(drawableName: String?): String? {
     if (drawableName == null) return null
     val context = LocalContext.current
+    // Dynamic resource lookup is used here to avoid maintaining a massive R.drawable switch statement.
     val resId = context.resources.getIdentifier(drawableName, "drawable", context.packageName)
     return if (resId != 0) "android.resource://${context.packageName}/$resId" else null
 }
+
 
 @Composable
 fun ExercisesRoute(
@@ -459,6 +465,9 @@ fun ExerciseItemCard(
                                 .clip(RoundedCornerShape(8.dp))
                         )
                     } else {
+                        // Provides a fallback visual (initial of the exercise name) if 
+                        // the specified image fails to resolve, ensuring the UI 
+                        // remains consistent and usable.
                         Box(
                             modifier = Modifier
                                 .size(56.dp)
@@ -472,6 +481,7 @@ fun ExerciseItemCard(
                             )
                         }
                     }
+
                 } else {
                     Box(
                         modifier = Modifier

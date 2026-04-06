@@ -150,4 +150,46 @@ class WorkoutRepositoryImplTest {
 
         assertEquals("Test", result?.name)
     }
+
+    @Test
+    fun `getLastHistoryForExercise prefers last session from same template when templateId is provided`() = runTest {
+        val exerciseId = "ex1"
+        val templateId = "template-1"
+
+        val sessionSameTemplate = SessionComplete(
+            session = WorkoutSessionEntity("s1", templateId, "Same template", LocalDateTime.now().minusDays(2), 3600, null),
+            exercises = emptyList()
+        )
+        val sessionAny = SessionComplete(
+            session = WorkoutSessionEntity("s2", null, "Any template", LocalDateTime.now().minusDays(1), 3600, null),
+            exercises = emptyList()
+        )
+
+        // When asking for same template, return that session; repository must not fall back.
+        coEvery { dao.getLastSessionWithExercise(exerciseId, templateId, any()) } returns sessionSameTemplate
+        // Fallback (any template) exists but should not be used.
+        coEvery { dao.getLastSessionWithExercise(exerciseId, null, any()) } returns sessionAny
+
+        val result = repository.getLastHistoryForExercise(exerciseId, templateId)
+
+        assertEquals("Same template", result?.name)
+    }
+
+    @Test
+    fun `getLastHistoryForExercise falls back to any session when no same-template session exists`() = runTest {
+        val exerciseId = "ex1"
+        val templateId = "template-1"
+
+        val sessionAny = SessionComplete(
+            session = WorkoutSessionEntity("s2", null, "Any template", LocalDateTime.now().minusDays(1), 3600, null),
+            exercises = emptyList()
+        )
+
+        coEvery { dao.getLastSessionWithExercise(exerciseId, templateId, any()) } returns null
+        coEvery { dao.getLastSessionWithExercise(exerciseId, null, any()) } returns sessionAny
+
+        val result = repository.getLastHistoryForExercise(exerciseId, templateId)
+
+        assertEquals("Any template", result?.name)
+    }
 }

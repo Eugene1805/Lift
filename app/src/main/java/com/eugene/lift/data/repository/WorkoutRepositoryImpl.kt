@@ -12,6 +12,7 @@ import com.eugene.lift.domain.repository.WorkoutRepository
 import com.eugene.lift.domain.repository.SettingsRepository
 import com.eugene.lift.domain.util.WeightConverter
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -104,25 +105,25 @@ class WorkoutRepositoryImpl @Inject constructor(
     }
 
     override fun getExerciseHistory(exerciseId: String): Flow<List<WorkoutSession>> {
-        return dao.getHistoryForExercise(exerciseId).map { list ->
-            list.map { it.toDomain() }
-        }.map { sessions ->
-            val unit = currentWeightUnit()
+        return combine(
+            dao.getHistoryForExercise(exerciseId).map { list -> list.map { it.toDomain() } },
+            settingsRepository.getSettings().map { it.weightUnit }
+        ) { sessions, unit ->
             sessions.map { convertSessionToPreference(it, unit) }
         }
     }
 
     override suspend fun getLastHistoryForExercise(exerciseId: String, templateId: String?): WorkoutSession? {
-        // Prefill preference:
-        // 1) Latest performed (has completed sets) from same template
-        // 2) Latest performed overall
-        // 3) Latest session from same template (even if no completed sets)
-        // 4) Latest session overall
+        // Strategy:
+        // - If templateId is provided (Active Workout prefilling), prefer sessions from that same
+        //   template first (performed -> any). If none exist, fall back to ANY template.
+        // - If templateId is null (generic history/ghost data), pick the last performed overall,
+        //   falling back to the last session overall.
 
         val sessionComplete = if (templateId != null) {
             dao.getLastPerformedSessionWithExercise(exerciseId, templateId)
-                ?: dao.getLastPerformedSessionWithExercise(exerciseId, null)
                 ?: dao.getLastSessionWithExercise(exerciseId, templateId)
+                ?: dao.getLastPerformedSessionWithExercise(exerciseId, null)
                 ?: dao.getLastSessionWithExercise(exerciseId, null)
         } else {
             dao.getLastPerformedSessionWithExercise(exerciseId, null)

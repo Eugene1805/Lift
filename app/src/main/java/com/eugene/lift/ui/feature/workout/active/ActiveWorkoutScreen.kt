@@ -20,8 +20,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.ui.res.stringResource
 import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.ui.components.ExerciseSnackbar
+import com.eugene.lift.ui.util.WeightFormatters
 import kotlinx.coroutines.delay
 
 import kotlinx.coroutines.flow.Flow
@@ -35,14 +37,16 @@ fun ActiveWorkoutScreen(
 ) {
     val screenState = rememberWorkoutScreenState()
 
-    val showExerciseSnackbar: (String, String) -> Unit = rememberUpdatedState<(String, String) -> Unit> { name, weight ->
-        screenState.showSnackbar(name, weight)
-    }.value
+    // Pre-resolve localized unit labels for use inside side-effects (stringResource is @Composable).
+    val kgLabel = stringResource(com.eugene.lift.R.string.unit_kg)
+    val lbsLabel = stringResource(com.eugene.lift.R.string.unit_lbs)
 
     LaunchedEffect(effects) {
         effects.collectLatest { effect ->
             if (effect is ActiveWorkoutEffect.ShowExerciseSnackbar) {
-                screenState.showSnackbar(effect.name, effect.weightText, effect.isPr)
+                val unitLabel = if (effect.weightUnit == WeightUnit.KG) kgLabel else lbsLabel
+                val weightText = "${WeightFormatters.formatWeight(effect.weight, effect.weightUnit)} $unitLabel"
+                screenState.showSnackbar(effect.name, weightText, effect.isPr)
             }
         }
     }
@@ -98,7 +102,11 @@ fun ActiveWorkoutScreen(
         if (hours > 0) "%02d:%02d:%02d".format(hours, minutes, seconds)
         else "%02d:%02d".format(minutes, seconds)
     }
-    val weightUnitLabel = if (uiState.userSettings.weightUnit == WeightUnit.KG) "kg" else "lbs"
+    val weightUnitLabel = if (uiState.userSettings.weightUnit == WeightUnit.KG) {
+        stringResource(com.eugene.lift.R.string.unit_kg)
+    } else {
+        stringResource(com.eugene.lift.R.string.unit_lbs)
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),

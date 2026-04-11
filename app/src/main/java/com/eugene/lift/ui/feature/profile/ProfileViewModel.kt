@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseProgression
+import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.model.UserProfile
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.repository.SettingsRepository
@@ -18,13 +19,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 import javax.inject.Inject
@@ -68,7 +66,7 @@ data class ProfileUiState(
     val allExercises: List<Exercise> = emptyList(),
     val isProgressionLoading: Boolean = false,
     val showExercisePickerDialog: Boolean = false,
-    val weightUnit: String = "kg"
+    val weightUnit: WeightUnit = WeightUnit.KG
 )
 
 @HiltViewModel
@@ -100,7 +98,7 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.getSettings().collect { settings ->
                 _uiState.value = _uiState.value.copy(
-                    weightUnit = if (settings.weightUnit == com.eugene.lift.domain.model.WeightUnit.LBS) "lbs" else "kg"
+                    weightUnit = settings.weightUnit
                 )
             }
         }

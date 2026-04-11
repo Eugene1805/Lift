@@ -137,13 +137,12 @@ fun ProfileScreen(
 
                 // Exercise Progression Section
                 item {
-                    val weightUnit = uiState.weightUnit
                     ExerciseProgressionSection(
                         progressions = uiState.progressions,
                         allExercises = uiState.allExercises,
                         trackedIds = uiState.progressions.map { it.exerciseId },
                         showPickerDialog = uiState.showExercisePickerDialog,
-                        weightUnit = weightUnit,
+                        weightUnit = uiState.weightUnit,
                         onAddClick = onShowExercisePicker,
                         onRemoveClick = onRemoveTrackedExercise,
                         onToggleExercise = onToggleTrackedExercise,

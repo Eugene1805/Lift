@@ -67,7 +67,9 @@ import com.eugene.lift.domain.model.ExerciseProgression
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.model.PrRecord
 import com.eugene.lift.domain.model.ProgressionDataPoint
+import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.usecase.exercise.GetExerciseProgressionUseCase
+import com.eugene.lift.ui.util.WeightFormatters
 import java.time.format.DateTimeFormatter
 
 // ── Short date formatter ──────────────────────────────────────────────────────
@@ -87,7 +89,7 @@ fun ExerciseProgressionSection(
     allExercises: List<Exercise>,
     trackedIds: List<String>,
     showPickerDialog: Boolean,
-    weightUnit: String,
+    weightUnit: WeightUnit,
     onAddClick: () -> Unit,
     onRemoveClick: (String) -> Unit,
     onToggleExercise: (String) -> Unit,
@@ -188,7 +190,7 @@ fun ExerciseProgressionSection(
 @Composable
 private fun ExerciseProgressionDetail(
     progression: ExerciseProgression,
-    weightUnit: String,
+    weightUnit: WeightUnit,
     onRemove: () -> Unit
 ) {
     Column {
@@ -247,7 +249,11 @@ private fun ExerciseProgressionDetail(
 // ── PR badge ─────────────────────────────────────────────────────────────────
 
 @Composable
-private fun PrBadge(pr: PrRecord, weightUnit: String) {
+private fun PrBadge(pr: PrRecord, weightUnit: WeightUnit) {
+    val unitLabel = when (weightUnit) {
+        WeightUnit.KG -> stringResource(R.string.unit_kg)
+        WeightUnit.LBS -> stringResource(R.string.unit_lbs)
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -271,7 +277,7 @@ private fun PrBadge(pr: PrRecord, weightUnit: String) {
             )
             if (pr.weight > 0) {
                 Text(
-                    text = "${formatWeight(pr.weight)} $weightUnit × ${pr.reps}",
+                    text = "${WeightFormatters.formatWeight(pr.weight, weightUnit)} $unitLabel × ${pr.reps}",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -299,11 +305,15 @@ private fun PrBadge(pr: PrRecord, weightUnit: String) {
 private fun ProgressionLineChart(
     dataPoints: List<ProgressionDataPoint>,
     measureType: MeasureType,
-    weightUnit: String,
+    weightUnit: WeightUnit,
     primaryColor: Color,
     modifier: Modifier = Modifier
 ) {
     val isWeightBased = measureType == MeasureType.REPS_AND_WEIGHT
+    val unitLabel = when (weightUnit) {
+        WeightUnit.KG -> stringResource(R.string.unit_kg)
+        WeightUnit.LBS -> stringResource(R.string.unit_lbs)
+    }
 
     val values = if (isWeightBased) {
         dataPoints.map {
@@ -422,14 +432,14 @@ private fun ProgressionLineChart(
             Text(
                 text = if (isWeightBased) stringResource(
                     R.string.profile_e1rm_label,
-                    formatWeight(minValue),
-                    weightUnit
+                    WeightFormatters.formatWeight(minValue, weightUnit),
+                    unitLabel
                 ) else stringResource(R.string.profile_min_reps, minValue.toInt()),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
             Text(
-                text = if (isWeightBased) "${formatWeight(maxValue)} $weightUnit"
+                text = if (isWeightBased) "${WeightFormatters.formatWeight(maxValue, weightUnit)} $unitLabel"
                 else maxValue.toInt().toString(),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -443,7 +453,7 @@ private fun ProgressionLineChart(
 @Composable
 private fun PrHistoryList(
     records: List<PrRecord>,
-    weightUnit: String
+    weightUnit: WeightUnit
 ) {
     val showAll = rememberSaveable { mutableStateOf(false) }
     val displayRecords = if (showAll.value || records.size <= 3) records else records.take(3)
@@ -480,7 +490,11 @@ private fun PrHistoryList(
 }
 
 @Composable
-private fun PrHistoryRow(record: PrRecord, weightUnit: String, rank: Int) {
+private fun PrHistoryRow(record: PrRecord, weightUnit: WeightUnit, rank: Int) {
+    val unitLabel = when (weightUnit) {
+        WeightUnit.KG -> stringResource(R.string.unit_kg)
+        WeightUnit.LBS -> stringResource(R.string.unit_lbs)
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -512,7 +526,7 @@ private fun PrHistoryRow(record: PrRecord, weightUnit: String, rank: Int) {
         Column(modifier = Modifier.weight(1f)) {
             if (record.weight > 0) {
                 Text(
-                    text = "${formatWeight(record.weight)} $weightUnit × ${record.reps}",
+                    text = "${WeightFormatters.formatWeight(record.weight, weightUnit)} $unitLabel × ${record.reps}",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface
@@ -727,12 +741,3 @@ private fun NoDataNote() {
     }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-private fun formatWeight(value: Double): String {
-    return if (value == kotlin.math.floor(value)) {
-        value.toInt().toString()
-    } else {
-        "%.1f".format(value)
-    }
-}

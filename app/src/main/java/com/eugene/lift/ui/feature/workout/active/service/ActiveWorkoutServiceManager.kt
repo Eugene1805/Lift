@@ -1,5 +1,6 @@
 package com.eugene.lift.ui.feature.workout.active.service
 
+import com.eugene.lift.domain.model.WeightUnit
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -15,7 +16,7 @@ data class WorkoutNotificationState(
     val weight: Double,
     val reps: Int,
     val isBodyweight: Boolean,
-    val weightUnitLabel: String
+    val weightUnit: WeightUnit
 )
 
 sealed interface WorkoutNotificationAction {

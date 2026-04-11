@@ -4,6 +4,7 @@ import com.eugene.lift.domain.error.AppError
 import com.eugene.lift.domain.model.SessionExercise
 import com.eugene.lift.domain.model.TimerState
 import com.eugene.lift.domain.model.UserSettings
+import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.model.WorkoutSet
 
 data class ReorderUiState(
@@ -56,6 +57,11 @@ sealed interface ActiveWorkoutUiEvent {
 sealed interface ActiveWorkoutEffect {
     data object NavigateBack : ActiveWorkoutEffect
     data class ShowSnackbar(val error: AppError) : ActiveWorkoutEffect
-    data class ShowExerciseSnackbar(val name: String, val weightText: String, val isPr: Boolean) : ActiveWorkoutEffect
+    data class ShowExerciseSnackbar(
+        val name: String,
+        val weight: Double,
+        val weightUnit: WeightUnit,
+        val isPr: Boolean
+    ) : ActiveWorkoutEffect
 }
 

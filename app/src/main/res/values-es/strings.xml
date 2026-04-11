@@ -690,6 +690,6 @@
     <string name="error_unexpected">Ocurrió un error inesperado.</string>
 
     <!-- History formatting -->
-    <string name="history_reps_format">%1$d reps</string>
+    <string name="history_reps_format">%1$d</string>
 </resources>
 

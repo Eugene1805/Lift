@@ -12,6 +12,8 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.eugene.lift.MainActivity
 import com.eugene.lift.R
+import com.eugene.lift.domain.model.WeightUnit
+import com.eugene.lift.ui.util.WeightFormatters
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -87,14 +89,19 @@ class ActiveWorkoutService : Service() {
             val weightStr = if (state.isBodyweight) {
                 getString(R.string.cat_bodyweight)
             } else if (state.weight > 0) {
-                val formattedWeight = if (state.weight % 1.0 == 0.0) state.weight.toInt().toString() else state.weight.toString()
-                "$formattedWeight ${state.weightUnitLabel}"
+                val unitLabel = when (state.weightUnit) {
+                    WeightUnit.KG -> getString(R.string.unit_kg)
+                    WeightUnit.LBS -> getString(R.string.unit_lbs)
+                }
+                val formattedWeight = WeightFormatters.formatWeight(state.weight, state.weightUnit)
+                "$formattedWeight $unitLabel"
             } else {
                 ""
             }
             
-            val repsStr = if (state.reps > 0) "${state.reps} reps" else ""
-            
+            // Show reps as a plain number (no label) and avoid hardcoded/non-localized text.
+            val repsStr = if (state.reps > 0) state.reps.toString() else ""
+
             val details = listOf(weightStr, repsStr).filter { it.isNotEmpty() }.joinToString(" × ")
             val setPrefix = getString(R.string.active_workout_set) + " ${state.setNumber}"
             

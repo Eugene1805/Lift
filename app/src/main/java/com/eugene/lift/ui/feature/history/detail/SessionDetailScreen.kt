@@ -43,9 +43,8 @@ import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.WorkoutSet
-import com.eugene.lift.domain.util.WeightConverter
 import com.eugene.lift.ui.feature.history.formatDurationSimple
-import com.eugene.lift.ui.feature.history.formatWeight
+import com.eugene.lift.ui.util.WeightFormatters
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -338,15 +337,16 @@ private fun formatSetSummary(
 
     val hasWeight = workoutSet.weight > 0
     val hasReps = workoutSet.reps > 0
+    val unit = userSettings.weightUnit
     val base = when {
-        hasWeight && hasReps -> "${formatWeight(displayWeight)} $weightLabel × ${workoutSet.reps}"
-        hasWeight -> "${formatWeight(displayWeight)} $weightLabel"
+        hasWeight && hasReps -> "${WeightFormatters.formatWeight(displayWeight, unit)} $weightLabel × ${workoutSet.reps}"
+        hasWeight -> "${WeightFormatters.formatWeight(displayWeight, unit)} $weightLabel"
         hasReps -> "${workoutSet.reps} $repsLabel"
         else -> "-"
     }
 
     val timePart = workoutSet.timeSeconds?.takeIf { it > 0 }?.let { formatDurationSimple(it) }
-    val distancePart = workoutSet.distance?.takeIf { it > 0 }?.let { "${formatWeight(it)} $distanceLabel" }
+    val distancePart = workoutSet.distance?.takeIf { it > 0 }?.let { "${WeightFormatters.formatWeight(it, WeightUnit.KG)} $distanceLabel" }
     val extraParts = listOfNotNull(distancePart, timePart)
 
     val effortText = when {
@@ -383,7 +383,7 @@ private fun buildSessionSummary(session: WorkoutSession, userSettings: UserSetti
         .filter { it.completed }
         .sumOf { it.weight * it.reps }
     // weight is already in display units (kg or lbs) as returned by the repository
-    val volumeText = if (totalVolume > 0) "${formatWeight(totalVolume)} $weightLabel" else "-"
+    val volumeText = if (totalVolume > 0) "${WeightFormatters.formatWeight(totalVolume, userSettings.weightUnit)} $weightLabel" else "-"
 
     return SessionDetailSummary(
         dateText = dateText,

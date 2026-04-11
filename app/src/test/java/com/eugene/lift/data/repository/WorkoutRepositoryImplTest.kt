@@ -144,7 +144,8 @@ class WorkoutRepositoryImplTest {
             exercises = emptyList() // Simplified for testing
         )
         
-        coEvery { dao.getLastSessionWithExercise(exerciseId, any()) } returns complete
+        coEvery { dao.getLastPerformedSessionWithExercise(exerciseId, any(), any()) } returns null
+        coEvery { dao.getLastSessionWithExercise(exerciseId, any(), any()) } returns complete
 
         val result = repository.getLastHistoryForExercise(exerciseId)
 
@@ -166,8 +167,10 @@ class WorkoutRepositoryImplTest {
         )
 
         // When asking for same template, return that session; repository must not fall back.
-        coEvery { dao.getLastSessionWithExercise(exerciseId, templateId, any()) } returns sessionSameTemplate
+        coEvery { dao.getLastPerformedSessionWithExercise(exerciseId, templateId, any()) } returns sessionSameTemplate
+        coEvery { dao.getLastSessionWithExercise(exerciseId, templateId, any()) } returns null
         // Fallback (any template) exists but should not be used.
+        coEvery { dao.getLastPerformedSessionWithExercise(exerciseId, null, any()) } returns sessionAny
         coEvery { dao.getLastSessionWithExercise(exerciseId, null, any()) } returns sessionAny
 
         val result = repository.getLastHistoryForExercise(exerciseId, templateId)
@@ -185,7 +188,9 @@ class WorkoutRepositoryImplTest {
             exercises = emptyList()
         )
 
+        coEvery { dao.getLastPerformedSessionWithExercise(exerciseId, templateId, any()) } returns null
         coEvery { dao.getLastSessionWithExercise(exerciseId, templateId, any()) } returns null
+        coEvery { dao.getLastPerformedSessionWithExercise(exerciseId, null, any()) } returns sessionAny
         coEvery { dao.getLastSessionWithExercise(exerciseId, null, any()) } returns sessionAny
 
         val result = repository.getLastHistoryForExercise(exerciseId, templateId)

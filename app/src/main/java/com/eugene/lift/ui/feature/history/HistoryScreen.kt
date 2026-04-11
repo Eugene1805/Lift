@@ -30,6 +30,7 @@ import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.model.WorkoutSession
 
 import com.eugene.lift.ui.components.HistoryEmptyState
+import com.eugene.lift.ui.util.WeightFormatters
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -255,13 +256,17 @@ private fun SessionStatsRow(totalVolume: Double, weightLabel: String, prCount: I
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        if (totalVolume > 0) VolumeStat(totalVolume = totalVolume, weightLabel = weightLabel)
+        if (totalVolume > 0) VolumeStat(
+            totalVolume = totalVolume,
+            weightLabel = weightLabel,
+            weightUnit = if (weightLabel.trim() == stringResource(R.string.unit_lbs)) WeightUnit.LBS else WeightUnit.KG
+        )
         if (prCount > 0) PrStat(prCount = prCount)
     }
 }
 
 @Composable
-private fun VolumeStat(totalVolume: Double, weightLabel: String) {
+private fun VolumeStat(totalVolume: Double, weightLabel: String, weightUnit: WeightUnit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = Icons.Default.FitnessCenter,
@@ -271,7 +276,7 @@ private fun VolumeStat(totalVolume: Double, weightLabel: String) {
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
-            text = "${formatWeight(totalVolume)} $weightLabel",
+            text = "${WeightFormatters.formatWeight(totalVolume, weightUnit)} $weightLabel",
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold
         )
@@ -327,8 +332,8 @@ private fun BestSetsSection(
         exercises.forEach { sessionExercise ->
             ExerciseSummaryCard(
                 sessionExercise = sessionExercise,
-                userSettings = userSettings,
                 weightLabel = weightLabel,
+                weightUnit = userSettings.weightUnit,
                 repsLabel = repsLabel
             )
         }
@@ -338,8 +343,8 @@ private fun BestSetsSection(
 @Composable
 private fun ExerciseSummaryCard(
     sessionExercise: com.eugene.lift.domain.model.SessionExercise,
-    userSettings: UserSettings,
     weightLabel: String,
+    weightUnit: WeightUnit,
     repsLabel: String
 ) {
     if (sessionExercise.sets.isEmpty()) return
@@ -352,8 +357,8 @@ private fun ExerciseSummaryCard(
     val bestSetText = getBestSetString(
         sessionExercise.sets,
         weightLabel,
-        repsLabel,
-        userSettings
+        weightUnit,
+        repsLabel
     )
     val effortText = bestSet.toEffortSuffix()
 
@@ -495,19 +500,11 @@ fun formatDuration(seconds: Long): String {
     return if (hours > 0) "$hours$hoursLabel $minutes$minutesLabel" else "$minutes$minutesLabel"
 }
 
-fun formatWeight(weight: Double): String {
-    return if (weight % 1.0 == 0.0) {
-        weight.toInt().toString()
-    } else {
-        String.format(Locale.ENGLISH,"%.1f", weight)
-    }
-}
-
 fun getBestSetString(
     sets: List<com.eugene.lift.domain.model.WorkoutSet>,
     kgLabel: String,
-    repsLabel: String,
-    userSettings: UserSettings
+    weightUnit: WeightUnit,
+    repsLabel: String
 ): String {
     val bestSet = sets.filter { it.completed }
         .maxWithOrNull(compareBy({ it.weight }, { it.reps }))
@@ -517,7 +514,7 @@ fun getBestSetString(
     val displayWeight = bestSet.weight
 
     return when {
-        displayWeight > 0 -> "${formatWeight(displayWeight)}$kgLabel × ${bestSet.reps}"
+        displayWeight > 0 -> "${WeightFormatters.formatWeight(displayWeight, weightUnit)}$kgLabel × ${bestSet.reps}"
         bestSet.reps > 0 -> "${bestSet.reps} $repsLabel"
         (bestSet.timeSeconds ?: 0) > 0 -> formatDurationSimple(bestSet.timeSeconds!!)
         (bestSet.distance ?: 0.0) > 0 -> "${bestSet.distance} km"

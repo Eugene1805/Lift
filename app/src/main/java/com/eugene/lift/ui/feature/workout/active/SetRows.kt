@@ -27,6 +27,7 @@ import com.eugene.lift.R
 import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.model.WorkoutSet
+import com.eugene.lift.ui.util.WeightFormatters
 
 @Composable
 fun SetRowItem(
@@ -87,12 +88,15 @@ private fun RowScope.RepsWeightRow(set: WorkoutSet, context: SetRowContext, call
     val historyDisplayWeight = context.historySet?.weight
     Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
         CompactDecimalInput(
-            value = if (set.weight > 0) formatWeight(set.weight) else "",
+            value = if (set.weight > 0) WeightFormatters.formatWeight(set.weight, context.userSettings.weightUnit) else "",
             onValueChange = callbacks.onWeightChange,
             placeholder = { Text("0") },
             enabled = !set.completed
         )
-        if (historyDisplayWeight != null) HistoryText("${formatWeight(historyDisplayWeight)} ${context.weightUnitLabel}")
+        if (historyDisplayWeight != null) {
+            // History weights are already in the user's display unit from the repository.
+            HistoryText("${WeightFormatters.formatWeight(historyDisplayWeight, context.userSettings.weightUnit)} ${context.weightUnitLabel}")
+        }
     }
     Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
         CompactNumberInput(
@@ -101,7 +105,8 @@ private fun RowScope.RepsWeightRow(set: WorkoutSet, context: SetRowContext, call
             placeholder = { Text("0") },
             enabled = !set.completed
         )
-        context.historySet?.reps?.let { HistoryText("$it reps") }
+        // Show only the number (no "reps" label)
+        context.historySet?.reps?.let { HistoryText("$it") }
     }
 }
 
@@ -114,27 +119,40 @@ private fun RowScope.RepsOnlyRow(set: WorkoutSet, context: SetRowContext, callba
             placeholder = { Text("0") },
             enabled = !set.completed
         )
-        context.historySet?.reps?.let {
-        context.historySet?.reps?.let { HistoryText("$it reps", Modifier.align(Alignment.CenterHorizontally)) }
+        // Show only the number (no "reps" label)
+        context.historySet?.reps?.let { HistoryText("$it", Modifier.align(Alignment.CenterHorizontally)) }
+    }
+}
+
+@Composable
+private fun RowScope.DistanceTimeRow(set: WorkoutSet, context: SetRowContext, callbacks: SetRowCallbacks) {
     Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
         val distanceValue = set.distance ?: 0.0
         CompactDecimalInput(
-            value = if (distanceValue > 0) formatWeight(distanceValue) else "",
+            value = if (distanceValue > 0) distanceValue.toString() else "",
             onValueChange = callbacks.onDistanceChange,
             placeholder = { Text("0") },
             enabled = !set.completed
         )
-        context.historySet?.let { hist ->
+        context.historySet?.distance?.let { histDistance ->
             val distUnitLabel = if (context.userSettings.distanceUnit == DistanceUnit.KM)
                 stringResource(R.string.unit_km)
             else
                 stringResource(R.string.unit_miles)
-            val distUnitLabel = if (context.userSettings.distanceUnit == DistanceUnit.KM) "km" else "mi"
+            HistoryText("${histDistance} $distUnitLabel")
+        }
+    }
+
+    Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
+        CompactNumberInput(
+            value = set.timeSeconds?.takeIf { it > 0 }?.toString() ?: "",
             onValueChange = callbacks.onTimeChange,
             placeholder = { Text("0") },
             enabled = !set.completed
         )
-        context.historySet?.timeSeconds?.let { HistoryText("$it ${stringResource(R.string.unit_seconds_short)}") }
+        context.historySet?.timeSeconds?.let { seconds ->
+            HistoryText("$seconds ${stringResource(R.string.unit_seconds_short)}")
+        }
     }
 }
 
@@ -143,7 +161,7 @@ private fun RowScope.TimeRow(set: WorkoutSet, context: SetRowContext, callbacks:
     Column(modifier = Modifier.weight(2f).padding(horizontal = 4.dp)) {
         CompactNumberInput(
             value = set.timeSeconds?.takeIf { it > 0 }?.toString() ?: "",
-        context.historySet?.timeSeconds?.let { HistoryText("$it s") }
+            onValueChange = callbacks.onTimeChange,
             placeholder = { Text("0") },
             enabled = !set.completed
         )

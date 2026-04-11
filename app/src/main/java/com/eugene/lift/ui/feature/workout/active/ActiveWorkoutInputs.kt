@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.eugene.lift.ui.util.WeightFormatters
 
 @Composable
 fun HistoryText(text: String, modifier: Modifier = Modifier) {
@@ -167,5 +168,3 @@ fun CompactTextInput(
     )
 }
 
-fun formatWeight(weight: Double): String =
-    if (weight == weight.toLong().toDouble()) weight.toLong().toString() else weight.toString()

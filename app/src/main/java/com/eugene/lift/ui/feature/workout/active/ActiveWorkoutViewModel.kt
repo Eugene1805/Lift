@@ -18,6 +18,7 @@ import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.ui.feature.workout.active.service.ActiveWorkoutServiceManager
 import com.eugene.lift.ui.feature.workout.active.service.WorkoutNotificationAction
 import com.eugene.lift.ui.feature.workout.active.service.WorkoutNotificationState
+import com.eugene.lift.ui.util.WeightFormatters
 import com.eugene.lift.domain.usecase.template.CreateTemplateFromWorkoutUseCase
 import com.eugene.lift.domain.usecase.template.UpdateTemplateFromWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.StartEmptyWorkoutUseCase
@@ -236,7 +237,7 @@ class ActiveWorkoutViewModel @Inject constructor(
                     weight = currentSet.weight,
                     reps = currentSet.reps,
                     isBodyweight = isBodyWeight,
-                    weightUnitLabel = if (settings.weightUnit == WeightUnit.KG) "kg" else "lbs"
+                    weightUnit = settings.weightUnit
                 )
             )
         } else {
@@ -280,28 +281,32 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private fun updateExerciseWithHistory(sessionExercise: SessionExercise): SessionExercise {
         val historySets = _historyState.value[sessionExercise.exercise.id]
-        // Prefill should match what the user sees in History:
-        // pick the best completed set (max weight, then max reps).
-        // Sets are already in display units.
-        val prefillSource = pickPrefillSet(historySets)
 
-        return if (prefillSource == null) {
-            sessionExercise // No history, leave as is
-        } else {
-            // History is already in display units (converted in loadHistoryFor)
-            val weightFromHistory = prefillSource.weight
-            val repsFromHistory = prefillSource.reps
+        // Prefill requirement:
+        // - History screen shows "your last time" (last performed session).
+        // - Prefill uses the last time for the same template/session, set-by-set,
+        //   preserving the original order and allowing different values per set.
+        if (historySets.isNullOrEmpty()) return sessionExercise
 
-            val updatedSets = sessionExercise.sets.map { currentSet ->
-                // If the set is "empty" (0/0), fill with history (in display units)
-                if (currentSet.weight == 0.0 && currentSet.reps == 0) {
-                    currentSet.copy(weight = weightFromHistory, reps = repsFromHistory)
-                } else {
-                    currentSet
-                }
+        val updatedSets = sessionExercise.sets.mapIndexed { index, currentSet ->
+            val historySet = historySets.getOrNull(index)
+
+            // Only prefill truly-empty sets so we don't overwrite user/template provided values.
+            if (historySet != null && currentSet.weight == 0.0 && currentSet.reps == 0) {
+                currentSet.copy(
+                    weight = historySet.weight,
+                    reps = historySet.reps,
+                    distance = historySet.distance,
+                    timeSeconds = historySet.timeSeconds,
+                    rpe = historySet.rpe,
+                    rir = historySet.rir
+                )
+            } else {
+                currentSet
             }
-            sessionExercise.copy(sets = updatedSets)
         }
+
+        return sessionExercise.copy(sets = updatedSets)
     }
 
     private fun startSessionTicker() {
@@ -328,19 +333,6 @@ class ActiveWorkoutViewModel @Inject constructor(
                 _historyState.value = currentMap
             }
         }
-    }
-
-    /**
-     * Prefill strategy (strict):
-     * 1) Prefer last completed set from the most relevant previous session.
-     * 2) If none completed in that session, fall back to the last completed set from that session's sets (none)
-     *    -> handled by [pickPrefillSet].
-     */
-    private fun pickPrefillSet(sets: List<WorkoutSet>?): WorkoutSet? {
-        if (sets.isNullOrEmpty()) return null
-
-        val completed = sets.filter { it.completed }
-        return completed.maxWithOrNull(compareBy({ it.weight }, { it.reps }))
     }
 
     private fun updateSetState(exerciseIndex: Int, setIndex: Int, update: (WorkoutSet) -> WorkoutSet) {
@@ -419,9 +411,14 @@ class ActiveWorkoutViewModel @Inject constructor(
                     val prSet = getPersonalRecordUseCase(exercise.exercise.id).firstOrNull()
                     val prWeight = prSet?.weight ?: 0.0
                     val isPr = currentSetWeight >= prWeight && currentSetWeight > 0
-                    val weightUnitLabel = if (userSettings.value.weightUnit == WeightUnit.KG) "kg" else "lbs"
-                    val weightText = "$currentSetWeight $weightUnitLabel"
-                    _effects.emit(ActiveWorkoutEffect.ShowExerciseSnackbar(exercise.exercise.name, weightText, isPr))
+                    _effects.emit(
+                        ActiveWorkoutEffect.ShowExerciseSnackbar(
+                            name = exercise.exercise.name,
+                            weight = currentSetWeight,
+                            weightUnit = userSettings.value.weightUnit,
+                            isPr = isPr
+                        )
+                    )
                 }
             }
         }
@@ -433,6 +430,21 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private fun finishWorkout(updateTemplate: Boolean?) {
         val session = _activeSession.value ?: return
+
+        // Validation: do not allow finishing with empty sets.
+        // "Empty set" definition: weight==0 AND reps==0.
+        // Additional rule: do not allow the user to finish if they typed a weight (>0)
+        // but left reps empty. (Weight can be 0 as long as reps > 0.)
+        // (We keep the existing AppError.Validation mapping for neutral translations.)
+        val allSets = session.exercises.flatMap { it.sets }
+        val hasTrulyEmptySet = allSets.any { it.weight == 0.0 && it.reps == 0 }
+        val hasWeightButNoReps = allSets.any { it.weight > 0.0 && it.reps <= 0 }
+        if (hasTrulyEmptySet || hasWeightButNoReps) {
+            viewModelScope.launch {
+                _effects.emit(ActiveWorkoutEffect.ShowSnackbar(com.eugene.lift.domain.error.AppError.Validation))
+            }
+            return
+        }
 
         viewModelScope.launch {
             val finalSession = session.copy(
@@ -619,14 +631,9 @@ class ActiveWorkoutViewModel @Inject constructor(
     }
 
     private fun getInitialSetDataFromHistory(exerciseId: String): Pair<Double, Int> {
-        val prefillSet = pickPrefillSet(_historyState.value[exerciseId])
-
-        return if (prefillSet != null) {
-            // History ya está en unidades de presentación; mantener tal cual
-            prefillSet.weight to prefillSet.reps
-        } else {
-            0.0 to 0
-        }
+        val historySets = _historyState.value[exerciseId]
+        val first = historySets?.firstOrNull()
+        return if (first != null) first.weight to first.reps else 0.0 to 0
     }
 }
 

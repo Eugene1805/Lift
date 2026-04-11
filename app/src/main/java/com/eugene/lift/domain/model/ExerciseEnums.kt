@@ -3,27 +3,25 @@ package com.eugene.lift.domain.model
 import androidx.annotation.StringRes
 import com.eugene.lift.R
 
+/**
+ * Muscle groups and body regions targeted by exercises.
+ *
+ * @property labelRes String resource for the localized name.
+ */
 enum class BodyPart(@get:StringRes val labelRes: Int) {
-    // Upper Body - Chest & Back
     CHEST(R.string.part_chest),
     BACK(R.string.part_back),
     LATS(R.string.part_lats),
     TRAPS(R.string.part_traps),
     LOWER_BACK(R.string.part_lower_back),
-
-    // Upper Body - Shoulders
     SHOULDERS(R.string.part_shoulders),
     FRONT_DELTS(R.string.part_front_delts),
     SIDE_DELTS(R.string.part_side_delts),
     REAR_DELTS(R.string.part_rear_delts),
-
-    // Upper Body - Arms
     ARMS(R.string.part_arms),
     BICEPS(R.string.part_biceps),
     TRICEPS(R.string.part_triceps),
     FOREARMS(R.string.part_forearms),
-
-    // Lower Body
     LEGS(R.string.part_legs),
     QUADRICEPS(R.string.part_quadriceps),
     HAMSTRINGS(R.string.part_hamstrings),
@@ -31,8 +29,6 @@ enum class BodyPart(@get:StringRes val labelRes: Int) {
     CALVES(R.string.part_calves),
     ADDUCTORS(R.string.part_adductors),
     ABDUCTORS(R.string.part_abductors),
-
-    // Core & Other
     CORE(R.string.part_core),
     NECK(R.string.part_neck),
     FULL_BODY(R.string.part_full_body),
@@ -40,6 +36,11 @@ enum class BodyPart(@get:StringRes val labelRes: Int) {
     OTHER(R.string.part_other)
 }
 
+/**
+ * Categories based on equipment or modality.
+ *
+ * @property labelRes String resource for the localized name.
+ */
 enum class ExerciseCategory(@get:StringRes val labelRes: Int) {
     BARBELL(R.string.cat_barbell),
     DUMBBELL(R.string.cat_dumbbell),
@@ -52,9 +53,18 @@ enum class ExerciseCategory(@get:StringRes val labelRes: Int) {
     DURATION(R.string.cat_duration)
 }
 
+/**
+ * Types of tracking metrics for sets.
+ *
+ * @property labelRes String resource for the localized name.
+ */
 enum class MeasureType(@get:StringRes val labelRes: Int) {
+    /** Track weight and repetitions. */
     REPS_AND_WEIGHT(R.string.type_reps_weight),
+    /** Track repetitions only. */
     REPS_ONLY(R.string.type_reps_only),
+    /** Track time duration. */
     TIME(R.string.type_time),
+    /** Track both distance and time. */
     DISTANCE_TIME(R.string.type_distance)
 }

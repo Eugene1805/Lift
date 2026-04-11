@@ -1,6 +1,5 @@
 package com.eugene.lift.domain.usecase.exercise
 
-import com.eugene.lift.data.local.ExerciseImageMapper
 import com.eugene.lift.domain.repository.ExerciseRepository
 import javax.inject.Inject
 
@@ -15,7 +14,8 @@ import javax.inject.Inject
  * are currently missing an image path, minimizing database I/O on subsequent app launches.
  */
 class AssignMissingImagesUseCase @Inject constructor(
-    private val repository: ExerciseRepository
+    private val repository: ExerciseRepository,
+    private val imageResolver: ExerciseImageResolver
 ) {
     /**
      * Executes the mapping process for all unassigned exercises currently in the repository.
@@ -26,7 +26,7 @@ class AssignMissingImagesUseCase @Inject constructor(
         val unassigned = repository.getExercisesWithoutImage()
         unassigned.forEach { exercise ->
             // Use the centralized mapper to find a match based on the exercise name.
-            val drawable = ExerciseImageMapper.getDrawable(exercise.name)
+            val drawable = imageResolver.resolveDrawable(exercise.name)
             if (drawable != null) {
                 repository.updateImagePath(exercise.id, drawable)
             }

@@ -25,9 +25,6 @@ interface UserProfileDao {
     @Query("SELECT * FROM user_profiles WHERE username = :username LIMIT 1")
     suspend fun getProfileByUsername(username: String): UserProfileEntity?
 
-    @Query("SELECT * FROM user_profiles WHERE email = :email LIMIT 1")
-    suspend fun getProfileByEmail(email: String): UserProfileEntity?
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProfile(profile: UserProfileEntity)
 
@@ -40,7 +37,6 @@ interface UserProfileDao {
     @Query("SELECT COUNT(*) FROM user_profiles")
     suspend fun getProfileCount(): Int
 
-    // Stats updates
     @Query("UPDATE user_profiles SET totalWorkouts = totalWorkouts + 1, lastWorkoutDate = :date, updatedAt = :updatedAt WHERE id = :id")
     suspend fun incrementWorkoutCount(id: String, date: LocalDate, updatedAt: LocalDateTime)
 
@@ -56,17 +52,6 @@ interface UserProfileDao {
     @Query("UPDATE user_profiles SET currentStreak = :streak, longestStreak = CASE WHEN :streak > longestStreak THEN :streak ELSE longestStreak END, updatedAt = :updatedAt WHERE id = :id")
     suspend fun updateStreak(id: String, streak: Int, updatedAt: LocalDateTime)
 
-    // Auth updates
-    @Query("UPDATE user_profiles SET authProvider = :provider, authProviderId = :providerId, updatedAt = :updatedAt WHERE id = :id")
-    suspend fun updateAuthProvider(id: String, provider: String, providerId: String?, updatedAt: LocalDateTime)
-
-    @Query("UPDATE user_profiles SET email = :email, isEmailVerified = :verified, updatedAt = :updatedAt WHERE id = :id")
-    suspend fun updateEmail(id: String, email: String, verified: Boolean, updatedAt: LocalDateTime)
-
-    @Query("UPDATE user_profiles SET lastSyncedAt = :syncedAt WHERE id = :id")
-    suspend fun updateLastSynced(id: String, syncedAt: LocalDateTime)
-
-    // Profile updates
     @Query("UPDATE user_profiles SET displayName = :displayName, updatedAt = :updatedAt WHERE id = :id")
     suspend fun updateDisplayName(id: String, displayName: String, updatedAt: LocalDateTime)
 
@@ -78,8 +63,4 @@ interface UserProfileDao {
 
     @Query("UPDATE user_profiles SET username = :username, updatedAt = :updatedAt WHERE id = :id")
     suspend fun updateUsername(id: String, username: String, updatedAt: LocalDateTime)
-
-    // Social / Privacy fields (followersCount, followingCount, isPublic) are reserved
-    // for a future social feature and are not yet wired to any UI or use case.
-    // updateFollowersCount, updateFollowingCount, updatePrivacy removed until implemented.
 }

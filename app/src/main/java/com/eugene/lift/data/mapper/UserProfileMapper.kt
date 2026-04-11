@@ -1,7 +1,6 @@
 package com.eugene.lift.data.mapper
 
 import com.eugene.lift.data.local.entity.UserProfileEntity
-import com.eugene.lift.domain.model.AuthProvider
 import com.eugene.lift.domain.model.UserProfile
 
 fun UserProfileEntity.toDomain(): UserProfile {
@@ -15,14 +14,6 @@ fun UserProfileEntity.toDomain(): UserProfile {
         bio = bio,
         createdAt = createdAt,
         updatedAt = updatedAt,
-        authProvider = try {
-            AuthProvider.valueOf(authProvider)
-        } catch (_: IllegalArgumentException) {
-            AuthProvider.LOCAL
-        },
-        authProviderId = authProviderId,
-        isEmailVerified = isEmailVerified,
-        lastSyncedAt = lastSyncedAt,
         totalWorkouts = totalWorkouts,
         totalVolume = totalVolume,
         totalDuration = totalDuration,
@@ -47,10 +38,6 @@ fun UserProfile.toEntity(): UserProfileEntity {
         bio = bio,
         createdAt = createdAt,
         updatedAt = updatedAt,
-        authProvider = authProvider.name,
-        authProviderId = authProviderId,
-        isEmailVerified = isEmailVerified,
-        lastSyncedAt = lastSyncedAt,
         totalWorkouts = totalWorkouts,
         totalVolume = totalVolume,
         totalDuration = totalDuration,

@@ -1,8 +1,8 @@
 package com.eugene.lift.ui.feature.history
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.lazy.items
@@ -32,7 +33,6 @@ import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.ui.components.HistoryEmptyState
 import com.eugene.lift.ui.util.WeightFormatters
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @Composable
 fun HistoryRoute(
@@ -55,7 +55,6 @@ fun HistoryRoute(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
     historyItems: List<HistoryUiItem>,
@@ -66,78 +65,180 @@ fun HistoryScreen(
     onScrollConsumed: () -> Unit
 ) {
     val listState = rememberLazyListState()
+    val targetScrollIndex = rememberTargetScrollIndex(scrollToDate, historyItems)
 
-    LaunchedEffect(scrollToDate, historyItems) {
-        if (scrollToDate == null) return@LaunchedEffect
-        val targetIndex = historyItems.indexOfFirst { item ->
-            item is HistoryUiItem.SessionItem && item.session.date.toLocalDate() == scrollToDate
-        }
-        if (targetIndex >= 0) {
-            listState.animateScrollToItem(targetIndex)
-        }
-        onScrollConsumed()
-    }
+    HistoryScrollEffect(
+        scrollToDate = scrollToDate,
+        targetScrollIndex = targetScrollIndex,
+        listState = listState,
+        onScrollConsumed = onScrollConsumed
+    )
 
+    HistoryScaffold(
+        historyItems = historyItems,
+        userSettings = userSettings,
+        listState = listState,
+        onSessionClick = onSessionClick,
+        onCalendarClick = onCalendarClick
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HistoryScaffold(
+    historyItems: List<HistoryUiItem>,
+    userSettings: UserSettings,
+    listState: LazyListState,
+    onSessionClick: (String) -> Unit,
+    onCalendarClick: () -> Unit
+) {
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.history_title)) },
-                actions = {
-                    IconButton(onClick = onCalendarClick) {
-                        Icon(
-                            imageVector = Icons.Default.CalendarMonth,
-                            contentDescription = stringResource(R.string.history_calendar),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
-                windowInsets = WindowInsets(0, 0, 0, 0),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
+            HistoryTopBar(onCalendarClick = onCalendarClick)
         }
     ) { innerPadding ->
-        if (historyItems.isEmpty()) {
-            Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                HistoryEmptyState()
-            }
-        } else {
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(bottom = 16.dp),
-                modifier = Modifier.padding(innerPadding).fillMaxSize()
-            ) {
-                // Using items/stickyHeader DSL for proper recycling
-                items(
-                    items = historyItems,
-                    key = { item ->
-                        when (item) {
-                            is HistoryUiItem.Header -> "header_${item.title}"
-                            is HistoryUiItem.SessionItem -> item.session.id
-                        }
-                    },
-                    contentType = { item ->
-                        when (item) {
-                            is HistoryUiItem.Header -> "header"
-                            is HistoryUiItem.SessionItem -> "session"
-                        }
-                    }
-                ) { item ->
-                    when (item) {
-                        is HistoryUiItem.Header -> HistoryHeader(title = item.title)
-                        is HistoryUiItem.SessionItem -> HistorySessionCard(
-                            session = item.session,
-                            userSettings = userSettings,
-                            onClick = { onSessionClick(item.session.id) }
-                        )
-                    }
+        HistoryContent(
+            historyItems = historyItems,
+            userSettings = userSettings,
+            listState = listState,
+            innerPadding = innerPadding,
+            onSessionClick = onSessionClick
+        )
+    }
+}
+
+@Composable
+private fun rememberTargetScrollIndex(
+    scrollToDate: java.time.LocalDate?,
+    historyItems: List<HistoryUiItem>
+): Int {
+    val targetScrollIndex by remember(scrollToDate, historyItems) {
+        derivedStateOf {
+            if (scrollToDate == null) {
+                -1
+            } else {
+                historyItems.indexOfFirst { item ->
+                    item is HistoryUiItem.SessionItem && item.session.date.toLocalDate() == scrollToDate
                 }
             }
         }
+    }
+    return targetScrollIndex
+}
+
+@Composable
+private fun HistoryScrollEffect(
+    scrollToDate: java.time.LocalDate?,
+    targetScrollIndex: Int,
+    listState: LazyListState,
+    onScrollConsumed: () -> Unit
+) {
+    LaunchedEffect(scrollToDate, targetScrollIndex) {
+        if (scrollToDate == null) return@LaunchedEffect
+        if (targetScrollIndex >= 0) {
+            listState.animateScrollToItem(targetScrollIndex)
+        }
+        onScrollConsumed()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HistoryTopBar(onCalendarClick: () -> Unit) {
+    TopAppBar(
+        title = { Text(stringResource(R.string.history_title)) },
+        actions = {
+            IconButton(onClick = onCalendarClick) {
+                Icon(
+                    imageVector = Icons.Default.CalendarMonth,
+                    contentDescription = stringResource(R.string.history_calendar),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        windowInsets = WindowInsets(0, 0, 0, 0),
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface
+        )
+    )
+}
+
+@Composable
+private fun HistoryContent(
+    historyItems: List<HistoryUiItem>,
+    userSettings: UserSettings,
+    listState: LazyListState,
+    innerPadding: PaddingValues,
+    onSessionClick: (String) -> Unit
+) {
+    if (historyItems.isEmpty()) {
+        Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+            HistoryEmptyState()
+        }
+    } else {
+        HistoryList(
+            historyItems = historyItems,
+            userSettings = userSettings,
+            listState = listState,
+            innerPadding = innerPadding,
+            onSessionClick = onSessionClick
+        )
+    }
+}
+
+@Composable
+private fun HistoryList(
+    historyItems: List<HistoryUiItem>,
+    userSettings: UserSettings,
+    listState: LazyListState,
+    innerPadding: PaddingValues,
+    onSessionClick: (String) -> Unit
+) {
+    LazyColumn(
+        state = listState,
+        contentPadding = PaddingValues(bottom = 16.dp),
+        modifier = Modifier.padding(innerPadding).fillMaxSize()
+    ) {
+        items(
+            items = historyItems,
+            key = { item -> historyItemKey(item) },
+            contentType = { item -> historyItemContentType(item) }
+        ) { item ->
+            HistoryListItem(item = item, userSettings = userSettings, onSessionClick = onSessionClick)
+        }
+    }
+}
+
+private fun historyItemKey(item: HistoryUiItem): String {
+    return when (item) {
+        is HistoryUiItem.Header -> "header_${item.title}"
+        is HistoryUiItem.SessionItem -> item.session.id
+    }
+}
+
+private fun historyItemContentType(item: HistoryUiItem): String {
+    return when (item) {
+        is HistoryUiItem.Header -> "header"
+        is HistoryUiItem.SessionItem -> "session"
+    }
+}
+
+@Composable
+private fun HistoryListItem(
+    item: HistoryUiItem,
+    userSettings: UserSettings,
+    onSessionClick: (String) -> Unit
+) {
+    when (item) {
+        is HistoryUiItem.Header -> HistoryHeader(title = item.title)
+        is HistoryUiItem.SessionItem -> HistorySessionCard(
+            session = item.session,
+            userSettings = userSettings,
+            onClick = { onSessionClick(item.session.id) }
+        )
     }
 }
 
@@ -193,7 +294,12 @@ fun HistorySessionCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            SessionStatsRow(totalVolume = totalVolume, weightLabel = weightLabel, prCount = prCount)
+            SessionStatsRow(
+                totalVolume = totalVolume,
+                weightLabel = weightLabel,
+                prCount = prCount,
+                weightUnit = userSettings.weightUnit
+            )
 
             BestSetsSection(
                 exercises = session.exercises,
@@ -249,7 +355,12 @@ private fun DurationBadge(durationSeconds: Long) {
 }
 
 @Composable
-private fun SessionStatsRow(totalVolume: Double, weightLabel: String, prCount: Int) {
+private fun SessionStatsRow(
+    totalVolume: Double,
+    weightLabel: String,
+    prCount: Int,
+    weightUnit: WeightUnit
+) {
     if (totalVolume <= 0 && prCount <= 0) return
 
     Row(
@@ -259,7 +370,7 @@ private fun SessionStatsRow(totalVolume: Double, weightLabel: String, prCount: I
         if (totalVolume > 0) VolumeStat(
             totalVolume = totalVolume,
             weightLabel = weightLabel,
-            weightUnit = if (weightLabel.trim() == stringResource(R.string.unit_lbs)) WeightUnit.LBS else WeightUnit.KG
+            weightUnit = weightUnit
         )
         if (prCount > 0) PrStat(prCount = prCount)
     }
@@ -294,7 +405,7 @@ private fun PrStat(prCount: Int) {
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
-            text = remember(prCount) { "$prCount" } + " ${stringResource(R.string.history_detail_prs)}",
+            text = "$prCount ${stringResource(R.string.history_detail_prs)}",
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface

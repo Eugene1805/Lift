@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,13 +48,14 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -62,29 +64,36 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.eugene.lift.R
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.usecase.exercise.SortOrder
 import com.eugene.lift.ui.components.ExercisesEmptyState
 
-/**
- * Translates a stored drawable string name into a URI that the Coil image loading
- * library can resolve.
- *
- * This bridge is necessary because we store technical asset names as strings in the
- * database (to allow for easy updates via the Mapper) rather than hardcoded resource IDs.
- *
- * @return A resource URI string or null if the asset cannot be identified, allowing
- * the UI to fall back to a placeholder.
- */
-@Composable
-private fun drawableUriOrNull(drawableName: String?): String? {
-    if (drawableName == null) return null
-    val context = LocalContext.current
-    // Dynamic resource lookup is used here to avoid maintaining a massive R.drawable switch statement.
-    val resId = context.resources.getIdentifier(drawableName, "drawable", context.packageName)
-    return if (resId != 0) "android.resource://${context.packageName}/$resId" else null
+private fun drawableResIdOrNull(drawableName: String?): Int? {
+    return when (drawableName) {
+        "abductors" -> R.drawable.abductors
+        "back_squat" -> R.drawable.back_squat
+        "barbell_row" -> R.drawable.barbell_row
+        "bench_press" -> R.drawable.bench_press
+        "cable_lateral_raise" -> R.drawable.cable_lateral_raise
+        "chest_peck_fly" -> R.drawable.chest_peck_fly
+        "deadlift" -> R.drawable.deadlift
+        "dumbell_biceps_curl" -> R.drawable.dumbell_biceps_curl
+        "dumbell_bulgarian_split_squat" -> R.drawable.dumbell_bulgarian_split_squat
+        "dumbell_incline_chest_press" -> R.drawable.dumbell_incline_chest_press
+        "dumbell_shoulder_press" -> R.drawable.dumbell_shoulder_press
+        "hip_thrust" -> R.drawable.hip_thrust
+        "leg_extension" -> R.drawable.leg_extension
+        "machine_preacher_curl" -> R.drawable.machine_preacher_curl
+        "machine_standing_calf_raises" -> R.drawable.machine_standing_calf_raises
+        "overhead_shoulder_press" -> R.drawable.overhead_shoulder_press
+        "pull_up" -> R.drawable.pull_up
+        "single_arm_triceps_extension" -> R.drawable.single_arm_triceps_extension
+        "smith_machine_bulgarian_split_squat" -> R.drawable.smith_machine_bulgarian_split_squat
+        "weigthed_dips" -> R.drawable.weigthed_dips
+        "wrist_curl" -> R.drawable.wrist_curl
+        else -> null
+    }
 }
 
 
@@ -208,6 +217,11 @@ private fun SearchAndFilterRow(
     onEvent: (ExercisesUiEvent) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
+    val hasActiveFilters by remember(uiState.selectedBodyParts, uiState.selectedCategories) {
+        derivedStateOf {
+            uiState.selectedBodyParts.isNotEmpty() || uiState.selectedCategories.isNotEmpty()
+        }
+    }
 
     Row(
         modifier = Modifier
@@ -224,7 +238,7 @@ private fun SearchAndFilterRow(
         )
 
         FilterButton(
-            hasFilters = uiState.selectedBodyParts.isNotEmpty() || uiState.selectedCategories.isNotEmpty(),
+            hasFilters = hasActiveFilters,
             onClick = { onEvent(ExercisesUiEvent.FilterSheetVisibilityChanged(true)) }
         )
 
@@ -385,17 +399,24 @@ fun ExercisesContent(
     onEvent: (ExercisesUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val listState = rememberLazyListState()
+
     if (uiState.exercises.isEmpty()) {
         ExercisesEmptyState(
             modifier = modifier.fillMaxSize()
         )
     } else {
         LazyColumn(
+            state = listState,
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(items = uiState.exercises, key = { it.id }) { exercise ->
+            items(
+                items = uiState.exercises,
+                key = { it.id },
+                contentType = { "exercise_item" }
+            ) { exercise ->
                 val isSelected = exercise.id in uiState.selectedExerciseIds
 
                 ExerciseItemCard(
@@ -450,52 +471,7 @@ fun ExerciseItemCard(
                 ExerciseSupportingContent(exercise)
             },
             leadingContent = {
-                if (exercise.imagePath != null) {
-                    val imageUri = drawableUriOrNull(exercise.imagePath)
-                    if (imageUri != null) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(imageUri)
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                        )
-                    } else {
-                        // Provides a fallback visual (initial of the exercise name) if 
-                        // the specified image fails to resolve, ensuring the UI 
-                        // remains consistent and usable.
-                        Box(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = exercise.name.take(1),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = exercise.name.take(1),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+                ExerciseThumbnail(exerciseName = exercise.name, imagePath = exercise.imagePath)
             },
             trailingContent = {
                 if (isSelectionMode) {
@@ -505,6 +481,39 @@ fun ExerciseItemCard(
                     )
                 }
             }
+        )
+    }
+}
+
+@Composable
+private fun ExerciseThumbnail(exerciseName: String, imagePath: String?) {
+    val imageResId = remember(imagePath) { drawableResIdOrNull(imagePath) }
+    if (imageResId != null) {
+        AsyncImage(
+            model = imageResId,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(56.dp)
+                .clip(RoundedCornerShape(8.dp))
+        )
+    } else {
+        ExercisePlaceholder(initial = exerciseName.take(1))
+    }
+}
+
+@Composable
+private fun ExercisePlaceholder(initial: String) {
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = initial,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

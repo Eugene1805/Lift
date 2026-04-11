@@ -18,13 +18,6 @@ data class UserProfileEntity(
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val updatedAt: LocalDateTime = LocalDateTime.now(),
 
-    // Authentication
-    val authProvider: String = "LOCAL", // Stored as string for Room
-    val authProviderId: String? = null,
-    val isEmailVerified: Boolean = false,
-    val lastSyncedAt: LocalDateTime? = null,
-
-    // Stats
     val totalWorkouts: Int = 0,
     val totalVolume: Double = 0.0,
     val totalDuration: Long = 0L,
@@ -33,7 +26,6 @@ data class UserProfileEntity(
     val longestStreak: Int = 0,
     val lastWorkoutDate: LocalDate? = null,
 
-    // Social
     val followersCount: Int = 0,
     val followingCount: Int = 0,
     val isPublic: Boolean = false

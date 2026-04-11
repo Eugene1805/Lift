@@ -7,7 +7,9 @@ import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.repository.ExerciseRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -15,12 +17,14 @@ import org.junit.Test
 class AssignMissingImagesUseCaseTest {
 
     private lateinit var repository: ExerciseRepository
+    private lateinit var imageResolver: ExerciseImageResolver
     private lateinit var useCase: AssignMissingImagesUseCase
 
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
-        useCase = AssignMissingImagesUseCase(repository)
+        imageResolver = mockk()
+        useCase = AssignMissingImagesUseCase(repository, imageResolver)
     }
 
     private fun exercise(name: String, id: String = name) = Exercise(
@@ -38,6 +42,7 @@ class AssignMissingImagesUseCaseTest {
         // GIVEN
         val bench = exercise("Bench Press (Barbell)", id = "bench_id")
         coEvery { repository.getExercisesWithoutImage() } returns listOf(bench)
+        every { imageResolver.resolveDrawable("Bench Press (Barbell)") } returns "bench_press"
 
         // WHEN
         useCase()
@@ -51,21 +56,25 @@ class AssignMissingImagesUseCaseTest {
         // GIVEN
         val unknown = exercise("Unknown Exercise XYZ", id = "unknown_id")
         coEvery { repository.getExercisesWithoutImage() } returns listOf(unknown)
+        every { imageResolver.resolveDrawable("Unknown Exercise XYZ") } returns null
 
         // WHEN
         useCase()
 
-        // THEN — no update should happen for exercises not in the mapper
+        // THEN - no update should happen for exercises not in the mapper
         coVerify(exactly = 0) { repository.updateImagePath(any(), any()) }
     }
 
     @Test
-    fun `invoke handles mixed exercises — only updates those with known mappings`() = runTest {
+    fun `invoke handles mixed exercises - only updates those with known mappings`() = runTest {
         // GIVEN
         val bench = exercise("Bench Press (Barbell)", id = "bench_id")
         val unknown = exercise("Some Obscure Exercise", id = "unknown_id")
         val deadlift = exercise("Deadlift (Barbell)", id = "dead_id")
         coEvery { repository.getExercisesWithoutImage() } returns listOf(bench, unknown, deadlift)
+        every { imageResolver.resolveDrawable("Bench Press (Barbell)") } returns "bench_press"
+        every { imageResolver.resolveDrawable("Some Obscure Exercise") } returns null
+        every { imageResolver.resolveDrawable("Deadlift (Barbell)") } returns "deadlift"
 
         // WHEN
         useCase()
@@ -86,5 +95,6 @@ class AssignMissingImagesUseCaseTest {
 
         // THEN
         coVerify(exactly = 0) { repository.updateImagePath(any(), any()) }
+        verify(exactly = 0) { imageResolver.resolveDrawable(any()) }
     }
 }

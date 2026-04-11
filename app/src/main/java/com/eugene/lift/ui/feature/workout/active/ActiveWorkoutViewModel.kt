@@ -14,11 +14,9 @@ import com.eugene.lift.domain.usecase.exercise.GetExerciseDetailUseCase
 import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateAutoTimerUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateEffortMetricUseCase
-import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.ui.feature.workout.active.service.ActiveWorkoutServiceManager
 import com.eugene.lift.ui.feature.workout.active.service.WorkoutNotificationAction
 import com.eugene.lift.ui.feature.workout.active.service.WorkoutNotificationState
-import com.eugene.lift.ui.util.WeightFormatters
 import com.eugene.lift.domain.usecase.template.CreateTemplateFromWorkoutUseCase
 import com.eugene.lift.domain.usecase.template.UpdateTemplateFromWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.StartEmptyWorkoutUseCase
@@ -32,6 +30,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
@@ -88,7 +87,7 @@ class ActiveWorkoutViewModel @Inject constructor(
     val uiState: StateFlow<ActiveWorkoutUiState> = _uiState.asStateFlow()
 
     private val _effects = MutableSharedFlow<ActiveWorkoutEffect>()
-    val effects: SharedFlow<ActiveWorkoutEffect> = _effects
+    val effects: SharedFlow<ActiveWorkoutEffect> = _effects.asSharedFlow()
 
     init {
         // Seed preferences from the COLD upstream flow so we actually suspend

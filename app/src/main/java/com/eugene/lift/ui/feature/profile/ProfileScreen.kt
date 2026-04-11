@@ -34,6 +34,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -244,7 +245,7 @@ private fun HistogramSection(
     selectedTimeRange: TimeRange,
     onTimeRangeChange: (TimeRange) -> Unit
 ) {
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
     val tabs = listOf(
         stringResource(R.string.profile_tab_duration),
         stringResource(R.string.profile_tab_volume),
@@ -288,11 +289,15 @@ private fun HistogramSection(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Histogram
-            val data = when (selectedTabIndex) {
-                0 -> stats.durationData
-                1 -> stats.volumeData
-                else -> stats.repsData
+            // Chart dataset is derived from selected tab and stats snapshot.
+            val data by remember(selectedTabIndex, stats) {
+                derivedStateOf {
+                    when (selectedTabIndex) {
+                        0 -> stats.durationData
+                        1 -> stats.volumeData
+                        else -> stats.repsData
+                    }
+                }
             }
 
             if (data.isEmpty()) {

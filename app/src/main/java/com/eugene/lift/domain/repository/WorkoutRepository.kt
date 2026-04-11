@@ -17,7 +17,6 @@ interface WorkoutRepository {
 
     fun getPersonalRecord(exerciseId: String): Flow<WorkoutSet?>
 
-
     fun getExerciseHistory(exerciseId: String): Flow<List<WorkoutSession>>
 
     suspend fun getLastHistoryForExercise(exerciseId: String, templateId: String? = null): WorkoutSession?

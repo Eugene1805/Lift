@@ -6,12 +6,12 @@ import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.eugene.lift.data.local.AppDatabase
+import com.eugene.lift.data.local.ExerciseImageResolverImpl
 import com.eugene.lift.data.local.ExerciseSeeder
 import com.eugene.lift.data.local.SettingsDataSource
 import com.eugene.lift.data.local.dao.ExerciseDao
 import com.eugene.lift.data.local.dao.FolderDao
 import com.eugene.lift.data.local.dao.TemplateDao
-import com.eugene.lift.data.local.dao.UserCredentialsDao
 import com.eugene.lift.data.local.dao.UserProfileDao
 import com.eugene.lift.data.local.dao.WorkoutDao
 import com.eugene.lift.data.repository.ExerciseRepositoryImpl
@@ -28,6 +28,7 @@ import com.eugene.lift.domain.repository.SettingsRepository
 import com.eugene.lift.domain.repository.TemplateRepository
 import com.eugene.lift.domain.repository.UserProfileRepository
 import com.eugene.lift.domain.repository.WorkoutRepository
+import com.eugene.lift.domain.usecase.exercise.ExerciseImageResolver
 import com.eugene.lift.domain.usecase.workout.StartEmptyWorkoutUseCase
 import dagger.Module
 import dagger.Provides
@@ -49,20 +50,70 @@ object AppModule {
             }
         }
 
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Drop user_credentials table
+                db.execSQL("DROP TABLE IF EXISTS user_credentials")
+
+                // Handle user_profiles column removal
+                // Standard approach: Create new table, copy data, drop old, rename new
+                db.execSQL("""
+                    CREATE TABLE user_profiles_new (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        username TEXT NOT NULL,
+                        displayName TEXT NOT NULL,
+                        email TEXT,
+                        avatarUrl TEXT,
+                        avatarColor TEXT NOT NULL,
+                        bio TEXT,
+                        createdAt TEXT NOT NULL,
+                        updatedAt TEXT NOT NULL,
+                        totalWorkouts INTEGER NOT NULL,
+                        totalVolume REAL NOT NULL,
+                        totalDuration INTEGER NOT NULL,
+                        totalPRs INTEGER NOT NULL,
+                        currentStreak INTEGER NOT NULL,
+                        longestStreak INTEGER NOT NULL,
+                        lastWorkoutDate TEXT,
+                        followersCount INTEGER NOT NULL,
+                        followingCount INTEGER NOT NULL,
+                        isPublic INTEGER NOT NULL
+                    )
+                """.trimIndent())
+
+                db.execSQL("""
+                    INSERT INTO user_profiles_new (
+                        id, username, displayName, email, avatarUrl, avatarColor, bio, 
+                        createdAt, updatedAt, totalWorkouts, totalVolume, totalDuration, 
+                        totalPRs, currentStreak, longestStreak, lastWorkoutDate, 
+                        followersCount, followingCount, isPublic
+                    )
+                    SELECT 
+                        id, username, displayName, email, avatarUrl, avatarColor, bio, 
+                        createdAt, updatedAt, totalWorkouts, totalVolume, totalDuration, 
+                        totalPRs, currentStreak, longestStreak, lastWorkoutDate, 
+                        followersCount, followingCount, isPublic
+                    FROM user_profiles
+                """.trimIndent())
+
+                db.execSQL("DROP TABLE user_profiles")
+                db.execSQL("ALTER TABLE user_profiles_new RENAME TO user_profiles")
+            }
+        }
+
         return Room.databaseBuilder(
             app,
             AppDatabase::class.java,
             "lift_db"
         )
-            .addMigrations(MIGRATION_8_9)
+            .addMigrations(MIGRATION_8_9, MIGRATION_9_10)
             .fallbackToDestructiveMigration(true)
             .build()
     }
     @Provides
     @Singleton
-    fun provideExerciseDao(db: AppDatabase): ExerciseDao {
-        return db.exerciseDao()
-    }
+    fun provideExerciseDao(db: AppDatabase): ExerciseDao = db.exerciseDao()
+
     @Provides
     @Singleton
     fun provideTemplateDao(db: AppDatabase): TemplateDao = db.templateDao()
@@ -73,53 +124,41 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFolderRepository(dao: FolderDao): FolderRepository {
-        return FolderRepositoryImpl(dao)
-    }
+    fun provideFolderRepository(dao: FolderDao): FolderRepository = FolderRepositoryImpl(dao)
+
     @Provides
     @Singleton
     fun provideWorkoutDao(db: AppDatabase): WorkoutDao = db.workoutDao()
 
     @Provides
     @Singleton
-    fun provideExerciseRepository(dao: ExerciseDao): ExerciseRepository {
-        return ExerciseRepositoryImpl(dao)
-    }
+    fun provideExerciseRepository(dao: ExerciseDao): ExerciseRepository = ExerciseRepositoryImpl(dao)
 
     @Provides
     @Singleton
-    fun provideSettingsDataSource(@ApplicationContext context: Context): SettingsDataSource {
-        return SettingsDataSource(context)
-    }
+    fun provideSettingsDataSource(@ApplicationContext context: Context): SettingsDataSource = SettingsDataSource(context)
+
     @Provides
     @Singleton
-    fun provideTemplateRepository(dao: TemplateDao): TemplateRepository {
-        return TemplateRepositoryImpl(dao)
-    }
+    fun provideTemplateRepository(dao: TemplateDao): TemplateRepository = TemplateRepositoryImpl(dao)
 
     @Provides
     @Singleton
     fun provideWorkoutRepository(
         dao: WorkoutDao,
         settingsRepository: SettingsRepository
-    ): WorkoutRepository {
-        return WorkoutRepositoryImpl(dao, settingsRepository)
-    }
+    ): WorkoutRepository = WorkoutRepositoryImpl(dao, settingsRepository)
 
     @Provides
     @Singleton
-    fun provideSettingsRepository(dataSource: SettingsDataSource): SettingsRepository {
-        return SettingsRepositoryImpl(dataSource)
-    }
+    fun provideSettingsRepository(dataSource: SettingsDataSource): SettingsRepository = SettingsRepositoryImpl(dataSource)
 
     @Provides
     @Singleton
     fun provideExerciseSeeder(
         repository: ExerciseRepository,
         @ApplicationContext context: Context
-    ): ExerciseSeeder {
-        return ExerciseSeeder(repository, context)
-    }
+    ): ExerciseSeeder = ExerciseSeeder(repository, context)
 
     @Provides
     @Singleton
@@ -127,16 +166,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUserCredentialsDao(db: AppDatabase): UserCredentialsDao = db.userCredentialsDao()
-
-    @Provides
-    @Singleton
     fun provideUserProfileRepository(
-        userProfileDao: UserProfileDao,
-        userCredentialsDao: UserCredentialsDao
-    ): UserProfileRepository {
-        return UserProfileRepositoryImpl(userProfileDao, userCredentialsDao)
-    }
+        userProfileDao: UserProfileDao
+    ): UserProfileRepository = UserProfileRepositoryImpl(userProfileDao)
+
     @Provides
     @Singleton
     fun provideStartEmptyWorkoutUseCase(
@@ -163,6 +196,14 @@ object AppModule {
         @ApplicationContext context: android.content.Context
     ): ImageRepository {
         return ImageRepositoryImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideExerciseImageResolver(
+        impl: ExerciseImageResolverImpl
+    ): ExerciseImageResolver {
+        return impl
     }
 
 }

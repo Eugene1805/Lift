@@ -4,7 +4,6 @@ import androidx.room.*
 import com.eugene.lift.data.local.entity.*
 import kotlinx.coroutines.flow.Flow
 
-// 1. DTO: Un TemplateExercise + Su Ejercicio Base (Nombre, categoria...)
 data class TemplateExerciseDetail(
     @Embedded val templateExercise: TemplateExerciseEntity,
 
@@ -18,7 +17,6 @@ data class TemplateExerciseDetail(
     val bodyPartRefs: List<ExerciseBodyPartCrossRef>
 )
 
-// 2. DTO: El Template completo + Lista de ejercicios detallados
 data class TemplateWithExercises(
     @Embedded val template: WorkoutTemplateEntity,
 
@@ -40,7 +38,6 @@ interface TemplateDao {
     @Query("SELECT * FROM workout_templates WHERE id = :id")
     fun getTemplateById(id: String): Flow<TemplateWithExercises?>
 
-    // --- Escritura (Sin cambios) ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTemplate(template: WorkoutTemplateEntity)
 

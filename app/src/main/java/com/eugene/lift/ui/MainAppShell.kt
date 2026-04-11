@@ -30,7 +30,6 @@ fun MainAppShell(settingsRepository: SettingsRepository) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Show bottom bar only on main navigation destinations
     val showBottomBar = bottomNavItems.any { item ->
         currentDestination?.hierarchy?.any { it.hasRoute(item.route::class) } == true
     }

@@ -8,12 +8,6 @@ import com.eugene.lift.domain.repository.ImageRepository
 import com.eugene.lift.domain.repository.UserProfileRepository
 import javax.inject.Inject
 
-/**
- * Orchestrates the full avatar-upload flow:
- * 1. Compress & save the chosen image locally.
- * 2. Update the profile's [avatarUrl] with the new local path.
- * 3. Delete the old avatar file if one existed.
- */
 class UploadAvatarUseCase @Inject constructor(
     private val imageRepository: ImageRepository,
     private val userProfileRepository: UserProfileRepository,
@@ -37,7 +31,6 @@ class UploadAvatarUseCase @Inject constructor(
 
             userProfileRepository.updateAvatarUrl(profileId, savedPath)
 
-            // Clean up old avatar after the new one is persisted
             if (oldAvatarPath != null && oldAvatarPath != savedPath) {
                 imageRepository.deleteImage(oldAvatarPath)
             }

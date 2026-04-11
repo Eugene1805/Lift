@@ -17,8 +17,6 @@ data class ExerciseResult(
 @Dao
 interface ExerciseDao {
 
-    // --- READ OPERATIONS (Return DTOs) ---
-
     @Query("""
         SELECT e.*, GROUP_CONCAT(cref.bodyPart) as bodyParts
         FROM exercises e
@@ -40,7 +38,6 @@ interface ExerciseDao {
     @Query("SELECT COUNT(*) FROM exercises")
     suspend fun getExerciseCount(): Int
 
-    // --- WRITE OPERATIONS (Work with Entities) ---
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExercise(exercise: ExerciseEntity)
@@ -54,8 +51,6 @@ interface ExerciseDao {
     @Query("DELETE FROM exercises WHERE id = :exerciseId")
     suspend fun deleteExerciseBase(exerciseId: String)
 
-    // Transactional Save: Clean Architecture means the Repo calls this,
-    // or we expose this atomic operation.
     @Transaction
     suspend fun saveExerciseComplete(
         exercise: ExerciseEntity,
@@ -74,10 +69,6 @@ interface ExerciseDao {
         deleteExerciseBase(exerciseId)
     }
 
-    // --- Image assignment helpers ---
-    // These methods support the automated background process of enriching exercise
-    // data with visual assets without requiring a full record rewrite.
-
     /**
      * Identifies exercises that are currently missing a visual representation.
      *
@@ -95,4 +86,4 @@ interface ExerciseDao {
      */
     @Query("UPDATE exercises SET imagePath = :imagePath WHERE id = :exerciseId")
     suspend fun updateImagePath(exerciseId: String, imagePath: String)
-}
+}

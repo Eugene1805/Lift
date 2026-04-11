@@ -24,6 +24,5 @@ data class WorkoutSessionEntity(
     val name: String,
     val date: LocalDateTime,
     val durationSeconds: Long,
-    // Optional session-level notes (nullable)
     val note: String? = null
 )

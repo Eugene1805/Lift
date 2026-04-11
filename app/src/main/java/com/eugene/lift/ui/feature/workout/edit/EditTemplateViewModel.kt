@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -44,7 +43,6 @@ class EditTemplateViewModel @Inject constructor(
     private val _reorderState = MutableStateFlow(ReorderUiState())
 
     private val _events = Channel<UiEvent>()
-    val events = _events.receiveAsFlow()
 
     val uiState: StateFlow<EditTemplateUiState> = combine(
         _name,
@@ -87,10 +85,12 @@ class EditTemplateViewModel @Inject constructor(
             is EditTemplateUiEvent.ExerciseRemoved -> removeExercise(event.exerciseId)
             is EditTemplateUiEvent.ExerciseConfigChanged -> updateExerciseConfig(event.exerciseId, event.sets, event.reps)
             is EditTemplateUiEvent.ExercisesSelected -> onExercisesSelected(event.exerciseIds)
+            is EditTemplateUiEvent.ExerciseReplaced -> replaceExercise(event.exerciseIndex, event.newExerciseId)
             is EditTemplateUiEvent.ExercisesReordered -> reorderExercise(event.fromIndex, event.toIndex)
             EditTemplateUiEvent.ToggleReorderMode -> toggleReorderMode()
             EditTemplateUiEvent.SaveClicked -> saveTemplate()
-            EditTemplateUiEvent.AddExerciseClicked -> Unit
+            EditTemplateUiEvent.AddExerciseClicked,
+            is EditTemplateUiEvent.ExerciseReplaceClicked -> Unit
             EditTemplateUiEvent.NavigationHandled -> _isSaveCompleted.value = false
         }
     }
@@ -147,6 +147,22 @@ class EditTemplateViewModel @Inject constructor(
                 val exercise = getExerciseDetailUseCase(id).firstOrNull()
                 if (exercise != null) {
                     addExercise(exercise)
+                }
+            }
+        }
+    }
+
+    private fun replaceExercise(exerciseIndex: Int, newExerciseId: String) {
+        viewModelScope.launch {
+            val replacement = getExerciseDetailUseCase(newExerciseId).firstOrNull() ?: return@launch
+            _exercises.update { list ->
+                if (exerciseIndex !in list.indices) return@update list
+                val current = list[exerciseIndex]
+                list.toMutableList().apply {
+                    this[exerciseIndex] = current.copy(
+                        id = UUID.randomUUID().toString(),
+                        exercise = replacement
+                    )
                 }
             }
         }

@@ -11,20 +11,18 @@ class CreateTemplateFromWorkoutUseCase @Inject constructor(
     private val repository: TemplateRepository
 ) {
     suspend operator fun invoke(workoutSession: WorkoutSession) {
-        // Convert session exercises to template exercises
         val templateExercises = workoutSession.exercises.mapIndexed { index, sessionExercise ->
             TemplateExercise(
                 id = UUID.randomUUID().toString(),
                 exercise = sessionExercise.exercise,
                 orderIndex = index,
                 targetSets = sessionExercise.sets.size,
-                targetReps = "6-10", // Default target reps
-                restTimerSeconds = 90, // Default rest timer
+                targetReps = "6-10",
+                restTimerSeconds = 90,
                 note = ""
             )
         }
-
-        // Create a new template
+        
         val newTemplate = WorkoutTemplate(
             id = UUID.randomUUID().toString(),
             name = workoutSession.name,

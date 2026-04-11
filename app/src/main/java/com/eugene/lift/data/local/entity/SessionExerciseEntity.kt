@@ -29,6 +29,5 @@ data class SessionExerciseEntity(
     val sessionId: String,
     val exerciseId: String,
     val orderIndex: Int,
-    // Optional per-exercise notes (nullable)
     val note: String? = null
 )

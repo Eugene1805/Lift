@@ -23,8 +23,6 @@ fun TemplateWithExercises.toDomain(): WorkoutTemplate {
 }
 
 fun TemplateExerciseDetail.toDomain(): TemplateExercise {
-    // 1. Construimos el Ejercicio de Dominio completo usando los datos reales
-    // obtenidos de la relación en el DAO (bodyPartRefs).
     val domainExercise = Exercise(
         id = exercise.id,
         name = exercise.name,
@@ -36,7 +34,6 @@ fun TemplateExerciseDetail.toDomain(): TemplateExercise {
         bodyParts = bodyPartRefs.map { it.bodyPart }
     )
 
-    // 2. Retornamos el TemplateExercise con el objeto Exercise válido
     return TemplateExercise(
         id = templateExercise.id,
         exercise = domainExercise,

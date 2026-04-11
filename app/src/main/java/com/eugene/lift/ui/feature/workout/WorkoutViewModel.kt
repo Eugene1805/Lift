@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -44,7 +43,6 @@ class WorkoutViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(true)
 
     private val _events = Channel<UiEvent>()
-    val events = _events.receiveAsFlow()
 
     private val templatesFlow = combine(
         getAllTemplatesUseCase(),

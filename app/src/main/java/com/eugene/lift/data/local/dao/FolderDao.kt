@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface FolderDao {
 
-    // Ordenamos por fecha de creación descendente (las nuevas primero)
-    // O puedes ordenar por nombre: ORDER BY name ASC
     @Query("SELECT * FROM workout_folders ORDER BY createdAt DESC")
     fun getAllFolders(): Flow<List<FolderEntity>>
 

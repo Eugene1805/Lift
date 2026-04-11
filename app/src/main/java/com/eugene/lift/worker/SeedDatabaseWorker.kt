@@ -19,19 +19,14 @@ class SeedDatabaseWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return try {
-            // First, ensure the base exercise data is present in the database.
             seeder.populate()
             
-            // Then, trigger the image assignment process. This is executed separately
-            // to handle exercises that may have been added in versions where image
-            // paths were not yet part of the seed data or to repair missing links.
             assignMissingImagesUseCase()
             
             Result.success()
         } catch (e: Exception) {
-            // Log full stack trace to aid in debugging production seeding failures.
             e.printStackTrace()
             Result.failure()
         }
     }
-}
+}

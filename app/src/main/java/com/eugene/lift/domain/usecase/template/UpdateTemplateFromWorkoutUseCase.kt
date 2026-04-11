@@ -14,12 +14,9 @@ class UpdateTemplateFromWorkoutUseCase @Inject constructor(
     suspend operator fun invoke(workoutSession: WorkoutSession) {
         val templateId = workoutSession.templateId ?: return
 
-        // Get the current template
         val currentTemplate = getTemplateDetailUseCase(templateId).first() ?: return
 
-        // Convert session exercises to template exercises
         val updatedExercises = workoutSession.exercises.mapIndexed { index, sessionExercise ->
-            // Try to find existing template exercise for this exercise
             val existingTemplateExercise = currentTemplate.exercises.find {
                 it.exercise.id == sessionExercise.exercise.id
             }
@@ -35,7 +32,6 @@ class UpdateTemplateFromWorkoutUseCase @Inject constructor(
             )
         }
 
-        // Update the template with new exercises
         val updatedTemplate = currentTemplate.copy(
             exercises = updatedExercises
         )

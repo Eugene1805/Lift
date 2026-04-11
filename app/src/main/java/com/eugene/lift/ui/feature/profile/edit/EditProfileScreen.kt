@@ -71,6 +71,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.eugene.lift.R
 import com.eugene.lift.ui.event.UiEvent
+import com.eugene.lift.ui.util.toMessage
 import java.io.File
 
 @Composable
@@ -87,7 +88,7 @@ fun EditProfileRoute(
         viewModel.events.collect { event ->
             when (event) {
                 is UiEvent.ShowSnackbar -> snackbarHostState.showSnackbar(
-                    context.getString(R.string.error_generic_try_again)
+                    event.error.toMessage(context)
                 )
             }
         }

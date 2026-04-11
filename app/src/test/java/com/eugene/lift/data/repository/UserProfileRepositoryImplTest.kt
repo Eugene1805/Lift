@@ -1,6 +1,5 @@
 package com.eugene.lift.data.repository
 
-import com.eugene.lift.data.local.dao.UserCredentialsDao
 import com.eugene.lift.data.local.dao.UserProfileDao
 import com.eugene.lift.data.local.entity.UserProfileEntity
 import io.mockk.coEvery
@@ -20,7 +19,6 @@ import java.time.LocalDateTime
 class UserProfileRepositoryImplTest {
 
     private lateinit var userProfileDao: UserProfileDao
-    private lateinit var userCredentialsDao: UserCredentialsDao
     private lateinit var repository: UserProfileRepositoryImpl
 
     private fun buildEntity(
@@ -40,8 +38,7 @@ class UserProfileRepositoryImplTest {
     @Before
     fun setUp() {
         userProfileDao = mockk(relaxed = true)
-        userCredentialsDao = mockk(relaxed = true)
-        repository = UserProfileRepositoryImpl(userProfileDao, userCredentialsDao)
+        repository = UserProfileRepositoryImpl(userProfileDao)
     }
 
     // ── getCurrentProfile ────────────────────────────────────────────────────

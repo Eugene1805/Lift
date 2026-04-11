@@ -25,7 +25,7 @@ class DuplicateTemplateUseCase @Inject constructor(
 
             val copy = original.copy(
                 id = newTemplateId,
-                name = "${original.name} (Copia)",
+                name = "${original.name} ©️",
                 exercises = newExercises,
                 isArchived = false,
                 lastPerformedAt = null

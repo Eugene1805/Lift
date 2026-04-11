@@ -35,11 +35,18 @@ fun SetRowItem(
     context: SetRowContext,
     callbacks: SetRowCallbacks
 ) {
+    val isEvenRow = context.setNumber % 2 == 0
+    val defaultRowColor = if (isEvenRow) {
+        MaterialTheme.colorScheme.surfaceContainerLow
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+
     val rowBackground by animateColorAsState(
         targetValue = if (set.completed)
             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
         else
-            MaterialTheme.colorScheme.surface,
+            defaultRowColor,
         label = "set_row_background"
     )
 
@@ -48,11 +55,13 @@ fun SetRowItem(
             .fillMaxWidth()
             .background(rowBackground)
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.Top
     ) {
         Text(
             text = context.setNumber.toString(),
-            modifier = Modifier.width(32.dp),
+            modifier = Modifier
+                .width(32.dp)
+                .align(Alignment.CenterVertically),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurface
@@ -94,7 +103,6 @@ private fun RowScope.RepsWeightRow(set: WorkoutSet, context: SetRowContext, call
             enabled = !set.completed
         )
         if (historyDisplayWeight != null) {
-            // History weights are already in the user's display unit from the repository.
             HistoryText("${WeightFormatters.formatWeight(historyDisplayWeight, context.userSettings.weightUnit)} ${context.weightUnitLabel}")
         }
     }
@@ -105,7 +113,6 @@ private fun RowScope.RepsWeightRow(set: WorkoutSet, context: SetRowContext, call
             placeholder = { Text("0") },
             enabled = !set.completed
         )
-        // Show only the number (no "reps" label)
         context.historySet?.reps?.let { HistoryText("$it") }
     }
 }
@@ -119,7 +126,6 @@ private fun RowScope.RepsOnlyRow(set: WorkoutSet, context: SetRowContext, callba
             placeholder = { Text("0") },
             enabled = !set.completed
         )
-        // Show only the number (no "reps" label)
         context.historySet?.reps?.let { HistoryText("$it", Modifier.align(Alignment.CenterHorizontally)) }
     }
 }
@@ -139,7 +145,7 @@ private fun RowScope.DistanceTimeRow(set: WorkoutSet, context: SetRowContext, ca
                 stringResource(R.string.unit_km)
             else
                 stringResource(R.string.unit_miles)
-            HistoryText("${histDistance} $distUnitLabel")
+            HistoryText("$histDistance $distUnitLabel")
         }
     }
 
@@ -172,7 +178,8 @@ private fun RowScope.TimeRow(set: WorkoutSet, context: SetRowContext, callbacks:
 @Composable
 private fun RowScope.EffortRow(set: WorkoutSet, context: SetRowContext, callbacks: SetRowCallbacks) {
     if (context.effortMetric == null) return
-    Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
+    Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally) {
         if (context.effortMetric == "RPE") {
             CompactDecimalInput(
                 value = set.rpe?.toString() ?: "",

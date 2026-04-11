@@ -43,8 +43,6 @@ class GetExerciseProgressionUseCase @Inject constructor(
         }
     }
 
-    // ── Pure computation – testable without coroutines ──────────────────────
-
     fun buildProgression(
         exerciseId: String,
         exerciseName: String,
@@ -58,10 +56,9 @@ class GetExerciseProgressionUseCase @Inject constructor(
 
         val dataPoints = mutableListOf<ProgressionDataPoint>()
         val prHistory = mutableListOf<PrRecord>()
-        var allTimeBestValue = Double.MIN_VALUE  // e1RM or max reps
+        var allTimeBestValue = Double.MIN_VALUE
 
         for (session in chronological) {
-            // Find the exercise entry in this session
             val sessionExercise = session.exercises
                 .firstOrNull { it.exercise.id == exerciseId }
                 ?: continue
@@ -70,10 +67,8 @@ class GetExerciseProgressionUseCase @Inject constructor(
             if (completedSets.isEmpty()) continue
 
             val bestSet = if (isWeightBased) {
-                // Best = highest estimated 1RM
                 completedSets.maxByOrNull { estimatedOneRepMax(it.weight, it.reps) }
             } else {
-                // Best = highest reps
                 completedSets.maxByOrNull { it.reps }
             } ?: continue
 
@@ -91,7 +86,6 @@ class GetExerciseProgressionUseCase @Inject constructor(
                 )
             )
 
-            // A new PR if this session's best eclipses everything before
             if (comparisonValue > allTimeBestValue) {
                 allTimeBestValue = comparisonValue
                 prHistory.add(
@@ -110,8 +104,8 @@ class GetExerciseProgressionUseCase @Inject constructor(
         return ExerciseProgression(
             exerciseId = exerciseId,
             exerciseName = exerciseName,
-            dataPoints = dataPoints, // already chronological
-            prHistory = prHistory.asReversed(), // newest first for the PR list
+            dataPoints = dataPoints,
+            prHistory = prHistory.asReversed(),
             currentPr = currentPr
         )
     }

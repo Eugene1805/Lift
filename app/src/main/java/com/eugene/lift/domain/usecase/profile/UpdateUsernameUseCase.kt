@@ -30,7 +30,7 @@ class UpdateUsernameUseCase @Inject constructor(
 
     /** Returns an [AppError] if invalid, null otherwise. */
     fun validate(username: String): AppError? {
-        if (username.length < MIN_LENGTH || username.length > MAX_LENGTH) {
+        if (username.length !in MIN_LENGTH..MAX_LENGTH) {
             return AppError.Validation
         }
         if (!USERNAME_REGEX.matches(username)) {

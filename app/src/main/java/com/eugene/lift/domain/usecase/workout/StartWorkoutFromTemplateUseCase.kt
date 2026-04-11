@@ -4,30 +4,31 @@ import com.eugene.lift.domain.model.SessionExercise
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.WorkoutSet
 import com.eugene.lift.domain.repository.TemplateRepository
+import com.eugene.lift.domain.repository.WorkoutRepository
 import kotlinx.coroutines.flow.first
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject
 
 class StartWorkoutFromTemplateUseCase @Inject constructor(
-    private val templateRepository: TemplateRepository
+    private val templateRepository: TemplateRepository,
+    private val workoutRepository: WorkoutRepository
 ) {
     /**
      * Crea una nueva sesión activa basada en una plantilla.
      * Pre-crea los sets vacíos según el 'targetSets' de la plantilla.
      */
     suspend operator fun invoke(templateId: String): WorkoutSession? {
-        // 1. Obtenemos la plantilla (usamos .first() para obtener el valor actual del Flow)
         val template = templateRepository.getTemplate(templateId).first() ?: return null
+        val lastSetsByExerciseId = loadLastSetsByExerciseId(template)
 
-        // 2. Mapeamos Ejercicios de Plantilla -> Ejercicios de Sesión
         val sessionExercises = template.exercises.map { templateExercise ->
+            val historicalSets = lastSetsByExerciseId[templateExercise.exercise.id].orEmpty()
 
-            // Generamos N sets vacíos según lo que pedía la plantilla
-            val initialSets = (1..templateExercise.targetSets).map { _ ->
+            val initialSets = (0 until templateExercise.targetSets).map { setIndex ->
                 WorkoutSet(
                     id = UUID.randomUUID().toString(),
-                    weight = 0.0, // Opcional: Podrías buscar el peso de la última sesión aquí (Mejora futura)
+                    weight = historicalSets.getOrNull(setIndex)?.weight ?: 0.0,
                     reps = 0,
                     completed = false,
                     rpe = null,
@@ -43,14 +44,29 @@ class StartWorkoutFromTemplateUseCase @Inject constructor(
             )
         }
 
-        // 3. Retornamos la sesión lista para empezar
         return WorkoutSession(
             id = UUID.randomUUID().toString(),
             templateId = template.id,
-            name = template.name, // El nombre puede ser editado luego
-            date = LocalDateTime.now(), // Hora de inicio
+            name = template.name,
+            date = LocalDateTime.now(),
             durationSeconds = 0,
             exercises = sessionExercises
         )
+    }
+
+    private suspend fun loadLastSetsByExerciseId(
+        template: com.eugene.lift.domain.model.WorkoutTemplate
+    ): Map<String, List<WorkoutSet>> {
+        return template.exercises
+            .map { it.exercise.id }
+            .distinct()
+            .associateWith { exerciseId ->
+                val lastSession = workoutRepository.getLastHistoryForExercise(exerciseId, template.id)
+                lastSession
+                    ?.exercises
+                    ?.firstOrNull { it.exercise.id == exerciseId }
+                    ?.sets
+                    .orEmpty()
+            }
     }
 }

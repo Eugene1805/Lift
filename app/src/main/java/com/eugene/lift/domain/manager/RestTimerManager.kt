@@ -23,7 +23,7 @@ class RestTimerManager @Inject constructor() {
     private val scope = CoroutineScope(Dispatchers.Main)
 
     fun startTimer(seconds: Long) {
-        stopTimer() // Reiniciar si ya existía uno
+        stopTimer()
 
         _timerState.value = TimerState(
             isRunning = true,
@@ -46,12 +46,10 @@ class RestTimerManager @Inject constructor() {
                         progress = secRemaining.toFloat() / seconds.toFloat()
                     )
                 }
-                delay(100) // Actualizamos cada 100ms para suavidad en UI si quisieras milisegundos
+                delay(100)
             }
 
-            // Fin del timer
             stopTimer()
-            // Aquí podrías disparar un sonido o vibración en el futuro
         }
     }
 
@@ -66,7 +64,6 @@ class RestTimerManager @Inject constructor() {
     fun addTime(seconds: Long) {
         if (!_timerState.value.isRunning) return
 
-        // Cancelamos el job actual y reiniciamos con el nuevo tiempo
         val currentRemaining = _timerState.value.timeRemainingSeconds
         val newTotal = currentRemaining + seconds
         startTimer(newTotal)

@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eugene.lift.R
@@ -40,7 +41,6 @@ fun ActiveExerciseCard(
     callbacks: ExerciseCallbacks
 ) {
     val setsInDeleteMode = remember { mutableStateListOf<String>() }
-    // Show note field if there's already a note, or user picks "Add/Edit note" from menu
     var showNoteField by remember(exercise.id) { mutableStateOf(!exercise.note.isNullOrEmpty()) }
 
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
@@ -128,7 +128,9 @@ private fun ExerciseHeader(
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Black
+            ),
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .weight(1f)
@@ -148,7 +150,6 @@ private fun ExerciseHeader(
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false }
             ) {
-                // Add/Edit note
                 DropdownMenuItem(
                     text = {
                         Text(
@@ -165,7 +166,6 @@ private fun ExerciseHeader(
                     }
                 )
 
-                // Replace exercise
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.active_workout_replace_exercise)) },
                     leadingIcon = {
@@ -179,7 +179,6 @@ private fun ExerciseHeader(
 
                 HorizontalDivider()
 
-                // Delete exercise
                 DropdownMenuItem(
                     text = {
                         Text(

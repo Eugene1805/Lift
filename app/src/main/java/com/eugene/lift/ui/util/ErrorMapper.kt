@@ -9,8 +9,6 @@ fun AppError.toMessage(context: Context): String {
         AppError.Database -> R.string.error_database
         AppError.Constraint -> R.string.error_constraint
         AppError.Validation -> R.string.error_validation
-        AppError.Auth -> R.string.error_auth
-        AppError.Network -> R.string.error_network
         is AppError.Unknown -> null
     }
 
@@ -28,8 +26,6 @@ fun AppError.toMessage(): String {
         AppError.Database -> "Database error"
         AppError.Constraint -> "Constraint error"
         AppError.Validation -> "Validation error"
-        AppError.Auth -> "Auth error"
-        AppError.Network -> "Network error"
         is AppError.Unknown -> this.message ?: "Unexpected error"
     }
 }

@@ -21,6 +21,8 @@ sealed interface EditTemplateUiEvent {
     data class ExerciseRemoved(val exerciseId: String) : EditTemplateUiEvent
     data class ExerciseConfigChanged(val exerciseId: String, val sets: String, val reps: String) : EditTemplateUiEvent
     data class ExercisesSelected(val exerciseIds: List<String>) : EditTemplateUiEvent
+    data class ExerciseReplaceClicked(val exerciseIndex: Int) : EditTemplateUiEvent
+    data class ExerciseReplaced(val exerciseIndex: Int, val newExerciseId: String) : EditTemplateUiEvent
     data class ExercisesReordered(val fromIndex: Int, val toIndex: Int) : EditTemplateUiEvent
     data object ToggleReorderMode : EditTemplateUiEvent
     data object SaveClicked : EditTemplateUiEvent

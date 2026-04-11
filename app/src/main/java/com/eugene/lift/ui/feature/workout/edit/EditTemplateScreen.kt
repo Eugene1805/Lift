@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -30,7 +31,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.eugene.lift.R
 import com.eugene.lift.domain.model.TemplateExercise
-import com.eugene.lift.ui.util.DragDropState
 import com.eugene.lift.ui.util.rememberDragDropState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +38,7 @@ import com.eugene.lift.ui.util.rememberDragDropState
 fun EditTemplateRoute(
     onNavigateBack: () -> Unit,
     onAddExerciseClick: () -> Unit,
+    onReplaceExerciseClick: (Int) -> Unit = {},
     viewModel: EditTemplateViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -55,6 +56,7 @@ fun EditTemplateRoute(
         onEvent = { event ->
             when (event) {
                 EditTemplateUiEvent.AddExerciseClicked -> onAddExerciseClick()
+                is EditTemplateUiEvent.ExerciseReplaceClicked -> onReplaceExerciseClick(event.exerciseIndex)
                 else -> viewModel.onEvent(event)
             }
         }
@@ -189,11 +191,9 @@ fun EditTemplateScreen(
                                 TemplateExerciseRowDraggable(
                                     item = item,
                                     isDragging = isDragging,
-                                    dragDropState = dragDropState,
-                                    itemIndex = index,
+                                    onReplace = { onEvent(EditTemplateUiEvent.ExerciseReplaceClicked(index)) },
                                     onRemove = { onEvent(EditTemplateUiEvent.ExerciseRemoved(item.id)) },
-                                    onConfigChange = { s, r -> onEvent(EditTemplateUiEvent.ExerciseConfigChanged(item.id, s, r)) },
-                                    onReorder = { from, to -> onEvent(EditTemplateUiEvent.ExercisesReordered(from, to)) }
+                                    onConfigChange = { s, r -> onEvent(EditTemplateUiEvent.ExerciseConfigChanged(item.id, s, r)) }
                                 )
                             }
                         }
@@ -245,11 +245,9 @@ fun EditTemplateScreen(
 fun TemplateExerciseRowDraggable(
     item: TemplateExercise,
     isDragging: Boolean,
-    dragDropState: DragDropState,
-    itemIndex: Int,
+    onReplace: () -> Unit,
     onRemove: () -> Unit,
-    onConfigChange: (sets: String, reps: String) -> Unit,
-    onReorder: (from: Int, to: Int) -> Unit
+    onConfigChange: (sets: String, reps: String) -> Unit
 ) {
     val alpha by animateFloatAsState(if (isDragging) 0.4f else 1f, label = "drag_alpha")
 
@@ -322,6 +320,14 @@ fun TemplateExerciseRowDraggable(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
+            }
+            IconButton(onClick = onReplace, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    Icons.Filled.Edit,
+                    contentDescription = stringResource(R.string.action_edit),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(18.dp)
+                )
             }
             IconButton(onClick = onRemove, modifier = Modifier.size(36.dp)) {
                 Icon(

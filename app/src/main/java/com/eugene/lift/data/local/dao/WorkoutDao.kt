@@ -5,7 +5,6 @@ import com.eugene.lift.data.local.entity.*
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
-// DTOs anidados para el Historial
 data class SessionExerciseWithSets(
     @Embedded val sessionExercise: SessionExerciseEntity,
 
@@ -34,7 +33,6 @@ data class SessionComplete(
 
 @Dao
 interface WorkoutDao {
-    // Filtrado por fecha
     @Transaction
     @Query("SELECT * FROM workout_sessions WHERE date BETWEEN :from AND :to ORDER BY date DESC")
     fun getHistory(from: LocalDateTime, to: LocalDateTime): Flow<List<SessionComplete>>
@@ -43,7 +41,6 @@ interface WorkoutDao {
     @Query("SELECT * FROM workout_sessions WHERE id = :id")
     fun getSessionById(id: String): Flow<SessionComplete?>
 
-    // --- Escritura ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: WorkoutSessionEntity)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -58,8 +55,6 @@ interface WorkoutDao {
         sets: List<WorkoutSetEntity>
     ) {
         insertSession(session)
-        // Nota: En una edición real, deberíamos borrar previos igual que en TemplateDao
-        // Por simplicidad asumo inserción nueva. Si soportas "Editar Historial", añade deletes.
         insertSessionExercises(exercises)
         insertSets(sets)
     }
@@ -105,9 +100,7 @@ interface WorkoutDao {
         templateId: String?,
         currentDate: LocalDateTime = LocalDateTime.now()
     ): SessionComplete?
-    // --- Estadísticas y PRs ---
 
-    // Obtener el set con mayor peso para un ejercicio dado
     @Query("""
         SELECT s.* FROM workout_sets s
         JOIN session_exercises se ON s.sessionExerciseId = se.id
@@ -127,7 +120,6 @@ interface WorkoutDao {
     @Query("DELETE FROM workout_sessions WHERE id = :id")
     suspend fun deleteSession(id: String)
 
-    // Get the count of how many times each exercise has been used
     @Query("""
         SELECT exerciseId, COUNT(*) as useCount
         FROM session_exercises
@@ -135,7 +127,6 @@ interface WorkoutDao {
     """)
     suspend fun getExerciseUsageCount(): List<ExerciseUsageCount>
 
-    // Get the most recent date each exercise was performed
     @Query("""
         SELECT se.exerciseId, MAX(ws.date) as lastUsedDate
         FROM session_exercises se

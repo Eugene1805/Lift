@@ -4,9 +4,13 @@ import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
+import com.eugene.lift.domain.model.SessionExercise
 import com.eugene.lift.domain.model.TemplateExercise
+import com.eugene.lift.domain.model.WorkoutSession
+import com.eugene.lift.domain.model.WorkoutSet
 import com.eugene.lift.domain.model.WorkoutTemplate
 import com.eugene.lift.domain.repository.TemplateRepository
+import com.eugene.lift.domain.repository.WorkoutRepository
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
@@ -25,6 +29,7 @@ import org.junit.Test
 class StartWorkoutFromTemplateUseCaseTest {
 
     private lateinit var templateRepository: TemplateRepository
+    private lateinit var workoutRepository: WorkoutRepository
     private lateinit var useCase: StartWorkoutFromTemplateUseCase
 
     private val sampleExercise = Exercise(
@@ -66,7 +71,9 @@ class StartWorkoutFromTemplateUseCaseTest {
     @Before
     fun setup() {
         templateRepository = mockk()
-        useCase = StartWorkoutFromTemplateUseCase(templateRepository)
+        workoutRepository = mockk()
+        coEvery { workoutRepository.getLastHistoryForExercise(any(), any()) } returns null
+        useCase = StartWorkoutFromTemplateUseCase(templateRepository, workoutRepository)
     }
 
     @Test
@@ -99,7 +106,7 @@ class StartWorkoutFromTemplateUseCaseTest {
     }
 
     @Test
-    fun `invoke creates sets with initial values set to zero`() = runTest {
+    fun `invoke creates sets with fallback values when no history exists`() = runTest {
         // GIVEN
         coEvery { templateRepository.getTemplate("template-1") } returns flowOf(sampleTemplate)
 
@@ -110,7 +117,7 @@ class StartWorkoutFromTemplateUseCaseTest {
         assertNotNull(result)
         val firstExerciseSets = result?.exercises?.get(0)?.sets ?: emptyList()
 
-        // All sets should be uncompleted with zero weight and reps
+        // With no history, sets should keep zero/default values.
         assertTrue(firstExerciseSets.all { !it.completed })
         assertTrue(firstExerciseSets.all { it.weight == 0.0 })
         assertTrue(firstExerciseSets.all { it.reps == 0 })
@@ -260,5 +267,40 @@ class StartWorkoutFromTemplateUseCaseTest {
         // Session date should be between before and after
         assertTrue(result!!.date.isAfter(beforeTime.minusSeconds(1)))
         assertTrue(result.date.isBefore(afterTime.plusSeconds(1)))
+    }
+
+    @Test
+    fun `invoke prefills weights from last session by set index`() = runTest {
+        // GIVEN
+        coEvery { templateRepository.getTemplate("template-1") } returns flowOf(sampleTemplate)
+        val historySession = WorkoutSession(
+            id = "history-1",
+            templateId = "template-1",
+            name = "Push Day",
+            date = java.time.LocalDateTime.now().minusDays(1),
+            durationSeconds = 1200,
+            exercises = listOf(
+                SessionExercise(
+                    id = "hist-ex-1",
+                    exercise = sampleExercise,
+                    sets = listOf(
+                        WorkoutSet(id = "s1", weight = 80.0, reps = 10, completed = true),
+                        WorkoutSet(id = "s2", weight = 82.5, reps = 8, completed = true)
+                    )
+                )
+            )
+        )
+        coEvery { workoutRepository.getLastHistoryForExercise("exercise-1", "template-1") } returns historySession
+        coEvery { workoutRepository.getLastHistoryForExercise("exercise-2", "template-1") } returns null
+
+        // WHEN
+        val result = useCase("template-1")
+
+        // THEN
+        assertNotNull(result)
+        val firstExerciseSets = result!!.exercises.first().sets
+        assertEquals(80.0, firstExerciseSets[0].weight, 0.0)
+        assertEquals(82.5, firstExerciseSets[1].weight, 0.0)
+        assertEquals(0.0, firstExerciseSets[2].weight, 0.0)
     }
 }

@@ -94,8 +94,8 @@ fun FolderChip(
     onLongClick: () -> Unit = {},
     showDelete: Boolean = false,
     onDelete: () -> Unit = {},
-    isDragTarget: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDragTarget: Boolean = false
 ) {
     val backgroundColor = when {
         isDragTarget -> MaterialTheme.colorScheme.secondaryContainer

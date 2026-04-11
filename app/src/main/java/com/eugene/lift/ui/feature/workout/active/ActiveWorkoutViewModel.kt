@@ -251,7 +251,6 @@ class ActiveWorkoutViewModel @Inject constructor(
                 return@launch
             }
 
-            // Store original exercises for change detection
             originalTemplateExercises = session.exercises.map { it.copy() }
 
             loadHistoryForSession(session)
@@ -290,15 +289,16 @@ class ActiveWorkoutViewModel @Inject constructor(
         val updatedSets = sessionExercise.sets.mapIndexed { index, currentSet ->
             val historySet = historySets.getOrNull(index)
 
-            // Only prefill truly-empty sets so we don't overwrite user/template provided values.
-            if (historySet != null && currentSet.weight == 0.0 && currentSet.reps == 0) {
+            // Prefill empty fields independently so weight and reps can be restored even
+            // when one of them was already initialized upstream.
+            if (historySet != null) {
                 currentSet.copy(
-                    weight = historySet.weight,
-                    reps = historySet.reps,
-                    distance = historySet.distance,
-                    timeSeconds = historySet.timeSeconds,
-                    rpe = historySet.rpe,
-                    rir = historySet.rir
+                    weight = if (currentSet.weight == 0.0) historySet.weight else currentSet.weight,
+                    reps = if (currentSet.reps == 0) historySet.reps else currentSet.reps,
+                    distance = currentSet.distance ?: historySet.distance,
+                    timeSeconds = currentSet.timeSeconds ?: historySet.timeSeconds,
+                    rpe = currentSet.rpe ?: historySet.rpe,
+                    rir = currentSet.rir ?: historySet.rir
                 )
             } else {
                 currentSet
@@ -322,7 +322,6 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private suspend fun loadHistoryFor(exerciseId: String) {
         val lastSession = getLastHistoryForExerciseUseCase(exerciseId, templateId)
-        // Los pesos de lastSession YA vienen en la unidad de preferencia desde el repositorio
         if (lastSession != null) {
             val oldExercise = lastSession.exercises.find { it.exercise.id == exerciseId }
             if (oldExercise != null) {
@@ -347,8 +346,6 @@ class ActiveWorkoutViewModel @Inject constructor(
     }
 
     private fun onWeightChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
-        // Store weight directly as entered (in display units)
-        // Conversion to kg happens only when finishing the workout
         val weight = newValue.toDoubleOrNull() ?: 0.0
         updateSetState(exerciseIndex, setIndex) { it.copy(weight = weight) }
     }
@@ -430,11 +427,6 @@ class ActiveWorkoutViewModel @Inject constructor(
     private fun finishWorkout(updateTemplate: Boolean?) {
         val session = _activeSession.value ?: return
 
-        // Validation: do not allow finishing with empty sets.
-        // "Empty set" definition: weight==0 AND reps==0.
-        // Additional rule: do not allow the user to finish if they typed a weight (>0)
-        // but left reps empty. (Weight can be 0 as long as reps > 0.)
-        // (We keep the existing AppError.Validation mapping for neutral translations.)
         val allSets = session.exercises.flatMap { it.sets }
         val hasTrulyEmptySet = allSets.any { it.weight == 0.0 && it.reps == 0 }
         val hasWeightButNoReps = allSets.any { it.weight > 0.0 && it.reps <= 0 }
@@ -585,14 +577,14 @@ class ActiveWorkoutViewModel @Inject constructor(
             val newExerciseDef = getExerciseDetailUseCase(newExerciseId).firstOrNull() ?: return@launch
 
             loadHistoryFor(newExerciseId)
-            val (initialWeight, initialReps) = getInitialSetDataFromHistory(newExerciseId)
+            val historySets = _historyState.value[newExerciseId].orEmpty()
 
-            // Build same number of sets as the original, with new data
-            val newSets = oldExercise.sets.mapIndexed { idx, oldSet ->
-                oldSet.copy(
+            val newSets = List(oldExercise.sets.size) { idx ->
+                val historicalSet = historySets.getOrNull(idx)
+                WorkoutSet(
                     id = UUID.randomUUID().toString(),
-                    weight = if (idx == 0) initialWeight else oldSet.weight,
-                    reps = if (idx == 0) initialReps else oldSet.reps,
+                    weight = historicalSet?.weight ?: 0.0,
+                    reps = historicalSet?.reps ?: 0,
                     completed = false
                 )
             }

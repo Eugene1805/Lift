@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
      * including DropdownMenus, AlertDialogs and other popups not owned by Compose —
      * also render in the correct locale rather than falling back to the OS locale.
      *
-     * Hilt is NOT yet initialised here, so we read DataStore directly.
+     * Hilt is NOT yet initialized here, so we read DataStore directly.
      * runBlocking is safe: it is a single small file read (< 1 ms).
      */
     override fun attachBaseContext(newBase: Context) {

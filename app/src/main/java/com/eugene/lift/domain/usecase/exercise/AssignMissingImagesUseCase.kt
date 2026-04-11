@@ -25,7 +25,6 @@ class AssignMissingImagesUseCase @Inject constructor(
         // that user-modified or already assigned images are not overwritten.
         val unassigned = repository.getExercisesWithoutImage()
         unassigned.forEach { exercise ->
-            // Use the centralized mapper to find a match based on the exercise name.
             val drawable = imageResolver.resolveDrawable(exercise.name)
             if (drawable != null) {
                 repository.updateImagePath(exercise.id, drawable)

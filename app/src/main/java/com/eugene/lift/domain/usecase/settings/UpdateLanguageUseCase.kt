@@ -16,11 +16,9 @@ class UpdateLanguageUseCase @Inject constructor(
     suspend operator fun invoke(languageCode: String) {
         Log.d(TAG, "Updating language to: $languageCode")
         try {
-            // Update app locale
             val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(languageCode)
             AppCompatDelegate.setApplicationLocales(appLocale)
 
-            // Persist language preference
             repository.setLanguageCode(languageCode)
             Log.i(TAG, "Language updated successfully to: $languageCode")
         } catch (e: Exception) {

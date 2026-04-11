@@ -3,8 +3,6 @@ package com.eugene.lift.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,12 +46,10 @@ fun LiftNavGraph(
     val onboardingComplete by settingsRepository.isOnboardingComplete()
         .collectAsStateWithLifecycle(initialValue = null)
 
-    // Wait until we know whether onboarding is needed before rendering NavHost
-    // (avoids a flash of the wrong start destination)
     val startDestination = when (onboardingComplete) {
         true -> com.eugene.lift.ui.navigation.WorkoutRoute as Any
         false -> com.eugene.lift.ui.navigation.OnboardingRoute as Any
-        null -> return   // still loading from DataStore
+        null -> return
     }
 
     NavHost(
@@ -61,17 +57,14 @@ fun LiftNavGraph(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        // Onboarding
         onboardingScreen(navController)
 
-        // Main bottom navigation destinations
         profileScreen(navController)
         historyScreen(navController)
         workoutScreen(navController)
         exerciseListScreen(navController)
         settingsScreen()
 
-        // Detail and edit screens
         templateDetailScreen(navController)
         templateEditScreen(navController)
         exerciseDetailScreen(navController)
@@ -84,7 +77,6 @@ fun LiftNavGraph(
     }
 }
 
-// Onboarding Screen
 private fun NavGraphBuilder.onboardingScreen(navController: NavHostController) {
     composable<com.eugene.lift.ui.navigation.OnboardingRoute> {
         OnboardingRouteScreen(
@@ -97,7 +89,6 @@ private fun NavGraphBuilder.onboardingScreen(navController: NavHostController) {
     }
 }
 
-// Profile Screen
 private fun NavGraphBuilder.profileScreen(navController: NavHostController) {
     composable<com.eugene.lift.ui.navigation.ProfileRoute> {
         ProfileRoute(
@@ -108,7 +99,6 @@ private fun NavGraphBuilder.profileScreen(navController: NavHostController) {
     }
 }
 
-// Edit Profile Screen
 private fun NavGraphBuilder.editProfileScreen(navController: NavHostController) {
     composable<EditProfileRoute> {
         EditProfileRouteScreen(
@@ -117,7 +107,6 @@ private fun NavGraphBuilder.editProfileScreen(navController: NavHostController) 
     }
 }
 
-// History Screen
 private fun NavGraphBuilder.historyScreen(navController: NavHostController) {
     composable<com.eugene.lift.ui.navigation.HistoryRoute> { backStackEntry ->
         val savedStateHandle = backStackEntry.savedStateHandle
@@ -141,7 +130,6 @@ private fun NavGraphBuilder.historyScreen(navController: NavHostController) {
     }
 }
 
-// Workout Screen
 private fun NavGraphBuilder.workoutScreen(navController: NavHostController) {
     composable<com.eugene.lift.ui.navigation.WorkoutRoute> {
         WorkoutRoute(
@@ -161,7 +149,6 @@ private fun NavGraphBuilder.workoutScreen(navController: NavHostController) {
     }
 }
 
-// Template Detail Screen
 private fun NavGraphBuilder.templateDetailScreen(navController: NavHostController) {
     composable<TemplateDetailRoute> {
         TemplateDetailRoute(
@@ -181,12 +168,13 @@ private fun NavGraphBuilder.templateDetailScreen(navController: NavHostControlle
     }
 }
 
-// Template Edit Screen
 private fun NavGraphBuilder.templateEditScreen(navController: NavHostController) {
     composable<TemplateEditRoute> { backStackEntry ->
         val viewModel: EditTemplateViewModel = hiltViewModel()
         val savedStateHandle = backStackEntry.savedStateHandle
         val selectedExerciseIds = savedStateHandle.get<List<String>>("selected_exercise_ids")
+        val replaceExerciseId = savedStateHandle.get<String>("replace_exercise_id")
+        val replaceExerciseIndex = savedStateHandle.get<Int>("replace_exercise_index")
 
         LaunchedEffect(selectedExerciseIds) {
             selectedExerciseIds?.let { ids ->
@@ -195,15 +183,26 @@ private fun NavGraphBuilder.templateEditScreen(navController: NavHostController)
             }
         }
 
+        LaunchedEffect(replaceExerciseId, replaceExerciseIndex) {
+            if (replaceExerciseId != null && replaceExerciseIndex != null) {
+                viewModel.onEvent(EditTemplateUiEvent.ExerciseReplaced(replaceExerciseIndex, replaceExerciseId))
+                savedStateHandle.remove<String>("replace_exercise_id")
+                savedStateHandle.remove<Int>("replace_exercise_index")
+            }
+        }
+
         EditTemplateRoute(
             onNavigateBack = { navController.popBackStack() },
             onAddExerciseClick = { navController.navigate(ExercisePickerRoute) },
+            onReplaceExerciseClick = { exerciseIndex ->
+                backStackEntry.savedStateHandle["replace_exercise_index"] = exerciseIndex
+                navController.navigate(ExercisePickerRoute)
+            },
             viewModel = viewModel
         )
     }
 }
 
-// Exercise Picker Screen
 private fun NavGraphBuilder.exercisePickerScreen(navController: NavHostController) {
     composable<ExercisePickerRoute> {
         ExercisesRoute(
@@ -224,22 +223,26 @@ private fun NavGraphBuilder.exercisePickerScreen(navController: NavHostControlle
             },
             onExercisesSelected = { ids ->
                 val previousEntry = navController.previousBackStackEntry
-                previousEntry?.savedStateHandle?.set("selected_exercise_ids", ids)
-                previousEntry?.savedStateHandle?.set("selected_exercise_ids_active", ids)
+                val replaceIndex = previousEntry?.savedStateHandle?.get<Int>("replace_exercise_index")
+                if (replaceIndex != null && ids.isNotEmpty()) {
+                    // Replace mode: keep the same slot and replace with a single selected exercise.
+                    previousEntry.savedStateHandle["replace_exercise_id"] = ids.first()
+                } else {
+                    previousEntry?.savedStateHandle?.set("selected_exercise_ids", ids)
+                    previousEntry?.savedStateHandle?.set("selected_exercise_ids_active", ids)
+                }
                 navController.popBackStack()
             }
         )
     }
 }
 
-// Settings Screen
 private fun NavGraphBuilder.settingsScreen() {
     composable<com.eugene.lift.ui.navigation.SettingsRoute> {
         SettingsRoute()
     }
 }
 
-// Exercise Add/Edit Screen
 private fun NavGraphBuilder.exerciseAddScreen(navController: NavHostController) {
     composable<ExerciseAddRoute> {
         AddExerciseRoute(
@@ -248,7 +251,6 @@ private fun NavGraphBuilder.exerciseAddScreen(navController: NavHostController) 
     }
 }
 
-// Exercise List Screen
 private fun NavGraphBuilder.exerciseListScreen(navController: NavHostController) {
     composable<ExerciseListRoute> {
         ExercisesRoute(
@@ -260,7 +262,6 @@ private fun NavGraphBuilder.exerciseListScreen(navController: NavHostController)
     }
 }
 
-// Exercise Detail Screen
 private fun NavGraphBuilder.exerciseDetailScreen(navController: NavHostController) {
     composable<ExerciseDetailRoute> {
         ExerciseDetailRoute(
@@ -272,13 +273,11 @@ private fun NavGraphBuilder.exerciseDetailScreen(navController: NavHostControlle
     }
 }
 
-// Active Workout Screen
 private fun NavGraphBuilder.activeWorkoutScreen(navController: NavHostController) {
     composable<ActiveWorkoutRoute> { backStackEntry ->
         val viewModel: ActiveWorkoutViewModel = hiltViewModel()
         val savedStateHandle = backStackEntry.savedStateHandle
 
-        // --- Add exercises (existing flow) ---
         val selectedExerciseIds = savedStateHandle.get<List<String>>("selected_exercise_ids_active")
         LaunchedEffect(selectedExerciseIds) {
             selectedExerciseIds?.let { ids ->
@@ -287,7 +286,6 @@ private fun NavGraphBuilder.activeWorkoutScreen(navController: NavHostController
             }
         }
 
-        // --- Replace exercise (new flow) ---
         val replaceExerciseId = savedStateHandle.get<String>("replace_exercise_id")
         val replaceExerciseIndex = savedStateHandle.get<Int>("replace_exercise_index")
         LaunchedEffect(replaceExerciseId, replaceExerciseIndex) {
@@ -315,7 +313,6 @@ private fun NavGraphBuilder.activeWorkoutScreen(navController: NavHostController
     }
 }
 
-// Session Detail Screen
 private fun NavGraphBuilder.sessionDetailScreen(navController: NavHostController) {
     composable<SessionDetailRoute> {
         SessionDetailRouteScreen(
@@ -324,7 +321,6 @@ private fun NavGraphBuilder.sessionDetailScreen(navController: NavHostController
     }
 }
 
-// History Calendar Screen
 private fun NavGraphBuilder.historyCalendarScreen(navController: NavHostController) {
     composable<HistoryCalendarRoute> {
         HistoryCalendarRouteScreen(

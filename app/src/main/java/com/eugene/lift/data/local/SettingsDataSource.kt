@@ -114,7 +114,6 @@ class SettingsDataSource @Inject constructor(
         }
     }
 
-    // ── Tracked exercise IDs ────────────────────────────────────────────────
 
     val trackedExerciseIds: Flow<List<String>> = dataStore.data.map { prefs ->
         val raw = prefs[Keys.TRACKED_EXERCISE_IDS] ?: ""
@@ -125,7 +124,6 @@ class SettingsDataSource @Inject constructor(
         dataStore.edit { prefs -> prefs[Keys.TRACKED_EXERCISE_IDS] = ids.joinToString(",") }
     }
 
-    // ── Workout preferences ─────────────────────────────────────────────────
 
     suspend fun setEffortMetric(metric: String?) {
         dataStore.edit { prefs ->
@@ -137,7 +135,6 @@ class SettingsDataSource @Inject constructor(
         dataStore.edit { prefs -> prefs[Keys.AUTO_TIMER_ENABLED] = enabled }
     }
 
-    // ── Onboarding ─────────────────────────────────────────────────────────
 
     val isOnboardingComplete: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[Keys.ONBOARDING_COMPLETE] ?: false
@@ -147,7 +144,6 @@ class SettingsDataSource @Inject constructor(
         dataStore.edit { prefs -> prefs[Keys.ONBOARDING_COMPLETE] = done }
     }
 
-    // ── Swipe hint ─────────────────────────────────────────────────────────
 
     val isSwipeHintSeen: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[Keys.SWIPE_HINT_SEEN] ?: false

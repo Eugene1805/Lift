@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Upsert
 import com.eugene.lift.data.local.entity.ExerciseBodyPartCrossRef
 import com.eugene.lift.data.local.entity.ExerciseEntity
 import kotlinx.coroutines.flow.Flow
@@ -44,13 +45,13 @@ interface ExerciseDao {
     @Query("SELECT * FROM exercises WHERE remoteId IN (:remoteIds)")
     suspend fun getExercisesByRemoteIds(remoteIds: List<Int>): List<ExerciseEntity>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertExercise(exercise: ExerciseEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun upsertExercise(exercise: ExerciseEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun upsertExercises(exercises: List<ExerciseEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

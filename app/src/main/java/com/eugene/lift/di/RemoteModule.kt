@@ -1,6 +1,12 @@
 package com.eugene.lift.di
 
+import com.eugene.lift.data.remote.ExerciseCatalogSyncer
 import com.eugene.lift.data.remote.ExerciseRemoteDataSource
+import com.eugene.lift.data.remote.ExerciseSyncItemPersister
+import com.eugene.lift.data.remote.ExerciseSyncWriter
+import com.eugene.lift.data.remote.RoomExerciseSyncItemPersister
+import com.eugene.lift.data.remote.RoomExerciseSyncWriter
+import com.eugene.lift.data.remote.WgerExerciseCatalogSyncer
 import com.eugene.lift.data.remote.WgerExerciseRemoteDataSource
 import com.eugene.lift.data.remote.api.WgerApiService
 import dagger.Binds
@@ -26,6 +32,24 @@ abstract class RemoteBindingsModule {
     abstract fun bindExerciseRemoteDataSource(
         impl: WgerExerciseRemoteDataSource
     ): ExerciseRemoteDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindExerciseCatalogSyncer(
+        impl: WgerExerciseCatalogSyncer
+    ): ExerciseCatalogSyncer
+
+    @Binds
+    @Singleton
+    abstract fun bindExerciseSyncWriter(
+        impl: RoomExerciseSyncWriter
+    ): ExerciseSyncWriter
+
+    @Binds
+    @Singleton
+    abstract fun bindExerciseSyncItemPersister(
+        impl: RoomExerciseSyncItemPersister
+    ): ExerciseSyncItemPersister
 }
 
 @Module

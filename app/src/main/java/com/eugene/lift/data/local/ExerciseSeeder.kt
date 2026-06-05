@@ -20,15 +20,24 @@ import javax.inject.Inject
  */
 private fun imageFor(name: String): String? = ExerciseImageMapper.getDrawable(name)
 
-
 class ExerciseSeeder @Inject constructor(
     private val repository: ExerciseRepository,
     @get:ApplicationContext private val context: Context
-) {
-    suspend fun populate() {
-        if (repository.getCount() > 0) return
+) : ExerciseBootstrapDataSource {
+    override suspend fun populateIfEmpty() {
+        if (hasExistingCatalog()) return
 
-        val exercises = listOf(
+        buildBootstrapExercises().forEach { exercise ->
+            repository.saveExercise(exercise)
+        }
+    }
+
+    private suspend fun hasExistingCatalog(): Boolean {
+        return repository.getCount() > 0
+    }
+
+    private fun buildBootstrapExercises(): List<Exercise> {
+        return listOf(
             // Barbell Exercises
             Exercise(
                 id = UUID.randomUUID().toString(),
@@ -1569,7 +1578,7 @@ class ExerciseSeeder @Inject constructor(
                 bodyParts = listOf(BodyPart.TRICEPS)
             )
         )
-
-        exercises.forEach { repository.saveExercise(it) }
     }
+
+    suspend fun populate() = populateIfEmpty()
 }

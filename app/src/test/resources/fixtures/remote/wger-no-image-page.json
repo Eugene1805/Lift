@@ -1,0 +1,39 @@
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 126,
+      "uuid": "33333333-3333-3333-3333-333333333333",
+      "category": {
+        "id": 11,
+        "name": "Cardio"
+      },
+      "muscles": [
+        {
+          "id": 6,
+          "name": "Quadriceps femoris",
+          "name_en": "Quadriceps"
+        },
+        {
+          "id": 7,
+          "name": "Gastrocnemius",
+          "name_en": "Calves"
+        }
+      ],
+      "muscles_secondary": [],
+      "equipment": [],
+      "images": [],
+      "translations": [
+        {
+          "id": 102,
+          "name": "Air Bike Sprint",
+          "description": "Sprint effort on an air bike.",
+          "language": 2
+        }
+      ],
+      "variations": 0
+    }
+  ]
+}

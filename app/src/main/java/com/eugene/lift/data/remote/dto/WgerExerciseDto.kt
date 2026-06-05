@@ -3,19 +3,24 @@ package com.eugene.lift.data.remote.dto
 data class WgerExerciseDto(
     val id: Int,
     val uuid: String? = null,
-    val name: String,
-    val description: String? = null,
     val category: WgerNamedResourceDto? = null,
-    val muscles: List<WgerNamedResourceDto> = emptyList(),
-    val muscles_secondary: List<WgerNamedResourceDto> = emptyList(),
+    val muscles: List<WgerMuscleDto> = emptyList(),
+    val muscles_secondary: List<WgerMuscleDto> = emptyList(),
     val equipment: List<WgerNamedResourceDto> = emptyList(),
     val images: List<WgerImageDto> = emptyList(),
-    val variations: List<WgerExerciseVariationDto> = emptyList()
+    val translations: List<WgerExerciseTranslationDto> = emptyList(),
+    val variations: Int? = null
 )
 
 data class WgerNamedResourceDto(
     val id: Int,
     val name: String
+)
+
+data class WgerMuscleDto(
+    val id: Int,
+    val name: String,
+    val name_en: String? = null
 )
 
 data class WgerImageDto(
@@ -24,7 +29,9 @@ data class WgerImageDto(
     val is_main: Boolean? = null
 )
 
-data class WgerExerciseVariationDto(
+data class WgerExerciseTranslationDto(
     val id: Int,
-    val images: List<WgerImageDto> = emptyList()
+    val name: String,
+    val description: String? = null,
+    val language: Int? = null
 )

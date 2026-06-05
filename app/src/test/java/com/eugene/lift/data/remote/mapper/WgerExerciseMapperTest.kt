@@ -1,10 +1,13 @@
 package com.eugene.lift.data.remote.mapper
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.eugene.lift.data.remote.dto.WgerExerciseDto
-import com.eugene.lift.data.remote.dto.WgerExerciseVariationDto
-import com.eugene.lift.data.remote.dto.WgerImageDto
-import com.eugene.lift.data.remote.dto.WgerNamedResourceDto
 import com.eugene.lift.data.remote.dto.WgerPaginatedResponseDto
+import com.eugene.lift.domain.model.BodyPart
+import com.eugene.lift.domain.model.ExerciseCategory
+import com.eugene.lift.domain.model.ExerciseSource
+import com.eugene.lift.domain.model.MeasureType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -12,72 +15,75 @@ import org.junit.Test
 class WgerExerciseMapperTest {
 
     @Test
-    fun `maps paginated response to remote page`() {
-        val response = WgerPaginatedResponseDto(
-            count = 1,
-            next = "next-page",
-            previous = null,
-            results = listOf(
-                WgerExerciseDto(
-                    id = 42,
-                    name = "Bench Press",
-                    description = "Press the bar.",
-                    category = WgerNamedResourceDto(id = 7, name = "Barbell"),
-                    muscles = listOf(WgerNamedResourceDto(id = 1, name = "Chest")),
-                    muscles_secondary = listOf(WgerNamedResourceDto(id = 2, name = "Triceps")),
-                    equipment = listOf(WgerNamedResourceDto(id = 3, name = "Bench")),
-                    images = listOf(WgerImageDto(id = 9, image = "main-image", is_main = true)),
-                    variations = listOf(
-                        WgerExerciseVariationDto(
-                            id = 77,
-                            images = listOf(WgerImageDto(id = 10, image = "variation-image"))
-                        )
-                    )
-                )
-            )
-        )
+    fun `maps fixture into remote page and local exercise`() {
+        val response = loadFixture("fixtures/remote/wger-exercise-page.json")
 
         val page = response.toRemoteExercisePage()
+        val exercise = page.exercises.single().toExercise(
+            existingLocalId = "existing-local-id",
+            syncedAt = 1710000000000,
+            syncVersion = 1
+        )
 
         assertEquals(1, page.totalCount)
         assertEquals("next-page", page.nextPageUrl)
         assertEquals(1, page.exercises.size)
         assertEquals(42, page.exercises.single().remoteId)
         assertEquals("Bench Press", page.exercises.single().name)
-        assertEquals("Barbell", page.exercises.single().categoryName)
-        assertEquals("main-image", page.exercises.single().primaryImageUrl)
+        assertEquals("Strength", page.exercises.single().categoryName)
+        assertEquals("https://wger.de/media/exercise-images/9/main-image.png", page.exercises.single().primaryImageUrl)
         assertEquals(listOf("Bench"), page.exercises.single().equipmentNames)
         assertEquals(listOf("Chest"), page.exercises.single().primaryMuscleNames)
-        assertEquals(listOf("Triceps"), page.exercises.single().secondaryMuscleNames)
+        assertEquals(listOf("Triceps", "Front deltoid"), page.exercises.single().secondaryMuscleNames)
+
+        assertEquals("existing-local-id", exercise.id)
+        assertEquals(ExerciseCategory.MACHINE, exercise.category)
+        assertEquals(MeasureType.REPS_AND_WEIGHT, exercise.measureType)
+        assertEquals(
+            listOf(BodyPart.CHEST, BodyPart.TRICEPS, BodyPart.FRONT_DELTS),
+            exercise.bodyParts
+        )
+        assertEquals(ExerciseSource.WGER, exercise.source)
+        assertEquals(42, exercise.remoteId)
+        assertEquals(1710000000000, exercise.lastSyncedAt)
+        assertEquals(1, exercise.syncVersion)
     }
 
     @Test
-    fun `falls back to variation image when direct image missing`() {
-        val dto = WgerExerciseDto(
-            id = 99,
-            name = "Pull Up",
-            variations = listOf(
-                WgerExerciseVariationDto(
-                    id = 12,
-                    images = listOf(WgerImageDto(id = 1, image = "variation-image"))
-                )
-            )
-        )
+    fun `unknown category falls back without breaking muscle mapping`() {
+        val payload = loadFixture("fixtures/remote/wger-unknown-category-page.json")
+            .toRemoteExercisePage()
+            .exercises
+            .single()
+        val exercise = payload.toExercise()
 
-        val payload = dto.toRemoteExercisePayload()
-
-        assertEquals("variation-image", payload.primaryImageUrl)
+        assertEquals(ExerciseCategory.REPS_ONLY, exercise.category)
+        assertEquals(MeasureType.REPS_ONLY, exercise.measureType)
+        assertEquals(listOf(BodyPart.BICEPS, BodyPart.FOREARMS), exercise.bodyParts)
     }
 
     @Test
-    fun `keeps image null when api returns none`() {
-        val dto = WgerExerciseDto(
-            id = 100,
-            name = "Air Squat"
-        )
-
-        val payload = dto.toRemoteExercisePayload()
+    fun `exercise without image or equipment maps cleanly`() {
+        val payload = loadFixture("fixtures/remote/wger-no-image-page.json")
+            .toRemoteExercisePage()
+            .exercises
+            .single()
+        val exercise = payload.toExercise(existingLocalId = "cardio-1")
 
         assertNull(payload.primaryImageUrl)
+        assertEquals(emptyList<String>(), payload.equipmentNames)
+        assertEquals(ExerciseCategory.CARDIO, exercise.category)
+        assertEquals(MeasureType.DISTANCE_TIME, exercise.measureType)
+        assertEquals(listOf(BodyPart.QUADRICEPS, BodyPart.CALVES), exercise.bodyParts)
+        assertEquals("cardio-1", exercise.id)
+    }
+
+    private fun loadFixture(path: String): WgerPaginatedResponseDto<WgerExerciseDto> {
+        val json = checkNotNull(javaClass.classLoader?.getResource(path)) {
+            "Fixture not found: $path"
+        }.readText()
+
+        val type = object : TypeToken<WgerPaginatedResponseDto<WgerExerciseDto>>() {}.type
+        return Gson().fromJson(json, type)
     }
 }

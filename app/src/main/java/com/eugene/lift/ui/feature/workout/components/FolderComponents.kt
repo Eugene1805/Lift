@@ -1,6 +1,7 @@
 package com.eugene.lift.ui.feature.workout.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -87,6 +88,7 @@ fun FolderRow(
 }
 
 @Composable
+@OptIn(ExperimentalFoundationApi::class)
 fun FolderChip(
     folder: Folder,
     isSelected: Boolean,

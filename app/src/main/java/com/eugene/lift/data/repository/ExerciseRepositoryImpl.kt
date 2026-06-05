@@ -52,7 +52,11 @@ class ExerciseRepositoryImpl @Inject constructor(
                 measureType = entity.measureType,
                 instructions = entity.instructions,
                 imagePath = entity.imagePath,
-                bodyParts = emptyList()
+                bodyParts = emptyList(),
+                remoteId = entity.remoteId,
+                source = entity.source,
+                lastSyncedAt = entity.lastSyncedAt,
+                syncVersion = entity.syncVersion
             )
         }
     }
@@ -61,4 +65,4 @@ class ExerciseRepositoryImpl @Inject constructor(
         // Leverages the targeted DAO update to minimize write amplification.
         dao.updateImagePath(exerciseId, imagePath)
     }
-}
+}

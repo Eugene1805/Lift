@@ -38,9 +38,20 @@ interface ExerciseDao {
     @Query("SELECT COUNT(*) FROM exercises")
     suspend fun getExerciseCount(): Int
 
+    @Query("SELECT * FROM exercises WHERE remoteId = :remoteId LIMIT 1")
+    suspend fun getExerciseByRemoteId(remoteId: Int): ExerciseEntity?
+
+    @Query("SELECT * FROM exercises WHERE remoteId IN (:remoteIds)")
+    suspend fun getExercisesByRemoteIds(remoteIds: List<Int>): List<ExerciseEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExercise(exercise: ExerciseEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertExercise(exercise: ExerciseEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertExercises(exercises: List<ExerciseEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCrossRefs(refs: List<ExerciseBodyPartCrossRef>)

@@ -30,7 +30,7 @@ import com.eugene.lift.data.local.entity.UserProfileEntity
         FolderEntity::class,
         UserProfileEntity::class
     ],
-    version = 10,
+    version = 11,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

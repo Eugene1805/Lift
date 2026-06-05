@@ -3,6 +3,7 @@ package com.eugene.lift.data.local
 import androidx.room.TypeConverter
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.ExerciseCategory
+import com.eugene.lift.domain.model.ExerciseSource
 import com.eugene.lift.domain.model.MeasureType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -38,6 +39,17 @@ class Converters {
     } catch (_: IllegalArgumentException) {
         MeasureType.REPS_AND_WEIGHT
     }
+
+    @TypeConverter
+    fun fromExerciseSource(value: ExerciseSource): String = value.name
+
+    @TypeConverter
+    fun toExerciseSource(value: String): ExerciseSource = try {
+        ExerciseSource.valueOf(value)
+    } catch (_: IllegalArgumentException) {
+        ExerciseSource.LOCAL
+    }
+
     @TypeConverter
     fun fromTimestamp(value: String?): LocalDateTime? {
         return value?.let { LocalDateTime.parse(it) }

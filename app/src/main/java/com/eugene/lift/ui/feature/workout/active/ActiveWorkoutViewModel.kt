@@ -22,8 +22,9 @@ import com.eugene.lift.domain.usecase.template.UpdateTemplateFromWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.StartEmptyWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.StartWorkoutFromTemplateUseCase
 import com.eugene.lift.domain.usecase.workout.FinishWorkoutUseCase
-import com.eugene.lift.domain.usecase.workout.GetLastHistoryForExerciseUseCase
 import com.eugene.lift.domain.usecase.workout.GetPersonalRecordUseCase
+import com.eugene.lift.domain.usecase.workout.ResolveExerciseHistoryUseCase
+import com.eugene.lift.domain.util.ExercisePerformanceEvaluator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,8 +54,9 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val createTemplateFromWorkoutUseCase: CreateTemplateFromWorkoutUseCase,
     private val restTimerManager: RestTimerManager,
     private val getExerciseDetailUseCase: GetExerciseDetailUseCase,
-    private val getLastHistoryForExerciseUseCase: GetLastHistoryForExerciseUseCase,
+    private val resolveExerciseHistoryUseCase: ResolveExerciseHistoryUseCase,
     private val getPersonalRecordUseCase: GetPersonalRecordUseCase,
+    private val exercisePerformanceEvaluator: ExercisePerformanceEvaluator,
     private val getSettingsUseCase: GetSettingsUseCase,  // kept private to call cold flow on init
     private val updateEffortMetricUseCase: UpdateEffortMetricUseCase,
     private val updateAutoTimerUseCase: UpdateAutoTimerUseCase,
@@ -72,6 +74,7 @@ class ActiveWorkoutViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), restTimerManager.timerState.value)
 
     private val _historyState = MutableStateFlow<Map<String, List<WorkoutSet>>>(emptyMap())
+    private val _prefillHistoryState = MutableStateFlow<Map<String, List<WorkoutSet>>>(emptyMap())
     private val _effortMetric = MutableStateFlow<String?>(null) // seeded from persisted settings in init
     private val _elapsedTimeSeconds = MutableStateFlow(0L)
     private val _reorderState = MutableStateFlow(ReorderUiState())
@@ -278,7 +281,7 @@ class ActiveWorkoutViewModel @Inject constructor(
     }
 
     private fun updateExerciseWithHistory(sessionExercise: SessionExercise): SessionExercise {
-        val historySets = _historyState.value[sessionExercise.exercise.id]
+        val historySets = _prefillHistoryState.value[sessionExercise.exercise.id]
 
         // Prefill requirement:
         // - History screen shows "your last time" (last performed session).
@@ -321,15 +324,13 @@ class ActiveWorkoutViewModel @Inject constructor(
     }
 
     private suspend fun loadHistoryFor(exerciseId: String) {
-        val lastSession = getLastHistoryForExerciseUseCase(exerciseId, templateId)
-        if (lastSession != null) {
-            val oldExercise = lastSession.exercises.find { it.exercise.id == exerciseId }
-            if (oldExercise != null) {
-                val displaySets = oldExercise.sets
-                val currentMap = _historyState.value.toMutableMap()
-                currentMap[exerciseId] = displaySets
-                _historyState.value = currentMap
-            }
+        val snapshot = resolveExerciseHistoryUseCase(exerciseId, templateId)
+
+        _historyState.value = _historyState.value.toMutableMap().apply {
+            this[exerciseId] = snapshot.displaySets
+        }
+        _prefillHistoryState.value = _prefillHistoryState.value.toMutableMap().apply {
+            this[exerciseId] = snapshot.prefillSets
         }
     }
 
@@ -392,25 +393,40 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private fun toggleSetCompleted(exerciseIndex: Int, setIndex: Int) {
         var isNowCompleted = false
-        var currentSetWeight = 0.0
+        var completedSetSnapshot: WorkoutSet? = null
         updateSetState(exerciseIndex, setIndex) {
-            isNowCompleted = !it.completed
-            currentSetWeight = it.weight
-            it.copy(completed = isNowCompleted)
+            val updatedSet = it.copy(completed = !it.completed)
+            isNowCompleted = updatedSet.completed
+            if (updatedSet.completed) {
+                completedSetSnapshot = updatedSet
+            }
+            updatedSet
         }
 
         if (isNowCompleted) {
             val session = _activeSession.value
             val exercise = session?.exercises?.getOrNull(exerciseIndex)
-            if (exercise != null && exercise.exercise.measureType == com.eugene.lift.domain.model.MeasureType.REPS_AND_WEIGHT && currentSetWeight > 0) {
+            val completedSet = completedSetSnapshot
+            if (exercise != null && completedSet != null) {
                 viewModelScope.launch {
-                    val prSet = getPersonalRecordUseCase(exercise.exercise.id).firstOrNull()
-                    val prWeight = prSet?.weight ?: 0.0
-                    val isPr = currentSetWeight >= prWeight && currentSetWeight > 0
+                    val measureType = exercise.exercise.measureType
+                    val currentPerformance = exercisePerformanceEvaluator.performanceValue(
+                        completedSet,
+                        measureType
+                    )
+                    if (currentPerformance <= 0.0) {
+                        return@launch
+                    }
+
+                    val prSet = getPersonalRecordUseCase(exercise.exercise.id, measureType)
+                    val previousPerformance = prSet?.let { previousSet ->
+                        exercisePerformanceEvaluator.performanceValue(previousSet, measureType)
+                    } ?: 0.0
+                    val isPr = currentPerformance > previousPerformance
                     _effects.emit(
                         ActiveWorkoutEffect.ShowExerciseSnackbar(
                             name = exercise.exercise.name,
-                            weight = currentSetWeight,
+                            weight = completedSet.weight,
                             weightUnit = userSettings.value.weightUnit,
                             isPr = isPr
                         )
@@ -622,7 +638,7 @@ class ActiveWorkoutViewModel @Inject constructor(
     }
 
     private fun getInitialSetDataFromHistory(exerciseId: String): Pair<Double, Int> {
-        val historySets = _historyState.value[exerciseId]
+        val historySets = _prefillHistoryState.value[exerciseId]
         val first = historySets?.firstOrNull()
         return if (first != null) first.weight to first.reps else 0.0 to 0
     }

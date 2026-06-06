@@ -10,6 +10,7 @@ import com.eugene.lift.domain.repository.UserProfileRepository
 import com.eugene.lift.domain.repository.WorkoutRepository
 import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.repository.SettingsRepository
+import com.eugene.lift.domain.util.ExercisePerformanceEvaluator
 import com.eugene.lift.domain.util.WeightConverter
 import kotlinx.coroutines.flow.first
 import java.time.Duration
@@ -20,6 +21,7 @@ class FinishWorkoutUseCase @Inject constructor(
     private val repository: WorkoutRepository,
     private val userProfileRepository: UserProfileRepository,
     private val settingsRepository: SettingsRepository,
+    private val performanceEvaluator: ExercisePerformanceEvaluator,
     private val safeExecutor: SafeExecutor
 ) {
     suspend operator fun invoke(activeSession: WorkoutSession): AppResult<Unit> {
@@ -57,34 +59,47 @@ class FinishWorkoutUseCase @Inject constructor(
     private suspend fun processExercise(
         exercise: SessionExercise
     ): SessionExercise {
-        val completedSets = exercise.sets.filter { it.completed }
-        if (completedSets.isEmpty()) return exercise
+        val measureType = exercise.exercise.measureType
+        if (!performanceEvaluator.supportsPrTracking(measureType)) {
+            return exercise
+        }
 
-        val sessionBestWeight = completedSets.maxOf { it.weight }
-        val previousRecordWeight = getPreviousRecordWeight(exercise)
+        val sessionBestValue = performanceEvaluator.bestCompletedValue(exercise.sets, measureType)
+        if (sessionBestValue <= 0.0) {
+            return exercise
+        }
 
-        if (sessionBestWeight <= previousRecordWeight) return exercise
+        val previousBestValue = getPreviousRecordValue(exercise)
+        if (sessionBestValue <= previousBestValue) return exercise
 
         return exercise.copy(
-            sets = markPrSets(exercise.sets, sessionBestWeight)
+            sets = markPrSets(exercise.sets, sessionBestValue, measureType)
         )
     }
 
-    private suspend fun getPreviousRecordWeight(
+    private suspend fun getPreviousRecordValue(
         exercise: SessionExercise
     ): Double {
-        return repository
-            .getPersonalRecord(exercise.exercise.id)
+        val measureType = exercise.exercise.measureType
+        return repository.getExerciseHistory(exercise.exercise.id)
             .first()
-            ?.weight ?: 0.0
+            .flatMap { session ->
+                session.exercises.filter { sessionExercise ->
+                    sessionExercise.exercise.id == exercise.exercise.id
+                }
+            }
+            .maxOfOrNull { sessionExercise ->
+                performanceEvaluator.bestCompletedValue(sessionExercise.sets, measureType)
+            } ?: 0.0
     }
 
     private fun markPrSets(
         sets: List<WorkoutSet>,
-        prWeight: Double
+        prValue: Double,
+        measureType: com.eugene.lift.domain.model.MeasureType
     ): List<WorkoutSet> {
         return sets.map { set ->
-            if (set.completed && set.weight == prWeight) {
+            if (set.completed && performanceEvaluator.matchesPerformance(set, prValue, measureType)) {
                 set.copy(isPr = true)
             } else {
                 set

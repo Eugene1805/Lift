@@ -6,6 +6,7 @@ import com.eugene.lift.domain.model.PrRecord
 import com.eugene.lift.domain.model.ProgressionDataPoint
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.repository.WorkoutRepository
+import com.eugene.lift.domain.util.ExercisePerformanceEvaluator
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -24,7 +25,8 @@ import javax.inject.Inject
  * PR history = subset of sessions where the best set exceeded any previous best.
  */
 class GetExerciseProgressionUseCase @Inject constructor(
-    private val workoutRepository: WorkoutRepository
+    private val workoutRepository: WorkoutRepository,
+    private val performanceEvaluator: ExercisePerformanceEvaluator
 ) {
     /**
      * Returns a cold [Flow] that emits [ExerciseProgression] whenever history changes.
@@ -63,17 +65,15 @@ class GetExerciseProgressionUseCase @Inject constructor(
                 .firstOrNull { it.exercise.id == exerciseId }
                 ?: continue
 
-            val completedSets = sessionExercise.sets.filter { it.completed }
-            if (completedSets.isEmpty()) continue
+            val bestSet = performanceEvaluator.bestCompletedSet(sessionExercise.sets, measureType)
+                ?: continue
 
-            val bestSet = if (isWeightBased) {
-                completedSets.maxByOrNull { estimatedOneRepMax(it.weight, it.reps) }
+            val e1RM = if (isWeightBased) {
+                performanceEvaluator.estimatedOneRepMax(bestSet.weight, bestSet.reps)
             } else {
-                completedSets.maxByOrNull { it.reps }
-            } ?: continue
-
-            val e1RM = if (isWeightBased) estimatedOneRepMax(bestSet.weight, bestSet.reps) else 0.0
-            val comparisonValue = if (isWeightBased) e1RM else bestSet.reps.toDouble()
+                0.0
+            }
+            val comparisonValue = performanceEvaluator.performanceValue(bestSet, measureType)
 
             val date = session.date.toLocalDate()
             dataPoints.add(
@@ -115,8 +115,7 @@ class GetExerciseProgressionUseCase @Inject constructor(
      * Returns [weight] unchanged when [reps] == 1 (already a 1RM attempt).
      */
     fun estimatedOneRepMax(weight: Double, reps: Int): Double {
-        if (reps <= 0 || weight <= 0.0) return 0.0
-        return weight * (1.0 + reps / 30.0)
+        return performanceEvaluator.estimatedOneRepMax(weight, reps)
     }
 
     companion object {

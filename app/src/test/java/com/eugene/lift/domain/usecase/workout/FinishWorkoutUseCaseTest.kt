@@ -14,10 +14,13 @@ import com.eugene.lift.domain.model.WorkoutSet
 import com.eugene.lift.domain.repository.SettingsRepository
 import com.eugene.lift.domain.repository.UserProfileRepository
 import com.eugene.lift.domain.repository.WorkoutRepository
+import com.eugene.lift.domain.util.ExercisePerformanceEvaluator
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -53,10 +56,12 @@ class FinishWorkoutUseCaseTest {
         val settingsRepository = mockk<SettingsRepository>(relaxed = true)
         coEvery { userProfileRepository.getCurrentProfileOnce() } returns null
         coEvery { settingsRepository.getSettings() } returns flowOf(UserSettings())
+        every { repository.getExerciseHistory(any()) } returns flowOf(emptyList())
         useCase = FinishWorkoutUseCase(
             repository,
             userProfileRepository,
             settingsRepository,
+            ExercisePerformanceEvaluator(),
             SafeExecutor(logger = null)
         )
     }
@@ -86,14 +91,16 @@ class FinishWorkoutUseCaseTest {
     fun `invoke marks PR when set beats previous record`() = runTest {
         // GIVEN
         val session = createSessionWithSet(weight = 100.0, completed = true)
-        val previousRecord = WorkoutSet(
-            id = "previous-set",
-            weight = 90.0,
-            reps = 10,
-            completed = true,
-            isPr = true
+        every {
+            repository.getExerciseHistory("exercise-1")
+        } returns flowOf(
+            listOf(
+                createHistorySession(
+                    exercise = sampleExercise,
+                    sets = listOf(createSet(weight = 90.0, completed = true))
+                )
+            )
         )
-        coEvery { repository.getPersonalRecord("exercise-1") } returns flowOf(previousRecord)
 
         // WHEN
         val result = useCase(session)
@@ -112,14 +119,16 @@ class FinishWorkoutUseCaseTest {
     fun `invoke does not mark PR when set does not beat previous record`() = runTest {
         // GIVEN
         val session = createSessionWithSet(weight = 80.0, completed = true)
-        val previousRecord = WorkoutSet(
-            id = "previous-set",
-            weight = 100.0,
-            reps = 10,
-            completed = true,
-            isPr = true
+        every {
+            repository.getExerciseHistory("exercise-1")
+        } returns flowOf(
+            listOf(
+                createHistorySession(
+                    exercise = sampleExercise,
+                    sets = listOf(createSet(weight = 100.0, completed = true))
+                )
+            )
         )
-        coEvery { repository.getPersonalRecord("exercise-1") } returns flowOf(previousRecord)
 
         // WHEN
         useCase(session)
@@ -137,14 +146,16 @@ class FinishWorkoutUseCaseTest {
     fun `invoke marks PR when set equals previous record`() = runTest {
         // GIVEN - Equal weight, not greater
         val session = createSessionWithSet(weight = 100.0, completed = true)
-        val previousRecord = WorkoutSet(
-            id = "previous-set",
-            weight = 100.0,
-            reps = 10,
-            completed = true,
-            isPr = true
+        every {
+            repository.getExerciseHistory("exercise-1")
+        } returns flowOf(
+            listOf(
+                createHistorySession(
+                    exercise = sampleExercise,
+                    sets = listOf(createSet(weight = 100.0, completed = true))
+                )
+            )
         )
-        coEvery { repository.getPersonalRecord("exercise-1") } returns flowOf(previousRecord)
 
         // WHEN
         useCase(session)
@@ -163,7 +174,6 @@ class FinishWorkoutUseCaseTest {
     fun `invoke marks PR for first ever set of exercise`() = runTest {
         // GIVEN - No previous record
         val session = createSessionWithSet(weight = 50.0, completed = true)
-        coEvery { repository.getPersonalRecord("exercise-1") } returns flowOf(null)
 
         // WHEN
         useCase(session)
@@ -186,14 +196,16 @@ class FinishWorkoutUseCaseTest {
             createSet(weight = 90.0, completed = true)
         )
         val session = createSessionWithSets(sets)
-        val previousRecord = WorkoutSet(
-            id = "previous-set",
-            weight = 95.0,
-            reps = 10,
-            completed = true,
-            isPr = true
+        every {
+            repository.getExerciseHistory("exercise-1")
+        } returns flowOf(
+            listOf(
+                createHistorySession(
+                    exercise = sampleExercise,
+                    sets = listOf(createSet(weight = 95.0, completed = true))
+                )
+            )
         )
-        coEvery { repository.getPersonalRecord("exercise-1") } returns flowOf(previousRecord)
 
         // WHEN
         useCase(session)
@@ -219,14 +231,16 @@ class FinishWorkoutUseCaseTest {
             createSet(weight = 100.0, completed = true)  // Also PR
         )
         val session = createSessionWithSets(sets)
-        val previousRecord = WorkoutSet(
-            id = "previous-set",
-            weight = 95.0,
-            reps = 10,
-            completed = true,
-            isPr = true
+        every {
+            repository.getExerciseHistory("exercise-1")
+        } returns flowOf(
+            listOf(
+                createHistorySession(
+                    exercise = sampleExercise,
+                    sets = listOf(createSet(weight = 95.0, completed = true))
+                )
+            )
         )
-        coEvery { repository.getPersonalRecord("exercise-1") } returns flowOf(previousRecord)
 
         // WHEN
         useCase(session)
@@ -251,7 +265,6 @@ class FinishWorkoutUseCaseTest {
             createSet(weight = 80.0, completed = true)
         )
         val session = createSessionWithSets(sets)
-        coEvery { repository.getPersonalRecord("exercise-1") } returns flowOf(null)
 
         // WHEN
         useCase(session)
@@ -323,7 +336,6 @@ class FinishWorkoutUseCaseTest {
             createSet(weight = 90.0, completed = false)
         )
         val session = createSessionWithSets(sets)
-        coEvery { repository.getPersonalRecord("exercise-1") } returns flowOf(null)
 
         // WHEN
         useCase(session)
@@ -357,11 +369,21 @@ class FinishWorkoutUseCaseTest {
             )
         )
 
-        coEvery { repository.getPersonalRecord("exercise-1") } returns flowOf(
-            WorkoutSet(id = "pr-1", weight = 95.0, reps = 10, completed = true, isPr = true)
+        every { repository.getExerciseHistory("exercise-1") } returns flowOf(
+            listOf(
+                createHistorySession(
+                    exercise = sampleExercise,
+                    sets = listOf(createSet(weight = 95.0, completed = true))
+                )
+            )
         )
-        coEvery { repository.getPersonalRecord("exercise-2") } returns flowOf(
-            WorkoutSet(id = "pr-2", weight = 140.0, reps = 10, completed = true, isPr = true)
+        every { repository.getExerciseHistory("exercise-2") } returns flowOf(
+            listOf(
+                createHistorySession(
+                    exercise = exercise2,
+                    sets = listOf(createSet(weight = 140.0, completed = true))
+                )
+            )
         )
 
         // WHEN
@@ -374,6 +396,73 @@ class FinishWorkoutUseCaseTest {
         val savedSession = slot.captured
         assertTrue("First exercise should have PR", savedSession.exercises[0].sets[0].isPr)
         assertTrue("Second exercise should have PR", savedSession.exercises[1].sets[0].isPr)
+    }
+
+    @Test
+    fun `invoke marks PR when estimated one rep max improves at same weight`() = runTest {
+        val session = createSessionWithSet(weight = 100.0, completed = true, reps = 8)
+        val previousSession = createHistorySession(
+            exercise = sampleExercise,
+            sets = listOf(createSet(weight = 100.0, completed = true, reps = 5))
+        )
+        coEvery { repository.getExerciseHistory("exercise-1") } returns flowOf(listOf(previousSession))
+
+        useCase(session)
+
+        val slot = slot<WorkoutSession>()
+        coVerify { repository.saveSession(capture(slot)) }
+
+        val savedSet = slot.captured.exercises.first().sets.first()
+        assertTrue("Set should be PR when e1RM improves", savedSet.isPr)
+    }
+
+    @Test
+    fun `invoke marks PR for reps only exercises using reps instead of weight`() = runTest {
+        val repsOnlyExercise = sampleExercise.copy(
+            id = "exercise-reps",
+            name = "Pull Up",
+            category = ExerciseCategory.BODYWEIGHT,
+            measureType = MeasureType.REPS_ONLY
+        )
+        val session = createSampleSession(LocalDateTime.now()).copy(
+            exercises = listOf(
+                createSessionExercise(
+                    sets = listOf(createSet(weight = 0.0, completed = true, reps = 12)),
+                    exercise = repsOnlyExercise
+                )
+            )
+        )
+        val previousSession = createHistorySession(
+            exercise = repsOnlyExercise,
+            sets = listOf(createSet(weight = 0.0, completed = true, reps = 10))
+        )
+        coEvery { repository.getExerciseHistory("exercise-reps") } returns flowOf(listOf(previousSession))
+
+        useCase(session)
+
+        val slot = slot<WorkoutSession>()
+        coVerify { repository.saveSession(capture(slot)) }
+
+        val savedSet = slot.captured.exercises.first().sets.first()
+        assertTrue("Higher reps should be marked as PR for reps-only exercises", savedSet.isPr)
+    }
+
+    @Test
+    fun `invoke does not mark PR when same weight has lower estimated one rep max`() = runTest {
+        val session = createSessionWithSet(weight = 100.0, completed = true, reps = 3)
+        val previousSession = createHistorySession(
+            exercise = sampleExercise,
+            sets = listOf(createSet(weight = 100.0, completed = true, reps = 6))
+        )
+        coEvery { repository.getExerciseHistory("exercise-1") } returns flowOf(listOf(previousSession))
+
+        useCase(session)
+
+        val slot = slot<WorkoutSession>()
+        coVerify { repository.saveSession(capture(slot)) }
+
+        val savedSet = slot.captured.exercises.first().sets.first()
+        assertFalse("Lower e1RM should not be marked as PR", savedSet.isPr)
     }
 
     // Helper methods
@@ -390,10 +479,10 @@ class FinishWorkoutUseCaseTest {
         )
     }
 
-    private fun createSessionWithSet(weight: Double, completed: Boolean): WorkoutSession {
+    private fun createSessionWithSet(weight: Double, completed: Boolean, reps: Int = 10): WorkoutSession {
         return createSampleSession(LocalDateTime.now()).copy(
             exercises = listOf(
-                createSessionExercise(listOf(createSet(weight, completed)))
+                createSessionExercise(listOf(createSet(weight, completed, reps)))
             )
         )
     }
@@ -415,11 +504,30 @@ class FinishWorkoutUseCaseTest {
         )
     }
 
-    private fun createSet(weight: Double, completed: Boolean): WorkoutSet {
+    private fun createHistorySession(
+        exercise: Exercise,
+        sets: List<WorkoutSet>
+    ): WorkoutSession {
+        return WorkoutSession(
+            id = "history-${exercise.id}",
+            templateId = null,
+            name = "Previous Session",
+            date = LocalDateTime.now().minusDays(3),
+            durationSeconds = 1800,
+            exercises = listOf(
+                createSessionExercise(
+                    sets = sets,
+                    exercise = exercise
+                ).copy(id = "history-session-ex-${exercise.id}")
+            )
+        )
+    }
+
+    private fun createSet(weight: Double, completed: Boolean, reps: Int = 10): WorkoutSet {
         return WorkoutSet(
             id = "set-${System.nanoTime()}",
             weight = weight,
-            reps = 10,
+            reps = reps,
             completed = completed,
             rpe = null,
             rir = null,

@@ -7,6 +7,7 @@ import com.eugene.lift.domain.model.SessionExercise
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.WorkoutSet
 import com.eugene.lift.domain.repository.WorkoutRepository
+import com.eugene.lift.domain.util.ExercisePerformanceEvaluator
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -25,7 +26,7 @@ class GetExerciseProgressionUseCaseTest {
     @Before
     fun setUp() {
         workoutRepository = mockk(relaxed = true)
-        useCase = GetExerciseProgressionUseCase(workoutRepository)
+        useCase = GetExerciseProgressionUseCase(workoutRepository, ExercisePerformanceEvaluator())
     }
 
     // ── e1RM Computation ─────────────────────────────────────────────────────

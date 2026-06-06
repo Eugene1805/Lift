@@ -27,11 +27,12 @@ data class ExerciseUsageStats(
 
 class GetExercisesUseCase @Inject constructor(
     private val repository: ExerciseRepository,
-    private val workoutRepository: WorkoutRepository
+    private val workoutRepository: WorkoutRepository,
+    private val catalogReconciler: ExerciseCatalogReconciler
 ) {
     operator fun invoke(filter: ExerciseFilter): Flow<List<Exercise>> {
         return repository.getExercises().map { list ->
-            var result = list
+            var result = catalogReconciler.reconcileVisibleExercises(list)
 
             // 1. Text Search
             if (filter.query.isNotBlank()) {

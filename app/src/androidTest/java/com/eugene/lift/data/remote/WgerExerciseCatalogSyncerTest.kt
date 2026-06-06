@@ -172,6 +172,100 @@ class WgerExerciseCatalogSyncerTest {
         )
     }
 
+    @Test
+    fun syncExercises_doesNotMergeByNameWhenLocalExerciseIsReferenced() = runBlocking {
+        val localSeedExercise = Exercise(
+            id = "seed-local-id",
+            name = "Bench Press",
+            category = ExerciseCategory.BARBELL,
+            measureType = MeasureType.REPS_AND_WEIGHT,
+            instructions = "Local seed instructions",
+            imagePath = null,
+            bodyParts = listOf(BodyPart.CHEST),
+            source = ExerciseSource.LOCAL
+        )
+        exerciseDao.saveExerciseComplete(localSeedExercise.toEntity(), localSeedExercise.toCrossRefs())
+
+        templateDao.saveTemplateComplete(
+            template = WorkoutTemplateEntity(
+                id = "template-name-match",
+                name = "Chest Day",
+                notes = "",
+                isArchived = false,
+                lastPerformedAt = null
+            ),
+            exercises = listOf(
+                TemplateExerciseEntity(
+                    id = "template-name-match-ex",
+                    templateId = "template-name-match",
+                    exerciseId = localSeedExercise.id,
+                    orderIndex = 0,
+                    targetSets = 4,
+                    targetReps = "6-8",
+                    restTimerSeconds = 150,
+                    note = ""
+                )
+            )
+        )
+
+        workoutDao.saveSessionComplete(
+            session = WorkoutSessionEntity(
+                id = "session-name-match",
+                templateId = "template-name-match",
+                name = "Chest Day",
+                date = LocalDateTime.now(),
+                durationSeconds = 1800
+            ),
+            exercises = listOf(
+                SessionExerciseEntity(
+                    id = "session-name-match-ex",
+                    sessionId = "session-name-match",
+                    exerciseId = localSeedExercise.id,
+                    orderIndex = 0
+                )
+            ),
+            sets = emptyList()
+        )
+
+        val syncer = WgerExerciseCatalogSyncer(
+            remoteDataSource = object : ExerciseRemoteDataSource {
+                override suspend fun syncExercises(): List<RemoteExercisePayload> {
+                    return listOf(
+                        RemoteExercisePayload(
+                            remoteId = 420,
+                            name = "bench-press",
+                            description = "Remote catalog description",
+                            categoryName = "Strength",
+                            primaryImageUrl = "https://example.com/bench.png",
+                            equipmentNames = listOf("Barbell"),
+                            primaryMuscleNames = listOf("Chest"),
+                            secondaryMuscleNames = listOf("Triceps")
+                        )
+                    )
+                }
+            },
+            exerciseDao = exerciseDao,
+            exerciseSyncWriter = RoomExerciseSyncWriter(database, RoomExerciseSyncItemPersister(exerciseDao)),
+            logger = TestLogger()
+        )
+
+        val syncedCount = syncer.syncExercises()
+        val template = templateDao.getTemplateById("template-name-match").first()
+        val session = workoutDao.getSessionById("session-name-match").first()
+        val localAfter = exerciseDao.getExerciseById(localSeedExercise.id).first()
+        val remoteAfter = exerciseDao.getExerciseByRemoteId(420)
+
+        assertEquals(1, syncedCount)
+        assertEquals(2, exerciseDao.getExerciseCount())
+        assertEquals("seed-local-id", template?.exercises?.single()?.exercise?.id)
+        assertEquals("seed-local-id", session?.exercises?.single()?.exercise?.id)
+        assertEquals(ExerciseSource.LOCAL, localAfter?.exercise?.source)
+        assertEquals("seed-local-id", localAfter?.exercise?.id)
+        assertNotNull(remoteAfter)
+        assertEquals("bench-press", remoteAfter?.name)
+        assertEquals(ExerciseSource.WGER, remoteAfter?.source)
+    }
+
     private suspend fun snapshotExercises(): List<ExerciseEntitySnapshot> {
         return exerciseDao.getExercisesByRemoteIds(listOf(101, 102)).map { entity ->
             ExerciseEntitySnapshot(

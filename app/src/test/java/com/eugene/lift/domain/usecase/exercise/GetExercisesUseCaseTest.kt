@@ -3,6 +3,7 @@ package com.eugene.lift.domain.usecase.exercise
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
+import com.eugene.lift.domain.model.ExerciseSource
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.repository.ExerciseRepository
 import com.eugene.lift.domain.repository.WorkoutRepository
@@ -61,7 +62,7 @@ class GetExercisesUseCaseTest {
         workoutRepository = mockk()
         coEvery { workoutRepository.getExerciseUsageCount() } returns emptyMap()
         coEvery { workoutRepository.getExerciseLastUsedDates() } returns emptyMap()
-        useCase = GetExercisesUseCase(repository, workoutRepository)
+        useCase = GetExercisesUseCase(repository, workoutRepository, ExerciseCatalogReconciler())
     }
 
     @Test
@@ -182,5 +183,77 @@ class GetExercisesUseCaseTest {
         // THEN
         Assert.assertEquals(1, result.size)
         Assert.assertEquals("Bench Press", result[0].name)
+    }
+
+    @Test
+    fun `invoke collapses remote duplicates while preserving stable local id`() = runTest {
+        val local = Exercise(
+            id = "local-bench",
+            name = "Bench Press",
+            bodyParts = listOf(BodyPart.CHEST),
+            category = ExerciseCategory.BARBELL,
+            measureType = MeasureType.REPS_AND_WEIGHT,
+            instructions = "",
+            imagePath = null
+        )
+        val remote = Exercise(
+            id = "remote-bench",
+            name = "bench-press",
+            bodyParts = listOf(BodyPart.CHEST, BodyPart.TRICEPS),
+            category = ExerciseCategory.MACHINE,
+            measureType = MeasureType.REPS_AND_WEIGHT,
+            instructions = "Drive through the bar.",
+            imagePath = "https://example.com/bench.png",
+            remoteId = 42,
+            source = ExerciseSource.WGER,
+            lastSyncedAt = 123L,
+            syncVersion = 1
+        )
+        coEvery { repository.getExercises() } returns flowOf(
+            listOf(
+                sampleExercises[1],
+                sampleExercises[2],
+                local,
+                remote
+            )
+        )
+
+        val result = useCase(ExerciseFilter()).first()
+        val bench = result.single { it.name.equals("Bench Press", ignoreCase = true) }
+
+        Assert.assertEquals(3, result.size)
+        Assert.assertEquals("local-bench", bench.id)
+        Assert.assertEquals(42, bench.remoteId)
+        Assert.assertEquals(ExerciseSource.WGER, bench.source)
+        Assert.assertEquals("https://example.com/bench.png", bench.imagePath)
+        Assert.assertEquals(setOf(BodyPart.CHEST, BodyPart.TRICEPS), bench.bodyParts.toSet())
+    }
+
+    @Test
+    fun `invoke keeps local exercises with matching names visible when no remote exists`() = runTest {
+        val first = Exercise(
+            id = "local-1",
+            name = "Bench Press",
+            bodyParts = listOf(BodyPart.CHEST),
+            category = ExerciseCategory.BARBELL,
+            measureType = MeasureType.REPS_AND_WEIGHT,
+            instructions = "",
+            imagePath = null
+        )
+        val second = Exercise(
+            id = "local-2",
+            name = "bench-press",
+            bodyParts = listOf(BodyPart.TRICEPS),
+            category = ExerciseCategory.MACHINE,
+            measureType = MeasureType.REPS_AND_WEIGHT,
+            instructions = "",
+            imagePath = null
+        )
+        coEvery { repository.getExercises() } returns flowOf(listOf(first, second))
+
+        val result = useCase(ExerciseFilter()).first()
+
+        Assert.assertEquals(2, result.size)
+        Assert.assertEquals(setOf("local-1", "local-2"), result.map { it.id }.toSet())
     }
 }

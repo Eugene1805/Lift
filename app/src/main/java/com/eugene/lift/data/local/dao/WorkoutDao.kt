@@ -59,6 +59,12 @@ interface WorkoutDao {
         insertSets(sets)
     }
 
+    @Query("SELECT DISTINCT exerciseId FROM session_exercises WHERE exerciseId IN (:exerciseIds)")
+    suspend fun getReferencedExerciseIds(exerciseIds: List<String>): List<String>
+
+    @Query("UPDATE session_exercises SET exerciseId = :targetExerciseId WHERE exerciseId = :sourceExerciseId")
+    suspend fun reassignExerciseReferences(sourceExerciseId: String, targetExerciseId: String)
+
     @Transaction
     @Query("""
         SELECT * FROM workout_sessions 

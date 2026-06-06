@@ -7,6 +7,7 @@ import com.eugene.lift.domain.model.ExerciseSource
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.repository.ExerciseRepository
 import com.eugene.lift.domain.repository.WorkoutRepository
+import com.eugene.lift.domain.util.ExerciseNameNormalizer
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first
@@ -62,7 +63,11 @@ class GetExercisesUseCaseTest {
         workoutRepository = mockk()
         coEvery { workoutRepository.getExerciseUsageCount() } returns emptyMap()
         coEvery { workoutRepository.getExerciseLastUsedDates() } returns emptyMap()
-        useCase = GetExercisesUseCase(repository, workoutRepository, ExerciseCatalogReconciler())
+        useCase = GetExercisesUseCase(
+            repository,
+            workoutRepository,
+            ExerciseCatalogReconciler(ExerciseNameNormalizer())
+        )
     }
 
     @Test

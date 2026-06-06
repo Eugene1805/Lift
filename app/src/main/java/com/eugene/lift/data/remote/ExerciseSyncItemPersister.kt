@@ -8,6 +8,7 @@ import javax.inject.Inject
 
 interface ExerciseSyncItemPersister {
     suspend fun persist(exercise: Exercise)
+    suspend fun deleteExercise(exerciseId: String)
 }
 
 class RoomExerciseSyncItemPersister @Inject constructor(
@@ -18,5 +19,9 @@ class RoomExerciseSyncItemPersister @Inject constructor(
             exercise = exercise.toEntity(),
             refs = exercise.toCrossRefs()
         )
+    }
+
+    override suspend fun deleteExercise(exerciseId: String) {
+        exerciseDao.deleteExerciseComplete(exerciseId)
     }
 }

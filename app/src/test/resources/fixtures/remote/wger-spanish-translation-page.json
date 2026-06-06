@@ -1,0 +1,45 @@
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 204,
+      "uuid": "44444444-4444-4444-4444-444444444444",
+      "category": {
+        "id": 7,
+        "name": "Strength"
+      },
+      "muscles": [
+        {
+          "id": 1,
+          "name": "Pectoralis major",
+          "name_en": "Chest"
+        }
+      ],
+      "muscles_secondary": [],
+      "equipment": [
+        {
+          "id": 4,
+          "name": "Dumbbell"
+        }
+      ],
+      "images": [],
+      "translations": [
+        {
+          "id": 300,
+          "name": "Lateral Raise",
+          "description": "Raise the dumbbells to the side.",
+          "language": 2
+        },
+        {
+          "id": 301,
+          "name": "Elevacion lateral con mancuerna",
+          "description": "Eleva las mancuernas hacia los lados.",
+          "language": 4
+        }
+      ],
+      "variations": 0
+    }
+  ]
+}

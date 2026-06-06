@@ -45,6 +45,9 @@ interface ExerciseDao {
     @Query("SELECT * FROM exercises WHERE remoteId IN (:remoteIds)")
     suspend fun getExercisesByRemoteIds(remoteIds: List<Int>): List<ExerciseEntity>
 
+    @Query("SELECT * FROM exercises")
+    suspend fun getAllExerciseEntities(): List<ExerciseEntity>
+
     @Upsert
     suspend fun insertExercise(exercise: ExerciseEntity)
 

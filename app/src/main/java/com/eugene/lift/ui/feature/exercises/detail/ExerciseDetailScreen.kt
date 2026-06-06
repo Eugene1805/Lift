@@ -55,14 +55,17 @@ import coil.request.ImageRequest
 import com.eugene.lift.R
 
 /**
- * Translates a stored drawable string name into a URI that the Coil image loading
- * library can resolve.
+ * Resolves a stored image path into a model that Coil can load, supporting both
+ * app drawables and remote URLs from the synced catalog.
  */
 @Composable
-private fun drawableUriOrNull(drawableName: String?): String? {
-    if (drawableName == null) return null
+private fun imageModelOrNull(imagePath: String?): Any? {
+    if (imagePath == null) return null
+    if (imagePath.startsWith("http://", ignoreCase = true) || imagePath.startsWith("https://", ignoreCase = true)) {
+        return imagePath
+    }
     val context = LocalContext.current
-    val resId = context.resources.getIdentifier(drawableName, "drawable", context.packageName)
+    val resId = context.resources.getIdentifier(imagePath, "drawable", context.packageName)
     return if (resId != 0) "android.resource://${context.packageName}/$resId" else null
 }
 
@@ -77,16 +80,16 @@ private fun drawableUriOrNull(drawableName: String?): String? {
  */
 @Composable
 private fun DynamicColorImageBox(
-    imageUri: String,
+    imageModel: Any,
     contentDescription: String?,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var dominantColor by remember(imageUri) { mutableStateOf(Color.White) }
+    var dominantColor by remember(imageModel) { mutableStateOf(Color.White) }
 
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(context)
-            .data(imageUri)
+            .data(imageModel)
             // Hardware bitmaps are optimized for memory but their pixel data is inaccessible
             // on the CPU. We disable them here so the Palette API can read the image data.
             .allowHardware(false) 
@@ -209,10 +212,10 @@ fun ExerciseDetailScreen(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            val imageUri = if (state.imagePath != null) drawableUriOrNull(state.imagePath) else null
-            if (imageUri != null) {
+            val imageModel = imageModelOrNull(state.imagePath)
+            if (imageModel != null) {
                 DynamicColorImageBox(
-                    imageUri = imageUri,
+                    imageModel = imageModel,
                     contentDescription = state.name,
                     modifier = Modifier
                         .fillMaxWidth()

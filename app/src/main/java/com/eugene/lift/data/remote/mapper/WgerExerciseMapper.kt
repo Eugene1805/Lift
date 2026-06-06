@@ -7,22 +7,38 @@ import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.ExerciseSource
 import com.eugene.lift.domain.model.MeasureType
+import com.eugene.lift.data.local.entity.ExerciseEntity
 import com.eugene.lift.data.remote.dto.WgerExerciseDto
 import com.eugene.lift.data.remote.dto.WgerMuscleDto
 import com.eugene.lift.data.remote.dto.WgerPaginatedResponseDto
+import com.eugene.lift.data.remote.dto.WgerExerciseTranslationDto
 import java.util.UUID
 
-fun WgerPaginatedResponseDto<WgerExerciseDto>.toRemoteExercisePage(): RemoteExercisePage {
+fun WgerPaginatedResponseDto<WgerExerciseDto>.toRemoteExercisePage(
+    preferredLanguageCode: String,
+    languageIdByCode: Map<String, Int>
+): RemoteExercisePage {
     return RemoteExercisePage(
         totalCount = count,
         nextPageUrl = next,
         previousPageUrl = previous,
-        exercises = results.map { it.toRemoteExercisePayload() }
+        exercises = results.map { exercise ->
+            exercise.toRemoteExercisePayload(
+                preferredLanguageCode = preferredLanguageCode,
+                languageIdByCode = languageIdByCode
+            )
+        }
     )
 }
 
-fun WgerExerciseDto.toRemoteExercisePayload(): RemoteExercisePayload {
-    val translation = translations.firstOrNull { it.name.isNotBlank() }
+fun WgerExerciseDto.toRemoteExercisePayload(
+    preferredLanguageCode: String,
+    languageIdByCode: Map<String, Int>
+): RemoteExercisePayload {
+    val translation = translations.selectPreferredTranslation(
+        preferredLanguageCode = preferredLanguageCode,
+        languageIdByCode = languageIdByCode
+    )
     val mainImageUrl = images.firstOrNull { it.is_main == true }?.image
         ?: images.firstOrNull()?.image
 
@@ -39,19 +55,23 @@ fun WgerExerciseDto.toRemoteExercisePayload(): RemoteExercisePayload {
 }
 
 fun RemoteExercisePayload.toExercise(
-    existingLocalId: String? = null,
+    existingExercise: ExerciseEntity? = null,
     syncedAt: Long? = null,
     syncVersion: Int? = null
 ): Exercise {
     val category = mapExerciseCategory(categoryName, equipmentNames)
+    val resolvedImagePath = primaryImageUrl ?: existingExercise?.imagePath
+    val resolvedInstructions = description?.takeIf { it.isNotBlank() }
+        ?: existingExercise?.instructions
+        ?: ""
 
     return Exercise(
-        id = existingLocalId ?: UUID.randomUUID().toString(),
+        id = existingExercise?.id ?: UUID.randomUUID().toString(),
         name = name,
         category = category,
         measureType = mapMeasureType(category),
-        instructions = description.orEmpty(),
-        imagePath = primaryImageUrl,
+        instructions = resolvedInstructions,
+        imagePath = resolvedImagePath,
         bodyParts = mapBodyParts(primaryMuscleNames + secondaryMuscleNames),
         remoteId = remoteId,
         source = ExerciseSource.WGER,
@@ -85,6 +105,24 @@ private fun mapExerciseCategory(
         equipmentNames.isEmpty() -> ExerciseCategory.BODYWEIGHT
         else -> ExerciseCategory.REPS_ONLY
     }
+}
+
+private fun List<WgerExerciseTranslationDto>.selectPreferredTranslation(
+    preferredLanguageCode: String,
+    languageIdByCode: Map<String, Int>
+): WgerExerciseTranslationDto? {
+    val preferredLanguageId = languageIdByCode[preferredLanguageCode]
+    val englishLanguageId = languageIdByCode["en"]
+
+    return firstOrNull { translation ->
+        translation.name.isNotBlank() && translation.language == preferredLanguageId
+    }
+        ?: firstOrNull { translation ->
+            translation.name.isNotBlank() && translation.language == englishLanguageId
+        }
+        ?: firstOrNull { translation ->
+            translation.name.isNotBlank()
+        }
 }
 
 private fun mapMeasureType(category: ExerciseCategory): MeasureType {

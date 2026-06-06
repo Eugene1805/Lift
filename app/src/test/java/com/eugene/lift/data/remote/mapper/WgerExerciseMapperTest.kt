@@ -14,13 +14,28 @@ import org.junit.Test
 
 class WgerExerciseMapperTest {
 
+    private val languageIdByCode = mapOf(
+        "en" to 2,
+        "es" to 4
+    )
+
     @Test
     fun `maps fixture into remote page and local exercise`() {
         val response = loadFixture("fixtures/remote/wger-exercise-page.json")
 
-        val page = response.toRemoteExercisePage()
+        val page = response.toRemoteExercisePage(
+            preferredLanguageCode = "en",
+            languageIdByCode = languageIdByCode
+        )
         val exercise = page.exercises.single().toExercise(
-            existingLocalId = "existing-local-id",
+            existingExercise = com.eugene.lift.data.local.entity.ExerciseEntity(
+                id = "existing-local-id",
+                name = "Bench Press",
+                category = ExerciseCategory.BARBELL,
+                measureType = MeasureType.REPS_AND_WEIGHT,
+                instructions = "",
+                imagePath = null
+            ),
             syncedAt = 1710000000000,
             syncVersion = 1
         )
@@ -52,7 +67,10 @@ class WgerExerciseMapperTest {
     @Test
     fun `unknown category falls back without breaking muscle mapping`() {
         val payload = loadFixture("fixtures/remote/wger-unknown-category-page.json")
-            .toRemoteExercisePage()
+            .toRemoteExercisePage(
+                preferredLanguageCode = "en",
+                languageIdByCode = languageIdByCode
+            )
             .exercises
             .single()
         val exercise = payload.toExercise()
@@ -65,10 +83,22 @@ class WgerExerciseMapperTest {
     @Test
     fun `exercise without image or equipment maps cleanly`() {
         val payload = loadFixture("fixtures/remote/wger-no-image-page.json")
-            .toRemoteExercisePage()
+            .toRemoteExercisePage(
+                preferredLanguageCode = "en",
+                languageIdByCode = languageIdByCode
+            )
             .exercises
             .single()
-        val exercise = payload.toExercise(existingLocalId = "cardio-1")
+        val exercise = payload.toExercise(
+            existingExercise = com.eugene.lift.data.local.entity.ExerciseEntity(
+                id = "cardio-1",
+                name = "Air Bike Sprint",
+                category = ExerciseCategory.CARDIO,
+                measureType = MeasureType.DISTANCE_TIME,
+                instructions = "",
+                imagePath = "air_bike_local"
+            )
+        )
 
         assertNull(payload.primaryImageUrl)
         assertEquals(emptyList<String>(), payload.equipmentNames)
@@ -76,6 +106,21 @@ class WgerExerciseMapperTest {
         assertEquals(MeasureType.DISTANCE_TIME, exercise.measureType)
         assertEquals(listOf(BodyPart.QUADRICEPS, BodyPart.CALVES), exercise.bodyParts)
         assertEquals("cardio-1", exercise.id)
+        assertEquals("air_bike_local", exercise.imagePath)
+    }
+
+    @Test
+    fun `preferred spanish translation is selected when available`() {
+        val payload = loadFixture("fixtures/remote/wger-spanish-translation-page.json")
+            .toRemoteExercisePage(
+                preferredLanguageCode = "es",
+                languageIdByCode = languageIdByCode
+            )
+            .exercises
+            .single()
+
+        assertEquals("Elevacion lateral con mancuerna", payload.name)
+        assertEquals("Eleva las mancuernas hacia los lados.", payload.description)
     }
 
     private fun loadFixture(path: String): WgerPaginatedResponseDto<WgerExerciseDto> {

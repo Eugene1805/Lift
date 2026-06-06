@@ -44,6 +44,12 @@ interface TemplateDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTemplateExercises(exercises: List<TemplateExerciseEntity>)
 
+    @Query("SELECT DISTINCT exerciseId FROM template_exercises WHERE exerciseId IN (:exerciseIds)")
+    suspend fun getReferencedExerciseIds(exerciseIds: List<String>): List<String>
+
+    @Query("UPDATE template_exercises SET exerciseId = :targetExerciseId WHERE exerciseId = :sourceExerciseId")
+    suspend fun reassignExerciseReferences(sourceExerciseId: String, targetExerciseId: String)
+
     @Query("DELETE FROM template_exercises WHERE templateId = :templateId")
     suspend fun deleteTemplateExercises(templateId: String)
 

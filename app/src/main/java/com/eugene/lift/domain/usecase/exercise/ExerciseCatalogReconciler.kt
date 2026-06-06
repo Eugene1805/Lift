@@ -2,7 +2,7 @@ package com.eugene.lift.domain.usecase.exercise
 
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseSource
-import java.text.Normalizer
+import com.eugene.lift.domain.util.ExerciseNameNormalizer
 import javax.inject.Inject
 
 data class CatalogDuplicateSuggestion(
@@ -10,7 +10,9 @@ data class CatalogDuplicateSuggestion(
     val hiddenExercises: List<Exercise>
 )
 
-class ExerciseCatalogReconciler @Inject constructor() {
+class ExerciseCatalogReconciler @Inject constructor(
+    private val nameNormalizer: ExerciseNameNormalizer
+) {
 
     fun reconcileVisibleExercises(exercises: List<Exercise>): List<Exercise> {
         return exercises
@@ -72,11 +74,7 @@ class ExerciseCatalogReconciler @Inject constructor() {
     }
 
     private fun catalogKey(exercise: Exercise): String {
-        val normalized = Normalizer.normalize(exercise.name.lowercase().trim(), Normalizer.Form.NFD)
-            .replace("\\p{M}+".toRegex(), "")
-            .replace("[^a-z0-9]+".toRegex(), " ")
-            .replace("\\s+".toRegex(), " ")
-            .trim()
+        val normalized = nameNormalizer.normalize(exercise.name)
 
         return normalized.ifBlank { exercise.id }
     }

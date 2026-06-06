@@ -19,7 +19,11 @@ import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.ExerciseSource
 import com.eugene.lift.domain.model.MeasureType
+import com.eugene.lift.domain.repository.SettingsRepository
+import com.eugene.lift.domain.util.ExerciseNameNormalizer
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -69,7 +73,12 @@ class WgerExerciseCatalogSyncerTest {
                     }
                     exerciseDao.saveExerciseComplete(exercise.toEntity(), exercise.toCrossRefs())
                 }
-            }
+                override suspend fun deleteExercise(exerciseId: String) {
+                    exerciseDao.deleteExerciseComplete(exerciseId)
+                }
+            },
+            templateDao = templateDao,
+            workoutDao = workoutDao
         )
 
         try {
@@ -150,7 +159,14 @@ class WgerExerciseCatalogSyncerTest {
                 }
             },
             exerciseDao = exerciseDao,
-            exerciseSyncWriter = RoomExerciseSyncWriter(database, RoomExerciseSyncItemPersister(exerciseDao)),
+            exerciseSyncWriter = RoomExerciseSyncWriter(
+                database,
+                RoomExerciseSyncItemPersister(exerciseDao),
+                templateDao,
+                workoutDao
+            ),
+            settingsRepository = TestSettingsRepository(),
+            nameNormalizer = ExerciseNameNormalizer(),
             logger = TestLogger()
         )
 
@@ -173,7 +189,7 @@ class WgerExerciseCatalogSyncerTest {
     }
 
     @Test
-    fun syncExercises_doesNotMergeByNameWhenLocalExerciseIsReferenced() = runBlocking {
+    fun syncExercises_mergesByNameIntoReferencedLocalExercise() = runBlocking {
         val localSeedExercise = Exercise(
             id = "seed-local-id",
             name = "Bench Press",
@@ -245,7 +261,14 @@ class WgerExerciseCatalogSyncerTest {
                 }
             },
             exerciseDao = exerciseDao,
-            exerciseSyncWriter = RoomExerciseSyncWriter(database, RoomExerciseSyncItemPersister(exerciseDao)),
+            exerciseSyncWriter = RoomExerciseSyncWriter(
+                database,
+                RoomExerciseSyncItemPersister(exerciseDao),
+                templateDao,
+                workoutDao
+            ),
+            settingsRepository = TestSettingsRepository(),
+            nameNormalizer = ExerciseNameNormalizer(),
             logger = TestLogger()
         )
 
@@ -256,13 +279,14 @@ class WgerExerciseCatalogSyncerTest {
         val remoteAfter = exerciseDao.getExerciseByRemoteId(420)
 
         assertEquals(1, syncedCount)
-        assertEquals(2, exerciseDao.getExerciseCount())
+        assertEquals(1, exerciseDao.getExerciseCount())
         assertEquals("seed-local-id", template?.exercises?.single()?.exercise?.id)
         assertEquals("seed-local-id", session?.exercises?.single()?.exercise?.id)
-        assertEquals(ExerciseSource.LOCAL, localAfter?.exercise?.source)
+        assertEquals(ExerciseSource.WGER, localAfter?.exercise?.source)
+        assertEquals(420, localAfter?.exercise?.remoteId)
+        assertEquals("https://example.com/bench.png", localAfter?.exercise?.imagePath)
         assertEquals("seed-local-id", localAfter?.exercise?.id)
-        assertNotNull(remoteAfter)
-        assertEquals("bench-press", remoteAfter?.name)
+        assertEquals(localAfter?.exercise?.id, remoteAfter?.id)
         assertEquals(ExerciseSource.WGER, remoteAfter?.source)
     }
 
@@ -301,5 +325,21 @@ class WgerExerciseCatalogSyncerTest {
 
     private class TestLogger : Logger {
         override fun log(throwable: Throwable) = Unit
+    }
+
+    private class TestSettingsRepository : SettingsRepository {
+        override fun getSettings() = flowOf(com.eugene.lift.domain.model.UserSettings())
+        override suspend fun setTheme(theme: com.eugene.lift.domain.model.AppTheme) = Unit
+        override suspend fun setWeightUnit(unit: com.eugene.lift.domain.model.WeightUnit) = Unit
+        override suspend fun setDistanceUnit(unit: com.eugene.lift.domain.model.DistanceUnit) = Unit
+        override suspend fun setLanguageCode(code: String) = Unit
+        override fun getTrackedExerciseIds(): Flow<List<String>> = flowOf(emptyList())
+        override suspend fun setTrackedExerciseIds(ids: List<String>) = Unit
+        override fun isOnboardingComplete(): Flow<Boolean> = flowOf(true)
+        override suspend fun setOnboardingComplete(done: Boolean) = Unit
+        override fun isSwipeHintSeen(): Flow<Boolean> = flowOf(true)
+        override suspend fun setSwipeHintSeen() = Unit
+        override suspend fun setEffortMetric(metric: String?) = Unit
+        override suspend fun setAutoTimerEnabled(enabled: Boolean) = Unit
     }
 }

@@ -96,6 +96,10 @@ private fun drawableResIdOrNull(drawableName: String?): Int? {
     }
 }
 
+private fun isRemoteImageUrl(imagePath: String?): Boolean {
+    return imagePath?.startsWith("http://", ignoreCase = true) == true ||
+        imagePath?.startsWith("https://", ignoreCase = true) == true
+}
 
 @Composable
 fun ExercisesRoute(
@@ -487,10 +491,15 @@ fun ExerciseItemCard(
 
 @Composable
 private fun ExerciseThumbnail(exerciseName: String, imagePath: String?) {
-    val imageResId = remember(imagePath) { drawableResIdOrNull(imagePath) }
-    if (imageResId != null) {
+    val imageModel = remember(imagePath) {
+        when {
+            isRemoteImageUrl(imagePath) -> imagePath
+            else -> drawableResIdOrNull(imagePath)
+        }
+    }
+    if (imageModel != null) {
         AsyncImage(
-            model = imageResId,
+            model = imageModel,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier

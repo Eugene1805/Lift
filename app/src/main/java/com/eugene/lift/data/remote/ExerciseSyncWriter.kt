@@ -30,10 +30,6 @@ class RoomExerciseSyncWriter @Inject constructor(
         merges: List<ExerciseCatalogMerge>
     ) {
         database.withTransaction {
-            exercises.forEach { exercise ->
-                itemPersister.persist(exercise)
-            }
-
             merges.forEach { merge ->
                 merge.duplicateExerciseIds
                     .distinct()
@@ -43,6 +39,10 @@ class RoomExerciseSyncWriter @Inject constructor(
                         workoutDao.reassignExerciseReferences(duplicateId, merge.canonicalExerciseId)
                         itemPersister.deleteExercise(duplicateId)
                     }
+            }
+
+            exercises.forEach { exercise ->
+                itemPersister.persist(exercise)
             }
         }
     }

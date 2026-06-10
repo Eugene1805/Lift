@@ -45,7 +45,7 @@ fun WgerExerciseDto.toRemoteExercisePayload(
     return RemoteExercisePayload(
         remoteId = id,
         name = translation?.name ?: "Exercise #$id",
-        description = translation?.description,
+        description = translation?.plainInstructions(),
         categoryName = category?.name,
         primaryImageUrl = mainImageUrl,
         equipmentNames = equipment.map { it.name },
@@ -123,6 +123,37 @@ private fun List<WgerExerciseTranslationDto>.selectPreferredTranslation(
         ?: firstOrNull { translation ->
             translation.name.isNotBlank()
         }
+}
+
+private fun WgerExerciseTranslationDto.plainInstructions(): String? {
+    return description_source.cleanExerciseInstructions()
+        ?: description.cleanExerciseInstructions()
+}
+
+private fun String?.cleanExerciseInstructions(): String? {
+    val value = this?.trim().orEmpty()
+    if (value.isBlank()) return null
+
+    return value
+        .replace("(?i)</p>".toRegex(), "\n\n")
+        .replace("(?i)<br\\s*/?>".toRegex(), "\n")
+        .replace("(?i)</li>".toRegex(), "\n")
+        .replace("(?i)<li>".toRegex(), "- ")
+        .replace("(?i)</?(ol|ul)>".toRegex(), "\n")
+        .replace("<[^>]+>".toRegex(), "")
+        .replace("&nbsp;", " ")
+        .replace("&amp;", "&")
+        .replace("&quot;", "\"")
+        .replace("&#39;", "'")
+        .replace("**", "")
+        .replace("__", "")
+        .replace("\\r\\n", "\n")
+        .replace("\\n{3,}".toRegex(), "\n\n")
+        .lines()
+        .map { it.trim() }
+        .joinToString("\n") { it }
+        .trim()
+        .takeIf { it.isNotBlank() }
 }
 
 private fun mapMeasureType(category: ExerciseCategory): MeasureType {

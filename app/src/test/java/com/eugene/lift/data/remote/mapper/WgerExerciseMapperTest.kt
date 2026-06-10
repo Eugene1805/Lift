@@ -3,6 +3,7 @@ package com.eugene.lift.data.remote.mapper
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.eugene.lift.data.remote.dto.WgerExerciseDto
+import com.eugene.lift.data.remote.dto.WgerExerciseTranslationDto
 import com.eugene.lift.data.remote.dto.WgerPaginatedResponseDto
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.ExerciseCategory
@@ -121,6 +122,44 @@ class WgerExerciseMapperTest {
 
         assertEquals("Elevacion lateral con mancuerna", payload.name)
         assertEquals("Eleva las mancuernas hacia los lados.", payload.description)
+    }
+
+    @Test
+    fun `prefers description source and strips html fallback`() {
+        val payload = WgerExerciseDto(
+            id = 77,
+            translations = listOf(
+                WgerExerciseTranslationDto(
+                    id = 701,
+                    name = "Hip Thrust",
+                    description = "<p><strong>Start</strong></p><ol><li>Drive hips up</li><li>Pause</li></ol>",
+                    description_source = "Start\n\n1. Drive hips up\n2. Pause",
+                    language = 2
+                )
+            )
+        ).toRemoteExercisePayload(
+            preferredLanguageCode = "en",
+            languageIdByCode = languageIdByCode
+        )
+
+        assertEquals("Start\n\n1. Drive hips up\n2. Pause", payload.description)
+
+        val fallbackPayload = WgerExerciseDto(
+            id = 78,
+            translations = listOf(
+                WgerExerciseTranslationDto(
+                    id = 702,
+                    name = "Dips",
+                    description = "<p>Start</p><ol><li>Lower down</li><li>Press up</li></ol>",
+                    language = 2
+                )
+            )
+        ).toRemoteExercisePayload(
+            preferredLanguageCode = "en",
+            languageIdByCode = languageIdByCode
+        )
+
+        assertEquals("Start\n\n- Lower down\n- Press up", fallbackPayload.description)
     }
 
     private fun loadFixture(path: String): WgerPaginatedResponseDto<WgerExerciseDto> {

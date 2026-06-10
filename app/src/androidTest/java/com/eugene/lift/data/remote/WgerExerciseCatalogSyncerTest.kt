@@ -290,6 +290,83 @@ class WgerExerciseCatalogSyncerTest {
         assertEquals(ExerciseSource.WGER, remoteAfter?.source)
     }
 
+    @Test
+    fun syncExercises_mergesExistingRemoteRowIntoStableLocalAlias() = runBlocking {
+        val localSeedExercise = Exercise(
+            id = "seed-back-squat",
+            name = "Back Squat",
+            category = ExerciseCategory.BARBELL,
+            measureType = MeasureType.REPS_AND_WEIGHT,
+            instructions = "Local seed instructions",
+            imagePath = "back_squat",
+            bodyParts = listOf(BodyPart.QUADRICEPS, BodyPart.GLUTES),
+            source = ExerciseSource.LOCAL
+        )
+        val staleRemoteExercise = Exercise(
+            id = "remote-squats",
+            name = "Squats",
+            category = ExerciseCategory.BARBELL,
+            measureType = MeasureType.REPS_AND_WEIGHT,
+            instructions = "Old remote instructions",
+            imagePath = null,
+            bodyParts = listOf(BodyPart.QUADRICEPS),
+            remoteId = 615,
+            source = ExerciseSource.WGER,
+            lastSyncedAt = 111L,
+            syncVersion = 1
+        )
+        exerciseDao.saveExerciseComplete(localSeedExercise.toEntity(), localSeedExercise.toCrossRefs())
+        exerciseDao.saveExerciseComplete(staleRemoteExercise.toEntity(), staleRemoteExercise.toCrossRefs())
+
+        val syncer = WgerExerciseCatalogSyncer(
+            remoteDataSource = object : ExerciseRemoteDataSource {
+                override suspend fun syncExercises(): List<RemoteExercisePayload> {
+                    return listOf(
+                        RemoteExercisePayload(
+                            remoteId = 615,
+                            name = "Squats",
+                            description = "Fresh remote instructions",
+                            categoryName = "Legs",
+                            primaryImageUrl = "https://example.com/squat.png",
+                            equipmentNames = listOf("Barbell"),
+                            primaryMuscleNames = listOf("Quadriceps"),
+                            secondaryMuscleNames = listOf("Glutes", "Hamstrings")
+                        )
+                    )
+                }
+            },
+            exerciseDao = exerciseDao,
+            exerciseSyncWriter = RoomExerciseSyncWriter(
+                database,
+                RoomExerciseSyncItemPersister(exerciseDao),
+                templateDao,
+                workoutDao
+            ),
+            settingsRepository = TestSettingsRepository(),
+            nameNormalizer = ExerciseNameNormalizer(),
+            logger = TestLogger()
+        )
+
+        val syncedCount = syncer.syncExercises()
+        val canonical = exerciseDao.getExerciseById(localSeedExercise.id).first()
+        val removedRemote = exerciseDao.getExerciseById(staleRemoteExercise.id).first()
+        val remoteLookup = exerciseDao.getExerciseByRemoteId(615)
+
+        assertEquals(1, syncedCount)
+        assertEquals(1, exerciseDao.getExerciseCount())
+        assertEquals("seed-back-squat", canonical?.exercise?.id)
+        assertEquals(615, canonical?.exercise?.remoteId)
+        assertEquals(ExerciseSource.WGER, canonical?.exercise?.source)
+        assertEquals("https://example.com/squat.png", canonical?.exercise?.imagePath)
+        assertEquals("Fresh remote instructions", canonical?.exercise?.instructions)
+        assertEquals(
+            setOf("QUADRICEPS", "GLUTES", "HAMSTRINGS"),
+            canonical?.bodyParts?.split(",")?.toSet()
+        )
+        assertEquals(null, removedRemote)
+        assertEquals("seed-back-squat", remoteLookup?.id)
+    }
+
     private suspend fun snapshotExercises(): List<ExerciseEntitySnapshot> {
         return exerciseDao.getExercisesByRemoteIds(listOf(101, 102)).map { entity ->
             ExerciseEntitySnapshot(

@@ -33,5 +33,6 @@ data class WgerExerciseTranslationDto(
     val id: Int,
     val name: String,
     val description: String? = null,
+    val description_source: String? = null,
     val language: Int? = null
 )

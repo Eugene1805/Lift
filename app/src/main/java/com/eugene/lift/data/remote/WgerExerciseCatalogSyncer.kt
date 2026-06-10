@@ -119,30 +119,42 @@ class WgerExerciseCatalogSyncer @Inject constructor(
         claimedCanonicalIds: Set<String>,
         trackedIds: Set<String>
     ): ExerciseSyncResolution {
-        existingByRemoteId[payload.remoteId]?.let { exactMatch ->
-            return ExerciseSyncResolution(
-                canonicalExercise = exactMatch,
-                duplicateExerciseIds = emptyList()
-            )
-        }
-
         val normalizedName = nameNormalizer.normalize(payload.name).ifBlank { payload.remoteId.toString() }
+        val exactMatch = existingByRemoteId[payload.remoteId]
         val sameNameCandidates = existingByNormalizedName[normalizedName]
             .orEmpty()
-            .filter { entity -> entity.remoteId == null || entity.remoteId == payload.remoteId }
-            .filter { entity -> entity.id !in claimedCanonicalIds }
-        if (sameNameCandidates.isEmpty()) {
+            .filter { entity ->
+                entity.remoteId == null ||
+                    entity.remoteId == payload.remoteId ||
+                    entity.id == exactMatch?.id
+            }
+            .filter { entity ->
+                entity.id !in claimedCanonicalIds || entity.id == exactMatch?.id
+            }
+        val candidates = buildList {
+            exactMatch?.let(::add)
+            sameNameCandidates.forEach { candidate ->
+                if (none { existing -> existing.id == candidate.id }) {
+                    add(candidate)
+                }
+            }
+        }
+
+        if (candidates.isEmpty()) {
             return ExerciseSyncResolution(
                 canonicalExercise = null,
                 duplicateExerciseIds = emptyList()
             )
         }
 
-        val canonical = sameNameCandidates
+        val canonical = candidates
             .sortedWith(
                 compareByDescending<com.eugene.lift.data.local.entity.ExerciseEntity> { entity ->
                     entity.id in trackedIds
                 }
+                    .thenByDescending(::isPlainLocal)
+                    .thenByDescending { entity -> entity.imagePath != null }
+                    .thenByDescending { entity -> entity.remoteId == payload.remoteId }
                     .thenByDescending { entity -> entity.source == ExerciseSource.WGER }
                     .thenByDescending { entity -> entity.lastSyncedAt ?: Long.MIN_VALUE }
                     .thenBy { entity -> entity.id }
@@ -151,8 +163,12 @@ class WgerExerciseCatalogSyncer @Inject constructor(
 
         return ExerciseSyncResolution(
             canonicalExercise = canonical,
-            duplicateExerciseIds = sameNameCandidates.map { entity -> entity.id }
+            duplicateExerciseIds = candidates.map { entity -> entity.id }
         )
+    }
+
+    private fun isPlainLocal(entity: com.eugene.lift.data.local.entity.ExerciseEntity): Boolean {
+        return entity.source == ExerciseSource.LOCAL && entity.remoteId == null
     }
 }
 

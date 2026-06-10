@@ -261,4 +261,38 @@ class GetExercisesUseCaseTest {
         Assert.assertEquals(2, result.size)
         Assert.assertEquals(setOf("local-1", "local-2"), result.map { it.id }.toSet())
     }
+
+    @Test
+    fun `invoke collapses curated alias duplicates from local seed and remote catalog`() = runTest {
+        val local = Exercise(
+            id = "local-lateral-raise",
+            name = "Lateral Raise (Dumbbell)",
+            bodyParts = listOf(BodyPart.SIDE_DELTS),
+            category = ExerciseCategory.DUMBBELL,
+            measureType = MeasureType.REPS_AND_WEIGHT,
+            instructions = "Local",
+            imagePath = null
+        )
+        val remote = Exercise(
+            id = "remote-lateral-raise",
+            name = "Lateral Raises",
+            bodyParts = listOf(BodyPart.SIDE_DELTS),
+            category = ExerciseCategory.DUMBBELL,
+            measureType = MeasureType.REPS_AND_WEIGHT,
+            instructions = "Remote",
+            imagePath = "https://example.com/lateral.png",
+            remoteId = 348,
+            source = ExerciseSource.WGER,
+            lastSyncedAt = 456L,
+            syncVersion = 1
+        )
+        coEvery { repository.getExercises() } returns flowOf(listOf(local, remote))
+
+        val result = useCase(ExerciseFilter()).first()
+
+        Assert.assertEquals(1, result.size)
+        Assert.assertEquals("local-lateral-raise", result.single().id)
+        Assert.assertEquals(348, result.single().remoteId)
+        Assert.assertEquals("https://example.com/lateral.png", result.single().imagePath)
+    }
 }

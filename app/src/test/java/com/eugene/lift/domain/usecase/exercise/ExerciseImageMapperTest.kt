@@ -44,6 +44,21 @@ class ExerciseImageMapperTest {
     }
 
     @Test
+    fun `getDrawable resolves localized spanish names`() {
+        assertEquals("bench_press", ExerciseImageMapper.getDrawable("Press de Banca (Barra)"))
+        assertEquals("back_squat", ExerciseImageMapper.getDrawable("Sentadilla Trasera"))
+        assertEquals("weigthed_dips", ExerciseImageMapper.getDrawable("Fondos con Peso"))
+        assertEquals("wrist_curl", ExerciseImageMapper.getDrawable("Curl de Muñeca (Barra)"))
+    }
+
+    @Test
+    fun `getDrawableForSeedKey resolves locale independent seed keys`() {
+        assertEquals("bench_press", ExerciseImageMapper.getDrawableForSeedKey("seed_bench_press"))
+        assertEquals("pull_up", ExerciseImageMapper.getDrawableForSeedKey("seed_pullup"))
+        assertEquals("smith_machine_bulgarian_split_squat", ExerciseImageMapper.getDrawableForSeedKey("seed_smith_machine_bulgarian_split_squat"))
+    }
+
+    @Test
     fun `getDrawable is case-insensitive`() {
         val lower = ExerciseImageMapper.getDrawable("bench press (barbell)")
         val upper = ExerciseImageMapper.getDrawable("BENCH PRESS (BARBELL)")

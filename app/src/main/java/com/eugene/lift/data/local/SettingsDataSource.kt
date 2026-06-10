@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.eugene.lift.common.localization.resolveSupportedLanguageCode
 import com.eugene.lift.domain.model.AppTheme
 import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.UserSettings
@@ -48,7 +49,7 @@ class SettingsDataSource @Inject constructor(
         val themeName = preferences[Keys.THEME] ?: AppTheme.SYSTEM.name
         val weightName = preferences[Keys.WEIGHT_UNIT] ?: WeightUnit.KG.name
         val distanceName = preferences[Keys.DISTANCE_UNIT] ?: DistanceUnit.KM.name
-        val langCode = preferences[Keys.LANGUAGE_CODE] ?: "en"
+        val langCode = resolveSupportedLanguageCode(preferences[Keys.LANGUAGE_CODE])
         val effortRaw = preferences[Keys.EFFORT_METRIC] // null if never set
         val effortMetric: String? = when (effortRaw) {
             "RPE" -> "RPE"

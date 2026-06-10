@@ -85,7 +85,7 @@ class GetCurrentLanguageUseCaseTest {
     }
 
     @Test
-    fun `invoke returns French from application locales`() {
+    fun `invoke falls back to English when application locale is unsupported French`() {
         // GIVEN
         val mockLocaleList = mockk<LocaleListCompat>(relaxed = true)
         val mockLocale = Locale("fr")
@@ -98,11 +98,11 @@ class GetCurrentLanguageUseCaseTest {
         val result = useCase()
 
         // THEN
-        assertEquals("fr", result)
+        assertEquals("en", result)
     }
 
     @Test
-    fun `invoke returns German from application locales`() {
+    fun `invoke falls back to English when application locale is unsupported German`() {
         // GIVEN
         val mockLocaleList = mockk<LocaleListCompat>(relaxed = true)
         val mockLocale = Locale("de")
@@ -115,6 +115,6 @@ class GetCurrentLanguageUseCaseTest {
         val result = useCase()
 
         // THEN
-        assertEquals("de", result)
+        assertEquals("en", result)
     }
 }

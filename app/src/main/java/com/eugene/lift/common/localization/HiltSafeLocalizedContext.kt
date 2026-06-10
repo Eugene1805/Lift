@@ -33,7 +33,7 @@ class HiltSafeLocalizedContext(
  * @return A HiltSafeLocalizedContext with the specified locale
  */
 fun Context.createLocalizedContext(languageCode: String): HiltSafeLocalizedContext {
-    val locale = Locale(languageCode)
+    val locale = Locale(resolveSupportedLanguageCode(languageCode))
     Locale.setDefault(locale)
 
     val config = Configuration(resources.configuration)

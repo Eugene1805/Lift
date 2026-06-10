@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eugene.lift.R
 import com.eugene.lift.common.localization.createLocalizedContext
+import com.eugene.lift.common.localization.systemLanguageCode
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
@@ -41,8 +42,8 @@ class HistoryViewModel @Inject constructor(
     // React to the app's in-app language setting (DataStore) instead of relying on the injected
     // ApplicationContext configuration, which may remain in the startup locale.
     private val languageCode: StateFlow<String> = userSettings
-        .map { it.languageCode.ifBlank { "en" } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "en")
+        .map { it.languageCode.ifBlank { systemLanguageCode() } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), systemLanguageCode())
 
     val historyItems: StateFlow<List<HistoryUiItem>> = combine(
         getWorkoutHistoryUseCase(),

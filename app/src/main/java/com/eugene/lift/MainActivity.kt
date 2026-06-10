@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.eugene.lift.common.localization.resolveSupportedLanguageCode
 import com.eugene.lift.common.localization.createLocalizedContext
 import com.eugene.lift.common.work.WorkInitializer
 import com.eugene.lift.data.local.dataStore
@@ -51,11 +52,13 @@ class MainActivity : ComponentActivity() {
     override fun attachBaseContext(newBase: Context) {
         val languageCode = try {
             runBlocking {
-                newBase.applicationContext.dataStore.data.first()[LANGUAGE_KEY] ?: "en"
+                resolveSupportedLanguageCode(
+                    newBase.applicationContext.dataStore.data.first()[LANGUAGE_KEY]
+                )
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Could not read language preference, defaulting to 'en'", e)
-            "en"
+            Log.w(TAG, "Could not read language preference, defaulting to system language", e)
+            resolveSupportedLanguageCode(null)
         }
         super.attachBaseContext(newBase.createLocalizedContext(languageCode))
     }

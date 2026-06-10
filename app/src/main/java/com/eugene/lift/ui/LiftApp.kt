@@ -12,6 +12,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.eugene.lift.common.localization.createLocalizedContext
+import com.eugene.lift.common.localization.systemLanguageCode
 import com.eugene.lift.domain.model.AppTheme
 import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.UserSettings
@@ -43,7 +44,7 @@ fun LiftApp(
                 theme = AppTheme.SYSTEM,
                 weightUnit = WeightUnit.KG,
                 distanceUnit = DistanceUnit.KM,
-                languageCode = "en"
+                languageCode = systemLanguageCode()
             )
         )
 

@@ -2,7 +2,7 @@ package com.eugene.lift.domain.usecase.settings
 
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
-import java.util.Locale
+import com.eugene.lift.common.localization.resolveSupportedLanguageCode
 import javax.inject.Inject
 
 class GetCurrentLanguageUseCase @Inject constructor() {
@@ -14,9 +14,9 @@ class GetCurrentLanguageUseCase @Inject constructor() {
         Log.d(TAG, "Getting current language code")
         val currentLocales = AppCompatDelegate.getApplicationLocales()
         val languageCode = if (!currentLocales.isEmpty) {
-            currentLocales[0]?.language ?: "en"
+            resolveSupportedLanguageCode(currentLocales[0]?.language)
         } else {
-            Locale.getDefault().language
+            resolveSupportedLanguageCode(null)
         }
         Log.d(TAG, "Current language code: $languageCode")
         return languageCode

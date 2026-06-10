@@ -1,5 +1,6 @@
 package com.eugene.lift.ui.feature.settings
 
+import com.eugene.lift.common.localization.systemLanguageCode
 import com.eugene.lift.domain.model.AppTheme
 import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.WeightUnit
@@ -8,7 +9,7 @@ data class SettingsUiState(
     val theme: AppTheme = AppTheme.SYSTEM,
     val weightUnit: WeightUnit = WeightUnit.KG,
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
-    val languageCode: String = "en",
+    val languageCode: String = systemLanguageCode(),
     val effortMetric: String? = null,
     val autoTimerEnabled: Boolean = true
 )

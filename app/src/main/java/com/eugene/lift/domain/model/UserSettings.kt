@@ -1,5 +1,7 @@
 package com.eugene.lift.domain.model
 
+import com.eugene.lift.common.localization.systemLanguageCode
+
 enum class AppTheme {
     LIGHT, DARK, SYSTEM
 }
@@ -16,7 +18,7 @@ data class UserSettings(
     val theme: AppTheme = AppTheme.SYSTEM,
     val weightUnit: WeightUnit = WeightUnit.KG,
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
-    val languageCode: String = "en",
+    val languageCode: String = systemLanguageCode(),
     val effortMetric: String? = null,   // "RPE", "RIR", or null (hidden)
     val autoTimerEnabled: Boolean = true
 )

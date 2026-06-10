@@ -26,6 +26,7 @@ object ExerciseImageMapper {
         "bulgarian split squat (dumbbell)"           to "dumbell_bulgarian_split_squat",
         "incline dumbbell press"                     to "dumbell_incline_chest_press",
         "bicep curl (dumbbell)"                      to "dumbell_biceps_curl",
+        "wrist curl (barbell)"                       to "wrist_curl",
 
         "pull-ups"                                   to "pull_up",
         "weighted dips"                              to "weigthed_dips",
@@ -38,8 +39,6 @@ object ExerciseImageMapper {
         "hip abduction (machine)"                    to "abductors",
 
         "bulgarian split squat (smith machine)"      to "smith_machine_bulgarian_split_squat",
-
-        "wrist_curl (barbell)"                       to "wrist_curl",
 
         // Pre-emptive mapping for exercises not yet in the default seed data but for
         // which assets already exist in the drawable folder.
@@ -56,4 +55,3 @@ object ExerciseImageMapper {
         return nameToDrawable[exerciseName.trim().lowercase()]
     }
 }
-

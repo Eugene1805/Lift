@@ -598,7 +598,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.DUMBBELL,
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_incline_dumbbell_press_desc),
-                imagePath = null,
+                imagePath = imageFor(context.getString(R.string.seed_incline_dumbbell_press)),
                 bodyParts = listOf(BodyPart.CHEST, BodyPart.FRONT_DELTS, BodyPart.TRICEPS)
             ),
             Exercise(
@@ -1143,7 +1143,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.BARBELL,
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_wrist_curl_desc),
-                imagePath = null,
+                imagePath = imageFor(context.getString(R.string.seed_wrist_curl)),
                 bodyParts = listOf(BodyPart.FOREARMS)
             ),
             Exercise(
@@ -1423,7 +1423,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.MACHINE,
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_smith_machine_bulgarian_split_squat_desc),
-                imagePath = null,
+                imagePath = imageFor(context.getString(R.string.seed_smith_machine_bulgarian_split_squat)),
                 bodyParts = listOf(BodyPart.QUADRICEPS, BodyPart.GLUTES, BodyPart.HAMSTRINGS)
             ),
 

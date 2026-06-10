@@ -56,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -68,33 +69,6 @@ import com.eugene.lift.R
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.usecase.exercise.SortOrder
 import com.eugene.lift.ui.components.ExercisesEmptyState
-
-private fun drawableResIdOrNull(drawableName: String?): Int? {
-    return when (drawableName) {
-        "abductors" -> R.drawable.abductors
-        "back_squat" -> R.drawable.back_squat
-        "barbell_row" -> R.drawable.barbell_row
-        "bench_press" -> R.drawable.bench_press
-        "cable_lateral_raise" -> R.drawable.cable_lateral_raise
-        "chest_peck_fly" -> R.drawable.chest_peck_fly
-        "deadlift" -> R.drawable.deadlift
-        "dumbell_biceps_curl" -> R.drawable.dumbell_biceps_curl
-        "dumbell_bulgarian_split_squat" -> R.drawable.dumbell_bulgarian_split_squat
-        "dumbell_incline_chest_press" -> R.drawable.dumbell_incline_chest_press
-        "dumbell_shoulder_press" -> R.drawable.dumbell_shoulder_press
-        "hip_thrust" -> R.drawable.hip_thrust
-        "leg_extension" -> R.drawable.leg_extension
-        "machine_preacher_curl" -> R.drawable.machine_preacher_curl
-        "machine_standing_calf_raises" -> R.drawable.machine_standing_calf_raises
-        "overhead_shoulder_press" -> R.drawable.overhead_shoulder_press
-        "pull_up" -> R.drawable.pull_up
-        "single_arm_triceps_extension" -> R.drawable.single_arm_triceps_extension
-        "smith_machine_bulgarian_split_squat" -> R.drawable.smith_machine_bulgarian_split_squat
-        "weigthed_dips" -> R.drawable.weigthed_dips
-        "wrist_curl" -> R.drawable.wrist_curl
-        else -> null
-    }
-}
 
 private fun isRemoteImageUrl(imagePath: String?): Boolean {
     return imagePath?.startsWith("http://", ignoreCase = true) == true ||
@@ -491,10 +465,15 @@ fun ExerciseItemCard(
 
 @Composable
 private fun ExerciseThumbnail(exerciseName: String, imagePath: String?) {
-    val imageModel = remember(imagePath) {
+    val context = LocalContext.current
+    val imageModel = remember(context, imagePath) {
         when {
             isRemoteImageUrl(imagePath) -> imagePath
-            else -> drawableResIdOrNull(imagePath)
+            imagePath == null -> null
+            else -> {
+                val resId = context.resources.getIdentifier(imagePath, "drawable", context.packageName)
+                resId.takeIf { it != 0 }
+            }
         }
     }
     if (imageModel != null) {

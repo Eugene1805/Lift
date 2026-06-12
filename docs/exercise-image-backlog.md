@@ -1,9 +1,10 @@
 # Exercise Image Backlog
 
 Current state:
-- Local seed is the source of truth for the exercise catalog.
-- `17` seeded exercises already resolve to local images.
-- `3` extra drawable assets already exist in the repo and can be enabled immediately.
+- Local seed remains the source of truth for the visible exercise catalog.
+- `39` seeded exercises now resolve to local `webp` assets.
+- Drawable naming is aligned with `ExerciseImageMapper`: `0` missing targets and `0` unused local `webp` files.
+- Existing installs need the versioned seed worker rerun to backfill the new image paths.
 
 ## Already Covered
 
@@ -13,90 +14,110 @@ Current state:
 - Overhead Press (Barbell)
 - Barbell Row
 - Dumbbell Shoulder Press
+- Lat Pulldown (Cable)
+- Leg Press (Machine)
 - Pull-ups
+- Dumbbell Row
 - Bicep Curl (Dumbbell)
+- Lateral Raise (Dumbbell)
+- Romanian Deadlift (Barbell)
+- Front Squat (Barbell)
 - Leg Extension (Machine)
+- Face Pulls (Cable)
+- Dips
 - Hip Thrust (Barbell)
+- Incline Bench Press (Barbell)
 - Standing Calf Raise (Machine)
+- Hammer Curl (Dumbbell)
 - Bulgarian Split Squat (Dumbbell)
+- Chest Supported Row (Machine)
 - Cable Lateral Raise
 - Pec Deck (Machine)
+- Seated Cable Row (Machine)
+- Machine Shoulder Press
 - Preacher Curl (Machine)
 - Weighted Dips
-- Hip Abduction (Machine)
-
-## Quick Wins
-
-These already have `webp` assets in `res/drawable` and are now wired to the seed:
-
+- Goblet Squat (Dumbbell)
+- Cable Row (Machine)
 - Incline Dumbbell Press
+- T-Bar Row
+- Hip Abduction (Machine)
+- Glute Kickback (Cable)
 - Wrist Curl (Barbell)
+- Chest Press (Machine)
+- Hack Squat (Machine)
 - Smith Machine Bulgarian Split Squat
 
 ## Batch 1
 
-Highest-value gym catalog additions after the current covered set:
+Highest-value gaps still missing a local asset:
 
 - Dumbbell Press
-- Incline Bench Press
-- Lat Pulldown
-- Leg Press
-- Dumbbell Row
-- Lateral Raise (Dumbbell)
-- Romanian Deadlift
-- Front Squat
-- Dips
-- Face Pull
-- Seated Cable Row
-- Chest Supported Row
+- Push-up
+- Cable Fly
+- Tricep Extension
+- Lunges
+- Leg Curl
 - Cable Tricep Pushdown
-- Hammer Curl
-- Goblet Squat
-- Chest Press Machine
+- Skull Crusher
+- Machine Row
+- Dumbbell Fly
+- Cable Crossover
+- Smith Machine Squat
+- Seated Leg Curl
+- Weighted Pull-up
+- Arnold Press
 
 ## Batch 2
 
-- Cable Row
-- Machine Row
-- Arnold Press
+Strong next layer after the core catalog gaps:
+
+- Plank
+- Hanging Leg Raise
+- Russian Twist
+- Reverse Pec Deck
 - EZ Bar Curl
 - Cable Curl
-- Weighted Pull-up
-- Hack Squat
-- Smith Machine Squat
-- Seated Leg Curl
-- Dumbbell Fly
-- Cable Crossover
+- Reverse Curl
+- Front Raise
 - Upright Row
-- Standing Calf Raise
-- Seated Calf Raise
-- Lunges
+- Reverse Wrist Curl
+- Glute Bridge
+- Back Extension
+- Front Lat Pulldown
+- Smith Machine Bench Press
+- Smith Machine Shoulder Press
 
 ## Batch 3
 
-Lower-priority or more specialized variants:
+Lower-priority variants and specialty movements:
 
-- Reverse Pec Deck
-- Rope Face Pull
-- Straight Arm Pulldown
-- T-Bar Row
-- Rack Pull
-- Sumo Deadlift
-- Landmine Press
-- Power Clean
-- Farmer's Walk
 - Box Jump
-- Glute Bridge
-- Glute Kickback
+- Farmer's Walk
+- Power Clean
+- Burpee
+- Mountain Climber
+- Jump Squat
 - Pistol Squat
 - Dragon Flag
 - Muscle Up
+- Front Lever
+- Machine Fly
+- Machine Pullover
+- Cable Pullover (Rope)
+- Cable Pullover (Bar)
+- Machine Overhead Triceps Extension
 
-## Asset Rules
+## Naming Rules
 
 - Put files in `app/src/main/res/drawable/`
-- Use lowercase ASCII `snake_case` names
+- Use lowercase ASCII `snake_case`
+- Prefer canonical movement names over equipment-first names when they are shown in the UI
+- Keep legacy typos only when already persisted in shipped DB data, for example `weigthed_dips`
 - Prefer `webp`
+
+## Visual Rules
+
 - Keep transparent or neutral consistent backgrounds
 - Keep framing and camera angle consistent across the set
 - Show the key movement pattern clearly
@@ -105,9 +126,8 @@ Lower-priority or more specialized variants:
 
 ## Integration Steps
 
-1. Add the asset file, for example `lat_pulldown.webp`
-2. Map the English seed name in `ExerciseImageMapper`
-3. Use `imageFor(context.getString(...))` in `ExerciseSeeder` for that exercise
-4. Run unit/build checks and visually confirm list/detail rendering
-
-Because the exercise list now resolves drawables dynamically by resource name, new local assets no longer require a manual `when` entry in `ExercisesScreen`.
+1. Add the `webp` file in `app/src/main/res/drawable/`
+2. Match the drawable basename in `ExerciseImageMapper`
+3. Wire the corresponding `seed_*` entry in `ExerciseSeeder` with `imageFor(context, R.string.seed_...)`
+4. Bump `SEED_DB_WORK_NAME` if existing installs need backfill
+5. Run unit/build checks and visually confirm list/detail rendering

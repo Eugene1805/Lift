@@ -22,11 +22,7 @@ fun ExerciseResult.toDomain(): Exercise {
         measureType = exercise.measureType,
         instructions = exercise.instructions,
         imagePath = exercise.imagePath,
-        bodyParts = partList,
-        remoteId = exercise.remoteId,
-        source = exercise.source,
-        lastSyncedAt = exercise.lastSyncedAt,
-        syncVersion = exercise.syncVersion
+        bodyParts = partList
     )
 }
 
@@ -37,11 +33,7 @@ fun Exercise.toEntity(): ExerciseEntity {
         category = category,
         measureType = measureType,
         instructions = instructions,
-        imagePath = imagePath,
-        remoteId = remoteId,
-        source = source,
-        lastSyncedAt = lastSyncedAt,
-        syncVersion = syncVersion
+        imagePath = imagePath
     )
 }
 

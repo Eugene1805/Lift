@@ -4,15 +4,16 @@ import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.eugene.lift.data.local.AppDatabase
+import com.eugene.lift.data.local.entity.ExerciseBodyPartCrossRef
 import com.eugene.lift.data.local.entity.ExerciseEntity
+import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.ExerciseCategory
-import com.eugene.lift.domain.model.ExerciseSource
 import com.eugene.lift.domain.model.MeasureType
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -38,32 +39,33 @@ class ExerciseDaoTest {
     }
 
     @Test
-    fun upsertAndFindByRemoteId_preservesRemoteMetadata() = runBlocking {
-        val remoteExercise = ExerciseEntity(
-            id = "local-remote-1",
+    fun saveExerciseComplete_roundTripsExerciseWithBodyParts() = runBlocking {
+        val exercise = ExerciseEntity(
+            id = "local-1",
             name = "Bench Press",
             category = ExerciseCategory.BARBELL,
             measureType = MeasureType.REPS_AND_WEIGHT,
-            instructions = "Press",
-            remoteId = 101,
-            source = ExerciseSource.WGER,
-            lastSyncedAt = 123456789L,
-            syncVersion = 1
+            instructions = "Press"
         )
 
-        dao.upsertExercise(remoteExercise)
+        dao.saveExerciseComplete(
+            exercise = exercise,
+            refs = listOf(
+                ExerciseBodyPartCrossRef("local-1", BodyPart.CHEST),
+                ExerciseBodyPartCrossRef("local-1", BodyPart.TRICEPS)
+            )
+        )
 
-        val stored = dao.getExerciseByRemoteId(101)
+        val stored = dao.getExerciseById("local-1").first()
 
         assertNotNull(stored)
-        assertEquals("local-remote-1", stored?.id)
-        assertEquals(ExerciseSource.WGER, stored?.source)
-        assertEquals(123456789L, stored?.lastSyncedAt)
-        assertEquals(1, stored?.syncVersion)
+        assertEquals("local-1", stored?.exercise?.id)
+        assertEquals("Bench Press", stored?.exercise?.name)
+        assertEquals(setOf("CHEST", "TRICEPS"), stored?.bodyParts?.split(",")?.toSet())
     }
 
     @Test
-    fun bulkLookupByRemoteIds_returnsOnlyMatchingExercises() = runBlocking {
+    fun getExercisesWithoutImage_returnsOnlyMissingImages() = runBlocking {
         dao.upsertExercises(
             listOf(
                 ExerciseEntity(
@@ -71,32 +73,21 @@ class ExerciseDaoTest {
                     name = "Bench Press",
                     category = ExerciseCategory.BARBELL,
                     measureType = MeasureType.REPS_AND_WEIGHT,
-                    remoteId = 101,
-                    source = ExerciseSource.WGER
+                    imagePath = null
                 ),
                 ExerciseEntity(
                     id = "local-2",
                     name = "Squat",
                     category = ExerciseCategory.BARBELL,
                     measureType = MeasureType.REPS_AND_WEIGHT,
-                    remoteId = 102,
-                    source = ExerciseSource.WGER
-                ),
-                ExerciseEntity(
-                    id = "local-3",
-                    name = "Custom Row",
-                    category = ExerciseCategory.DUMBBELL,
-                    measureType = MeasureType.REPS_AND_WEIGHT
+                    imagePath = "back_squat"
                 )
             )
         )
 
-        val matches = dao.getExercisesByRemoteIds(listOf(102, 999, 101))
-            .associateBy { it.remoteId }
+        val missing = dao.getExercisesWithoutImage()
 
-        assertEquals(2, matches.size)
-        assertEquals("local-1", matches[101]?.id)
-        assertEquals("local-2", matches[102]?.id)
-        assertNull(matches[999])
+        assertEquals(1, missing.size)
+        assertEquals("local-1", missing.single().id)
     }
 }

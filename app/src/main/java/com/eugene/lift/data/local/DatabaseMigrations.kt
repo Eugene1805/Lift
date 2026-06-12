@@ -72,3 +72,30 @@ val MIGRATION_10_11 = object : Migration(10, 11) {
         )
     }
 }
+
+val MIGRATION_11_12 = object : Migration(11, 12) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+                CREATE TABLE IF NOT EXISTS `exercises_new` (
+                    `id` TEXT NOT NULL,
+                    `name` TEXT NOT NULL,
+                    `category` TEXT NOT NULL,
+                    `measureType` TEXT NOT NULL,
+                    `instructions` TEXT NOT NULL,
+                    `imagePath` TEXT,
+                    PRIMARY KEY(`id`)
+                )
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+                INSERT INTO `exercises_new` (`id`, `name`, `category`, `measureType`, `instructions`, `imagePath`)
+                SELECT `id`, `name`, `category`, `measureType`, `instructions`, `imagePath`
+                FROM `exercises`
+            """.trimIndent()
+        )
+        db.execSQL("DROP TABLE `exercises`")
+        db.execSQL("ALTER TABLE `exercises_new` RENAME TO `exercises`")
+    }
+}

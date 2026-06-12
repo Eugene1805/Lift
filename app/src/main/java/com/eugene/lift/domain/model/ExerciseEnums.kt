@@ -68,11 +68,3 @@ enum class MeasureType(@get:StringRes val labelRes: Int) {
     /** Track both distance and time. */
     DISTANCE_TIME(R.string.type_distance)
 }
-
-/**
- * Origin of an exercise record.
- */
-enum class ExerciseSource {
-    LOCAL,
-    WGER
-}

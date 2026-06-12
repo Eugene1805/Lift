@@ -52,11 +52,7 @@ class ExerciseRepositoryImpl @Inject constructor(
                 measureType = entity.measureType,
                 instructions = entity.instructions,
                 imagePath = entity.imagePath,
-                bodyParts = emptyList(),
-                remoteId = entity.remoteId,
-                source = entity.source,
-                lastSyncedAt = entity.lastSyncedAt,
-                syncVersion = entity.syncVersion
+                bodyParts = emptyList()
             )
         }
     }

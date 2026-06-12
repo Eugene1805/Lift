@@ -21,27 +21,27 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun migrate10To11_preservesExerciseRowsAndAddsRemoteMetadataColumns() {
+    fun migrate11To12_preservesExerciseRowsAndRemovesRemoteMetadataColumns() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         context.deleteDatabase(TEST_DB_NAME)
-        createVersion10Database(context.getDatabasePath(TEST_DB_NAME).path)
+        createVersion11Database(context.getDatabasePath(TEST_DB_NAME).path)
 
         val database = Room.databaseBuilder(context, AppDatabase::class.java, TEST_DB_NAME)
-            .addMigrations(MIGRATION_10_11)
+            .addMigrations(MIGRATION_11_12)
             .build()
 
         database.openHelper.writableDatabase
 
         database.openHelper.readableDatabase.query(
-            "SELECT id, name, remoteId, source, lastSyncedAt, syncVersion FROM exercises WHERE id = 'local-1'"
+            "SELECT id, name, category, measureType, instructions, imagePath FROM exercises WHERE id = 'local-1'"
         ).use { cursor ->
             assertTrue(cursor.moveToFirst())
             assertEquals("local-1", cursor.getString(cursor.getColumnIndexOrThrow("id")))
             assertEquals("Bench Press", cursor.getString(cursor.getColumnIndexOrThrow("name")))
-            assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("remoteId")))
-            assertEquals("LOCAL", cursor.getString(cursor.getColumnIndexOrThrow("source")))
-            assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("lastSyncedAt")))
-            assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("syncVersion")))
+            assertEquals("BARBELL", cursor.getString(cursor.getColumnIndexOrThrow("category")))
+            assertEquals("REPS_AND_WEIGHT", cursor.getString(cursor.getColumnIndexOrThrow("measureType")))
+            assertEquals("Press", cursor.getString(cursor.getColumnIndexOrThrow("instructions")))
+            assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("imagePath")))
         }
 
         database.openHelper.readableDatabase.query("PRAGMA index_list(`exercises`)").use { cursor ->
@@ -51,7 +51,7 @@ class AppDatabaseMigrationTest {
                     foundRemoteIdIndex = true
                 }
             }
-            assertTrue(foundRemoteIdIndex)
+            assertFalse(foundRemoteIdIndex)
         }
 
         database.openHelper.readableDatabase.query("PRAGMA table_info(`exercises`)").use { cursor ->
@@ -69,18 +69,19 @@ class AppDatabaseMigrationTest {
                 }
             }
 
-            assertTrue(hasRemoteId)
-            assertTrue(hasSource)
-            assertTrue(hasLastSyncedAt)
-            assertTrue(hasSyncVersion)
+            assertFalse(hasRemoteId)
+            assertFalse(hasSource)
+            assertFalse(hasLastSyncedAt)
+            assertFalse(hasSyncVersion)
         }
 
         database.close()
     }
 
-    private fun createVersion10Database(path: String) {
+    private fun createVersion11Database(path: String) {
         SQLiteDatabase.openOrCreateDatabase(path, null).use { db ->
-            db.execSQL("CREATE TABLE IF NOT EXISTS `exercises` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `category` TEXT NOT NULL, `measureType` TEXT NOT NULL, `instructions` TEXT NOT NULL, `imagePath` TEXT, PRIMARY KEY(`id`))")
+            db.execSQL("CREATE TABLE IF NOT EXISTS `exercises` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `category` TEXT NOT NULL, `measureType` TEXT NOT NULL, `instructions` TEXT NOT NULL, `imagePath` TEXT, `remoteId` INTEGER, `source` TEXT NOT NULL, `lastSyncedAt` INTEGER, `syncVersion` INTEGER, PRIMARY KEY(`id`))")
+            db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_exercises_remoteId` ON `exercises` (`remoteId`)")
             db.execSQL("CREATE TABLE IF NOT EXISTS `exercise_body_part_cross_ref` (`exerciseId` TEXT NOT NULL, `bodyPart` TEXT NOT NULL, PRIMARY KEY(`exerciseId`, `bodyPart`))")
             db.execSQL("CREATE INDEX IF NOT EXISTS `index_exercise_body_part_cross_ref_bodyPart` ON `exercise_body_part_cross_ref` (`bodyPart`)")
             db.execSQL("CREATE TABLE IF NOT EXISTS `workout_folders` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `color` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))")
@@ -97,8 +98,8 @@ class AppDatabaseMigrationTest {
             db.execSQL("CREATE TABLE IF NOT EXISTS `workout_sets` (`id` TEXT NOT NULL, `sessionExerciseId` TEXT NOT NULL, `orderIndex` INTEGER NOT NULL, `weight` REAL NOT NULL, `reps` INTEGER NOT NULL, `completed` INTEGER NOT NULL, `rpe` REAL, `rir` INTEGER, `isPr` INTEGER NOT NULL, `timeSeconds` INTEGER, `distance` REAL, PRIMARY KEY(`id`), FOREIGN KEY(`sessionExerciseId`) REFERENCES `session_exercises`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )")
             db.execSQL("CREATE INDEX IF NOT EXISTS `index_workout_sets_sessionExerciseId` ON `workout_sets` (`sessionExerciseId`)")
             db.execSQL("CREATE TABLE IF NOT EXISTS `user_profiles` (`id` TEXT NOT NULL, `username` TEXT NOT NULL, `displayName` TEXT NOT NULL, `email` TEXT, `avatarUrl` TEXT, `avatarColor` TEXT NOT NULL, `bio` TEXT, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, `totalWorkouts` INTEGER NOT NULL, `totalVolume` REAL NOT NULL, `totalDuration` INTEGER NOT NULL, `totalPRs` INTEGER NOT NULL, `currentStreak` INTEGER NOT NULL, `longestStreak` INTEGER NOT NULL, `lastWorkoutDate` TEXT, `followersCount` INTEGER NOT NULL, `followingCount` INTEGER NOT NULL, `isPublic` INTEGER NOT NULL, PRIMARY KEY(`id`))")
-            db.execSQL("INSERT INTO `exercises` (`id`, `name`, `category`, `measureType`, `instructions`, `imagePath`) VALUES ('local-1', 'Bench Press', 'BARBELL', 'REPS_AND_WEIGHT', 'Press', NULL)")
-            db.version = 10
+            db.execSQL("INSERT INTO `exercises` (`id`, `name`, `category`, `measureType`, `instructions`, `imagePath`, `remoteId`, `source`, `lastSyncedAt`, `syncVersion`) VALUES ('local-1', 'Bench Press', 'BARBELL', 'REPS_AND_WEIGHT', 'Press', NULL, 101, 'WGER', 123456789, 1)")
+            db.version = 11
         }
     }
 

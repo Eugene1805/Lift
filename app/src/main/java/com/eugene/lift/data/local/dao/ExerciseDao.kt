@@ -39,12 +39,6 @@ interface ExerciseDao {
     @Query("SELECT COUNT(*) FROM exercises")
     suspend fun getExerciseCount(): Int
 
-    @Query("SELECT * FROM exercises WHERE remoteId = :remoteId LIMIT 1")
-    suspend fun getExerciseByRemoteId(remoteId: Int): ExerciseEntity?
-
-    @Query("SELECT * FROM exercises WHERE remoteId IN (:remoteIds)")
-    suspend fun getExercisesByRemoteIds(remoteIds: List<Int>): List<ExerciseEntity>
-
     @Query("SELECT * FROM exercises")
     suspend fun getAllExerciseEntities(): List<ExerciseEntity>
 

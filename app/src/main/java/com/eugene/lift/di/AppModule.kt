@@ -8,6 +8,7 @@ import com.eugene.lift.data.local.ExerciseBootstrapDataSource
 import com.eugene.lift.data.local.ExerciseImageResolverImpl
 import com.eugene.lift.data.local.ExerciseSeeder
 import com.eugene.lift.data.local.MIGRATION_10_11
+import com.eugene.lift.data.local.MIGRATION_11_12
 import com.eugene.lift.data.local.MIGRATION_8_9
 import com.eugene.lift.data.local.MIGRATION_9_10
 import com.eugene.lift.data.local.SettingsDataSource
@@ -52,7 +53,7 @@ object AppModule {
             AppDatabase::class.java,
             "lift_db"
         )
-            .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+            .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
             .fallbackToDestructiveMigration(true)
             .build()
     }

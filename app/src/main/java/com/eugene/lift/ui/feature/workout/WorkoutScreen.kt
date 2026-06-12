@@ -77,6 +77,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -103,6 +104,7 @@ fun WorkoutRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     val onEventUpdated by rememberUpdatedState(newValue = { event: WorkoutUiEvent ->
         when (event) {
@@ -113,7 +115,7 @@ fun WorkoutRoute(
             WorkoutUiEvent.StartEmptyClicked -> onStartEmptyClick(null)
             is WorkoutUiEvent.TemplateShared -> {
                 val template = uiState.templates.find { it.id == event.templateId } ?: return@rememberUpdatedState
-                val shareText = context.getString(
+                val shareText = resources.getString(
                     R.string.share_routine_text,
                     template.name,
                     template.exercises.size

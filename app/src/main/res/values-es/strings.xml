@@ -456,6 +456,7 @@
     <string name="action_delete">Eliminar</string>
     <string name="action_move_to_folder">Mover a carpeta</string>
     <string name="action_duplicate">Duplicar</string>
+    <string name="template_duplicate_name">%1$s (Copia)</string>
     <string name="action_share">Compartir</string>
     <string name="share_routine_text">Rutina: %1$s\n%2$d Ejercicios.</string>
     <string name="quick_start_title">Entrenamiento Rápido</string>

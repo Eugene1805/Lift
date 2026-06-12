@@ -1,5 +1,7 @@
 package com.eugene.lift.domain.usecase.template
 
+import android.content.Context
+import com.eugene.lift.R
 import com.eugene.lift.core.util.SafeExecutor
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
@@ -10,6 +12,7 @@ import com.eugene.lift.domain.model.WorkoutTemplate
 import com.eugene.lift.domain.repository.TemplateRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import kotlinx.coroutines.flow.flowOf
@@ -29,6 +32,7 @@ import org.junit.Test
 class DuplicateTemplateUseCaseTest {
 
     private lateinit var repository: TemplateRepository
+    private lateinit var context: Context
     private lateinit var useCase: DuplicateTemplateUseCase
 
     private val sampleExercise = Exercise(
@@ -73,7 +77,10 @@ class DuplicateTemplateUseCaseTest {
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
-        useCase = DuplicateTemplateUseCase(repository, SafeExecutor(logger = null))
+        context = mockk()
+        every { context.getString(R.string.template_duplicate_name, "Push Day") } returns "Push Day (Copy)"
+        every { context.getString(R.string.template_duplicate_name, "Push Day (Copy)") } returns "Push Day (Copy) (Copy)"
+        useCase = DuplicateTemplateUseCase(repository, context, SafeExecutor(logger = null))
     }
 
     @Test
@@ -89,7 +96,7 @@ class DuplicateTemplateUseCaseTest {
         coVerify(exactly = 1) { repository.saveTemplate(capture(slot)) }
 
         val duplicate = slot.captured
-        assertEquals("Push Day (Copia)", duplicate.name)
+        assertEquals("Push Day (Copy)", duplicate.name)
     }
 
     @Test
@@ -256,7 +263,7 @@ class DuplicateTemplateUseCaseTest {
 
         val duplicate = slot.captured
         assertEquals(0, duplicate.exercises.size)
-        assertEquals("Push Day (Copia)", duplicate.name)
+        assertEquals("Push Day (Copy)", duplicate.name)
     }
 
     @Test
@@ -327,10 +334,10 @@ class DuplicateTemplateUseCaseTest {
     }
 
     @Test
-    fun `invoke creates duplicate with name already containing Copia`() = runTest {
+    fun `invoke creates duplicate with name already containing Copy`() = runTest {
         // GIVEN
-        val templateWithCopia = originalTemplate.copy(name = "Push Day (Copia)")
-        coEvery { repository.getTemplate("original-template") } returns flowOf(templateWithCopia)
+        val templateWithCopy = originalTemplate.copy(name = "Push Day (Copy)")
+        coEvery { repository.getTemplate("original-template") } returns flowOf(templateWithCopy)
 
         // WHEN
         useCase("original-template")
@@ -340,6 +347,6 @@ class DuplicateTemplateUseCaseTest {
         coVerify(exactly = 1) { repository.saveTemplate(capture(slot)) }
 
         val duplicate = slot.captured
-        assertEquals("Push Day (Copia) (Copia)", duplicate.name)
+        assertEquals("Push Day (Copy) (Copy)", duplicate.name)
     }
 }

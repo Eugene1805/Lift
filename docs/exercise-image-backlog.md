@@ -2,9 +2,9 @@
 
 Current state:
 - Local seed remains the source of truth for the visible exercise catalog.
-- `39` seeded exercises now resolve to local `webp` assets.
-- Drawable naming is aligned with `ExerciseImageMapper`: `0` missing targets and `0` unused local `webp` files.
+- `66` seeded exercises now resolve to local drawable assets.
 - Existing installs need the versioned seed worker rerun to backfill the new image paths.
+- Unused local assets left on purpose for future variants: `ab_wheel_rollout`, `bodyweight_pull_up`, `cable_seated_pullover`, `machine_seated_shoulder_press`, `smith_machine_hip_thrust`, `smith_machine_romanian_deadlift`.
 
 ## Already Covered
 
@@ -37,16 +37,39 @@ Current state:
 - Machine Shoulder Press
 - Preacher Curl (Machine)
 - Weighted Dips
+- Weighted Pull-ups
 - Goblet Squat (Dumbbell)
 - Cable Row (Machine)
 - Incline Dumbbell Press
 - T-Bar Row
+- Barbell Shrug
 - Hip Abduction (Machine)
+- Hip Adduction (Machine)
+- Cable Fly
+- Plank
+- Leg Curl (Machine)
+- Skull Crushers (Barbell)
+- Cable Crunch
+- Russian Twists
+- Reverse Pec Deck (Machine)
+- Farmer's Walk (Dumbbell)
+- Machine Row (Seated)
+- Cable Curl
+- Back Extension (Hyperextension)
+- Single Leg Deadlift (Dumbbell)
+- Glute Bridge
 - Glute Kickback (Cable)
+- Bicycle Crunch
 - Wrist Curl (Barbell)
 - Chest Press (Machine)
 - Hack Squat (Machine)
+- Smith Machine Squat
+- Seated Leg Curl (Machine)
+- Smith Machine Bench Press
+- Dragon Flag
 - Smith Machine Bulgarian Split Squat
+- Machine Fly (Pec Fly)
+- Machine Pullover
 
 ## Batch 1
 
@@ -54,58 +77,46 @@ Highest-value gaps still missing a local asset:
 
 - Dumbbell Press
 - Push-up
-- Cable Fly
 - Tricep Extension
 - Lunges
-- Leg Curl
 - Cable Tricep Pushdown
-- Skull Crusher
-- Machine Row
 - Dumbbell Fly
 - Cable Crossover
-- Smith Machine Squat
-- Seated Leg Curl
-- Weighted Pull-up
 - Arnold Press
 
 ## Batch 2
 
 Strong next layer after the core catalog gaps:
 
-- Plank
 - Hanging Leg Raise
-- Russian Twist
-- Reverse Pec Deck
 - EZ Bar Curl
-- Cable Curl
 - Reverse Curl
 - Front Raise
 - Upright Row
 - Reverse Wrist Curl
-- Glute Bridge
-- Back Extension
 - Front Lat Pulldown
-- Smith Machine Bench Press
 - Smith Machine Shoulder Press
+- Dumbbell Overhead Press
+- Chin-up
+- Single Leg Curl
 
 ## Batch 3
 
 Lower-priority variants and specialty movements:
 
 - Box Jump
-- Farmer's Walk
 - Power Clean
 - Burpee
 - Mountain Climber
 - Jump Squat
 - Pistol Squat
-- Dragon Flag
 - Muscle Up
 - Front Lever
-- Machine Fly
-- Machine Pullover
 - Cable Pullover (Rope)
 - Cable Pullover (Bar)
+- Smith Machine Hip Thrust
+- Smith Machine Romanian Deadlift
+- Bodyweight Pull-up alt art
 - Machine Overhead Triceps Extension
 
 ## Naming Rules
@@ -114,7 +125,7 @@ Lower-priority variants and specialty movements:
 - Use lowercase ASCII `snake_case`
 - Prefer canonical movement names over equipment-first names when they are shown in the UI
 - Keep legacy typos only when already persisted in shipped DB data, for example `weigthed_dips`
-- Prefer `webp`
+- Prefer `webp`, but `png` is acceptable when the imported source is already clean and optimized
 
 ## Visual Rules
 
@@ -126,7 +137,7 @@ Lower-priority variants and specialty movements:
 
 ## Integration Steps
 
-1. Add the `webp` file in `app/src/main/res/drawable/`
+1. Add the drawable asset in `app/src/main/res/drawable/`
 2. Match the drawable basename in `ExerciseImageMapper`
 3. Wire the corresponding `seed_*` entry in `ExerciseSeeder` with `imageFor(context, R.string.seed_...)`
 4. Bump `SEED_DB_WORK_NAME` if existing installs need backfill

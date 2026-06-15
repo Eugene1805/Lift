@@ -7,5 +7,9 @@ class ExerciseImageResolverImpl @Inject constructor() : ExerciseImageResolver {
     override fun resolveDrawable(exerciseName: String): String? {
         return ExerciseImageMapper.getDrawable(exerciseName)
     }
+
+    override fun resolveDrawableForSeedKey(seedKey: String): String? {
+        return ExerciseImageMapper.getDrawableForSeedKey(seedKey)
+    }
 }
 

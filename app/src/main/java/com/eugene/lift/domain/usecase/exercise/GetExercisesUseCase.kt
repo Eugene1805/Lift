@@ -42,8 +42,12 @@ class GetExercisesUseCase @Inject constructor(
 
             // 2. Body Part Filter
             if (filter.bodyParts.isNotEmpty()) {
+                val expandedFilterParts = filter.bodyParts.flatMapTo(mutableSetOf(), ::expandBodyPart)
                 result = result.filter { exercise ->
-                    exercise.bodyParts.intersect((filter.bodyParts as Iterable<BodyPart>).toSet()).isNotEmpty()
+                    exercise.bodyParts
+                        .flatMapTo(mutableSetOf(), ::expandBodyPart)
+                        .intersect(expandedFilterParts)
+                        .isNotEmpty()
                 }
             }
 
@@ -98,6 +102,16 @@ class GetExercisesUseCase @Inject constructor(
                 ).map { it.first }
             }
             else -> exercises
+        }
+    }
+
+    private fun expandBodyPart(bodyPart: BodyPart): Set<BodyPart> {
+        return when (bodyPart) {
+            BodyPart.BACK -> setOf(BodyPart.BACK, BodyPart.LATS, BodyPart.TRAPS, BodyPart.LOWER_BACK, BodyPart.REAR_DELTS)
+            BodyPart.SHOULDERS -> setOf(BodyPart.SHOULDERS, BodyPart.FRONT_DELTS, BodyPart.SIDE_DELTS, BodyPart.REAR_DELTS)
+            BodyPart.ARMS -> setOf(BodyPart.ARMS, BodyPart.BICEPS, BodyPart.TRICEPS, BodyPart.FOREARMS)
+            BodyPart.LEGS -> setOf(BodyPart.LEGS, BodyPart.QUADRICEPS, BodyPart.HAMSTRINGS, BodyPart.GLUTES, BodyPart.CALVES, BodyPart.ADDUCTORS, BodyPart.ABDUCTORS)
+            else -> setOf(bodyPart)
         }
     }
 }

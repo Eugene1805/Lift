@@ -10,6 +10,7 @@ data class AddExerciseUiState(
     val category: ExerciseCategory = ExerciseCategory.MACHINE,
     val measureType: MeasureType = MeasureType.REPS_AND_WEIGHT,
     val isEditing: Boolean = false,
+    val isSeeded: Boolean = false,
     val isSaving: Boolean = false,
     val isNameError: Boolean = true,
     val isSaveEnabled: Boolean = false,

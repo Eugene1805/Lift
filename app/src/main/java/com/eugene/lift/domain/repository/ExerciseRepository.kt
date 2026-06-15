@@ -10,5 +10,7 @@ interface ExerciseRepository {
     suspend fun deleteExercise(exerciseId: String)
     suspend fun getCount(): Int
     suspend fun getExercisesWithoutImage(): List<Exercise>
+    suspend fun getExercisesWithoutSeedKey(): List<Exercise>
     suspend fun updateImagePath(exerciseId: String, imagePath: String)
+    suspend fun updateSeedKey(exerciseId: String, seedKey: String)
 }

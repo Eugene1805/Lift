@@ -5,6 +5,7 @@ import com.eugene.lift.domain.error.AppError
 import com.eugene.lift.domain.error.AppResult
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.repository.ExerciseRepository
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class SaveExerciseUseCase @Inject constructor(
@@ -13,6 +14,11 @@ class SaveExerciseUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(exercise: Exercise): AppResult<Unit> {
         if (exercise.name.isBlank()) {
+            return AppResult.Error(AppError.Validation)
+        }
+
+        val current = repository.getExerciseById(exercise.id).first()
+        if (current?.isSeeded == true) {
             return AppResult.Error(AppError.Validation)
         }
 

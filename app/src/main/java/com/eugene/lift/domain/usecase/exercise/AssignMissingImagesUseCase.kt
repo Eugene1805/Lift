@@ -21,15 +21,13 @@ class AssignMissingImagesUseCase @Inject constructor(
      * Executes the mapping process for all unassigned exercises currently in the repository.
      */
     suspend operator fun invoke() {
-        // We only fetch unassigned exercises to avoid redundant processing and ensure
-        // that user-modified or already assigned images are not overwritten.
         val unassigned = repository.getExercisesWithoutImage()
         unassigned.forEach { exercise ->
-            val drawable = imageResolver.resolveDrawable(exercise.name)
+            val drawable = exercise.seedKey?.let(imageResolver::resolveDrawableForSeedKey)
+                ?: imageResolver.resolveDrawable(exercise.name)
             if (drawable != null) {
                 repository.updateImagePath(exercise.id, drawable)
             }
         }
     }
 }
-

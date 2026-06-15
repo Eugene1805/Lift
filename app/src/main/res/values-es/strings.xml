@@ -5,6 +5,7 @@
     <string name="screen_add_title">Nuevo Ejercicio</string>
     <string name="screen_edit_title">Editar Ejercicio</string>
     <string name="btn_save">Guardar Ejercicio</string>
+    <string name="exercise_seed_read_only">Los ejercicios base del catálogo no se pueden editar en la app. Duplica uno si quieres una variante personalizada.</string>
     <string name="label_name">Nombre del ejercicio</string>
     <string name="label_body_part">Parte del Cuerpo</string>
     <string name="label_category">Categoría</string>
@@ -364,6 +365,10 @@
     <string name="seed_smith_machine_incline_bench_desc">1. Ajusta banco a 30–45 grados bajo barra de multipower.\n2. Acuéstate, agarra barra al ancho de hombros.\n3. Desancla y baja barra al pecho superior.\n4. Ruta fija trabaja pecho superior de forma segura.\n5. Empuja arriba y rota para volver a anclar.</string>
     <string name="seed_smith_machine_decline_bench">Press Declinado en Multipower</string>
     <string name="seed_smith_machine_decline_bench_desc">1. Ajusta banco en decline bajo barra de multipower.\n2. Asegura pies, acuéstate y agarra barra.\n3. Desancla y baja al pecho inferior.\n4. Ruta fija trabaja pecho inferior.\n5. Empuja arriba y rota para volver a anclar.</string>
+    <string name="seed_smith_machine_hip_thrust">Empuje de Cadera en Multipower</string>
+    <string name="seed_smith_machine_hip_thrust_desc">1. Siéntate en el suelo con la espalda alta apoyada en un banco y la barra de multipower sobre la cadera.\n2. Coloca los pies al ancho de hombros y activa el core.\n3. Empuja con los talones para extender la cadera hasta dejar el torso paralelo al suelo.\n4. Contrae fuerte los glúteos arriba sin hiperextender la zona lumbar.\n5. Baja con control hasta quedar apenas sobre el suelo y repite.</string>
+    <string name="seed_smith_machine_romanian_deadlift">Peso Muerto Rumano en Multipower</string>
+    <string name="seed_smith_machine_romanian_deadlift_desc">1. Colócate bajo la barra de multipower con pies al ancho de cadera y rodillas ligeramente flexionadas.\n2. Desancla la barra y mantenla pegada a los muslos.\n3. Lleva la cadera hacia atrás manteniendo la espalda neutra y las espinillas casi verticales.\n4. Baja hasta sentir buen estiramiento en femorales y luego empuja la cadera al frente para volver.\n5. Mantén dorsales activos y evita convertir el movimiento en sentadilla.</string>
     <string name="seed_incline_chest_press_machine">Press de Pecho Inclinado (Máquina)</string>
     <string name="seed_incline_chest_press_machine_desc">1. Siéntate en máquina de press inclinado.\n2. Ajusta asiento para manijas a nivel de pecho superior.\n3. Empuja manijas adelante hasta brazos extendidos.\n4. Trabaja pecho superior específicamente.\n5. Regresa controladamente a posición inicial.</string>
     <string name="seed_decline_chest_press_machine">Press de Pecho Declinado (Máquina)</string>

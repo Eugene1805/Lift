@@ -22,7 +22,8 @@ fun ExerciseResult.toDomain(): Exercise {
         measureType = exercise.measureType,
         instructions = exercise.instructions,
         imagePath = exercise.imagePath,
-        bodyParts = partList
+        bodyParts = partList,
+        seedKey = exercise.seedKey
     )
 }
 
@@ -33,7 +34,8 @@ fun Exercise.toEntity(): ExerciseEntity {
         category = category,
         measureType = measureType,
         instructions = instructions,
-        imagePath = imagePath
+        imagePath = imagePath,
+        seedKey = seedKey
     )
 }
 

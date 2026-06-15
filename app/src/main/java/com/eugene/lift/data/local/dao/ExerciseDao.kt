@@ -87,6 +87,9 @@ interface ExerciseDao {
     @Query("SELECT * FROM exercises WHERE imagePath IS NULL")
     suspend fun getExercisesWithoutImage(): List<ExerciseEntity>
 
+    @Query("SELECT * FROM exercises WHERE seedKey IS NULL")
+    suspend fun getExercisesWithoutSeedKey(): List<ExerciseEntity>
+
     /**
      * Updates only the visual asset path for a specific exercise.
      *
@@ -95,4 +98,7 @@ interface ExerciseDao {
      */
     @Query("UPDATE exercises SET imagePath = :imagePath WHERE id = :exerciseId")
     suspend fun updateImagePath(exerciseId: String, imagePath: String)
+
+    @Query("UPDATE exercises SET seedKey = :seedKey WHERE id = :exerciseId")
+    suspend fun updateSeedKey(exerciseId: String, seedKey: String)
 }

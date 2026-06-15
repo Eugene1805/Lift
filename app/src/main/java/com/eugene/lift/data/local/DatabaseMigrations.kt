@@ -99,3 +99,9 @@ val MIGRATION_11_12 = object : Migration(11, 12) {
         db.execSQL("ALTER TABLE `exercises_new` RENAME TO `exercises`")
     }
 }
+
+val MIGRATION_12_13 = object : Migration(12, 13) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE exercises ADD COLUMN seedKey TEXT")
+    }
+}

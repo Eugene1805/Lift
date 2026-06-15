@@ -170,8 +170,10 @@ fun ExerciseDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { onEvent(ExerciseDetailUiEvent.EditClicked) }) {
-                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.exercise_detail_edit))
+                    if (uiState.exercise?.isSeeded != true) {
+                        IconButton(onClick = { onEvent(ExerciseDetailUiEvent.EditClicked) }) {
+                            Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.exercise_detail_edit))
+                        }
                     }
                 },
                 windowInsets = WindowInsets(0,0,0,0),

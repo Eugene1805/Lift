@@ -41,7 +41,7 @@ class ExerciseSeeder @Inject constructor(
     }
 
     private fun buildBootstrapExercises(): List<Exercise> {
-        return listOf(
+        return SeedExerciseStrings.attachSeedKeys(context, listOf(
             // Barbell Exercises
             Exercise(
                 id = UUID.randomUUID().toString(),
@@ -314,7 +314,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.MACHINE,
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_cable_tricep_pushdown_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_cable_tricep_pushdown),
                 bodyParts = listOf(BodyPart.TRICEPS)
             ),
 
@@ -531,7 +531,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.DUMBBELL,
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_arnold_press_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_arnold_press),
                 bodyParts = listOf(BodyPart.FRONT_DELTS, BodyPart.SIDE_DELTS, BodyPart.TRICEPS)
             ),
 
@@ -562,7 +562,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.REPS_ONLY,
                 measureType = MeasureType.REPS_ONLY,
                 instructions = context.getString(R.string.seed_box_jump_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_box_jump),
                 bodyParts = listOf(BodyPart.QUADRICEPS, BodyPart.GLUTES, BodyPart.CALVES, BodyPart.FULL_BODY)
             ),
 
@@ -724,7 +724,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.BODYWEIGHT,
                 measureType = MeasureType.REPS_ONLY,
                 instructions = context.getString(R.string.seed_chin_up_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_chin_up),
                 bodyParts = listOf(BodyPart.LATS, BodyPart.BICEPS, BodyPart.REAR_DELTS)
             ),
 
@@ -795,7 +795,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.BODYWEIGHT,
                 measureType = MeasureType.REPS_ONLY,
                 instructions = context.getString(R.string.seed_ab_wheel_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_ab_wheel),
                 bodyParts = listOf(BodyPart.CORE)
             ),
             Exercise(
@@ -1178,7 +1178,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.BARBELL,
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_upright_row_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_upright_row),
                 bodyParts = listOf(BodyPart.TRAPS, BodyPart.SIDE_DELTS)
             ),
 
@@ -1231,7 +1231,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.BARBELL,
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_power_clean_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_power_clean),
                 bodyParts = listOf(BodyPart.FULL_BODY, BodyPart.TRAPS, BodyPart.HAMSTRINGS, BodyPart.GLUTES, BodyPart.QUADRICEPS)
             ),
 
@@ -1407,7 +1407,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.BODYWEIGHT,
                 measureType = MeasureType.REPS_ONLY,
                 instructions = context.getString(R.string.seed_muscle_up_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_muscle_up),
                 bodyParts = listOf(BodyPart.LATS, BodyPart.CHEST, BodyPart.TRICEPS, BodyPart.CORE)
             ),
             Exercise(
@@ -1416,7 +1416,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.BODYWEIGHT,
                 measureType = MeasureType.TIME,
                 instructions = context.getString(R.string.seed_front_lever_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_front_lever),
                 bodyParts = listOf(BodyPart.LATS, BodyPart.CORE)
             ),
 
@@ -1449,7 +1449,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.MACHINE,
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_smith_machine_incline_bench_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_smith_machine_incline_bench),
                 bodyParts = listOf(BodyPart.CHEST, BodyPart.FRONT_DELTS, BodyPart.TRICEPS)
             ),
             Exercise(
@@ -1538,8 +1538,26 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.MACHINE,
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_cable_pullover_bar_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_cable_pullover_bar),
                 bodyParts = listOf(BodyPart.LATS, BodyPart.CHEST)
+            ),
+            Exercise(
+                id = UUID.randomUUID().toString(),
+                name = context.getString(R.string.seed_smith_machine_hip_thrust),
+                category = ExerciseCategory.MACHINE,
+                measureType = MeasureType.REPS_AND_WEIGHT,
+                instructions = context.getString(R.string.seed_smith_machine_hip_thrust_desc),
+                imagePath = imageFor(context, R.string.seed_smith_machine_hip_thrust),
+                bodyParts = listOf(BodyPart.GLUTES, BodyPart.HAMSTRINGS, BodyPart.CORE)
+            ),
+            Exercise(
+                id = UUID.randomUUID().toString(),
+                name = context.getString(R.string.seed_smith_machine_romanian_deadlift),
+                category = ExerciseCategory.MACHINE,
+                measureType = MeasureType.REPS_AND_WEIGHT,
+                instructions = context.getString(R.string.seed_smith_machine_romanian_deadlift_desc),
+                imagePath = imageFor(context, R.string.seed_smith_machine_romanian_deadlift),
+                bodyParts = listOf(BodyPart.HAMSTRINGS, BodyPart.GLUTES, BodyPart.LOWER_BACK)
             ),
 
             // Overhead Triceps Extensions - Cable/Pulley Variations
@@ -1581,7 +1599,7 @@ class ExerciseSeeder @Inject constructor(
                 imagePath = null,
                 bodyParts = listOf(BodyPart.TRICEPS)
             )
-        )
+        ))
     }
 
     suspend fun populate() = populateIfEmpty()

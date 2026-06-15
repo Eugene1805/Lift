@@ -32,7 +32,7 @@ class ExerciseSeederTest {
         database = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
             .allowMainThreadQueries()
             .build()
-        repository = ExerciseRepositoryImpl(database.exerciseDao())
+        repository = ExerciseRepositoryImpl(database.exerciseDao(), context)
         seeder = ExerciseSeeder(repository, context)
     }
 
@@ -67,6 +67,7 @@ class ExerciseSeederTest {
             setOf(BodyPart.CHEST, BodyPart.TRICEPS, BodyPart.FRONT_DELTS),
             bench?.bodyParts?.toSet()
         )
+        assertEquals("seed_bench_press", bench?.seedKey)
     }
 
     @Test

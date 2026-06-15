@@ -18,5 +18,9 @@ data class Exercise(
     val measureType: MeasureType,
     val instructions: String,
     val imagePath: String?,
-    val bodyParts: List<BodyPart>
-)
+    val bodyParts: List<BodyPart>,
+    val seedKey: String? = null
+) {
+    val isSeeded: Boolean
+        get() = seedKey != null
+}

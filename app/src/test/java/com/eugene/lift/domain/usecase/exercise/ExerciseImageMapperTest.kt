@@ -64,6 +64,10 @@ class ExerciseImageMapperTest {
         assertEquals("cable_fly", ExerciseImageMapper.getDrawableForSeedKey("seed_cable_fly"))
         assertEquals("weighted_pull_up", ExerciseImageMapper.getDrawableForSeedKey("seed_weighted_pullup"))
         assertEquals("smith_machine_flat_chest_press", ExerciseImageMapper.getDrawableForSeedKey("seed_smith_machine_bench"))
+        assertEquals("cable_pullover_bar", ExerciseImageMapper.getDrawableForSeedKey("seed_cable_pullover_bar"))
+        assertEquals("smith_machine_hip_thrust", ExerciseImageMapper.getDrawableForSeedKey("seed_smith_machine_hip_thrust"))
+        assertEquals("arnold_press", ExerciseImageMapper.getDrawableForSeedKey("seed_arnold_press"))
+        assertEquals("smith_machine_incline_chest_press", ExerciseImageMapper.getDrawableForSeedKey("seed_smith_machine_incline_bench"))
     }
 
     @Test
@@ -73,9 +77,15 @@ class ExerciseImageMapperTest {
         assertEquals("machine_shoulder_press", ExerciseImageMapper.getDrawable("Machine Shoulder Press"))
         assertEquals("chest_press_machine", ExerciseImageMapper.getDrawable("Chest Press (Machine)"))
         assertEquals("standing_overhead_shoulder_press", ExerciseImageMapper.getDrawable("Overhead Press (Barbell)"))
-        assertEquals("standing_dumbbell_shoulder_press", ExerciseImageMapper.getDrawable("Dumbbell Shoulder Press"))
+        assertEquals("dumbbell_shoulder_press", ExerciseImageMapper.getDrawable("Dumbbell Shoulder Press"))
         assertEquals("reverse_fly", ExerciseImageMapper.getDrawable("Reverse Pec Deck (Machine)"))
         assertEquals("machine_pullover", ExerciseImageMapper.getDrawable("Machine Pullover"))
+        assertEquals("cable_pullover_bar", ExerciseImageMapper.getDrawable("Cable Pullover with Bar"))
+        assertEquals("smith_machine_hip_thrust", ExerciseImageMapper.getDrawable("Smith Machine Hip Thrust"))
+        assertEquals("smith_machine_romanian_deadlift", ExerciseImageMapper.getDrawable("Smith Machine Romanian Deadlift"))
+        assertEquals("arnold_press", ExerciseImageMapper.getDrawable("Arnold Press (Dumbbell)"))
+        assertEquals("ab_wheel", ExerciseImageMapper.getDrawable("Ab Wheel Rollout"))
+        assertEquals("upright_row", ExerciseImageMapper.getDrawable("Upright Row (Barbell)"))
     }
 
     @Test

@@ -3,6 +3,7 @@
     <string name="screen_add_title">New Exercise</string>
     <string name="screen_edit_title">Edit Exercise</string>
     <string name="btn_save">Save Exercise</string>
+    <string name="exercise_seed_read_only">Seeded exercises are read-only in the app. Duplicate one if you want a custom variant.</string>
     <string name="label_name">Exercise Name</string>
     <string name="label_body_part">Body Part</string>
     <string name="label_category">Category</string>
@@ -400,6 +401,10 @@
     <string name="seed_smith_machine_incline_bench_desc">1. Set bench to 30–45 degrees under Smith bar.\n2. Lie back, grip bar at shoulder width.\n3. Unrack and lower bar to upper chest.\n4. Fixed path targets upper chest safely.\n5. Press up and rotate to re-rack.</string>
     <string name="seed_smith_machine_decline_bench">Decline Bench Press (Smith Machine)</string>
     <string name="seed_smith_machine_decline_bench_desc">1. Set bench to decline under Smith bar.\n2. Secure feet, lie back and grip bar.\n3. Unrack and lower to lower chest.\n4. Fixed path targets lower chest.\n5. Press up and rotate to re-rack.</string>
+    <string name="seed_smith_machine_hip_thrust">Smith Machine Hip Thrust</string>
+    <string name="seed_smith_machine_hip_thrust_desc">1. Sit on the floor with your upper back supported on a bench and the Smith bar over your hips.\n2. Plant feet shoulder-width apart and brace your core.\n3. Drive through your heels to extend the hips until your torso is parallel to the floor.\n4. Squeeze glutes hard at the top without overextending the lower back.\n5. Lower under control until hips are just above the floor and repeat.</string>
+    <string name="seed_smith_machine_romanian_deadlift">Smith Machine Romanian Deadlift</string>
+    <string name="seed_smith_machine_romanian_deadlift_desc">1. Stand under the Smith bar with feet hip-width apart and a soft knee bend.\n2. Unrack the bar and keep it close to your thighs.\n3. Hinge back at the hips while keeping your spine neutral and shins nearly vertical.\n4. Lower until you feel a deep hamstring stretch, then drive hips forward to stand tall.\n5. Keep lats engaged and avoid turning the movement into a squat.</string>
     <string name="seed_incline_chest_press_machine">Incline Chest Press (Machine)</string>
     <string name="seed_incline_chest_press_machine_desc">1. Sit in incline chest press machine.\n2. Adjust seat so handles at upper chest level.\n3. Press handles forward until arms extended.\n4. Targets upper chest specifically.\n5. Return under control to starting position.</string>
     <string name="seed_decline_chest_press_machine">Decline Chest Press (Machine)</string>

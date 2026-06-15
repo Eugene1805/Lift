@@ -2,9 +2,11 @@
 
 Current state:
 - Local seed remains the source of truth for the visible exercise catalog.
-- `66` seeded exercises now resolve to local drawable assets.
+- `79` seeded exercises now resolve to local drawable assets.
+- Seeded exercises now persist a stable `seedKey`, so names/instructions can localize without mutating the catalog rows.
+- Seeded exercises are treated as read-only in the app; custom variants should come from user-created exercises.
 - Existing installs need the versioned seed worker rerun to backfill the new image paths.
-- Unused local assets left on purpose for future variants: `ab_wheel_rollout`, `bodyweight_pull_up`, `cable_seated_pullover`, `machine_seated_shoulder_press`, `smith_machine_hip_thrust`, `smith_machine_romanian_deadlift`.
+- Unused or alternate local assets left on purpose: `standing_dumbbell_shoulder_press`, `weigthed_dips`, `dumbell_chest_fly`, `dumbell_front_raise`, `machine_lateral_raise`, `sissy_squat`.
 
 ## Already Covered
 
@@ -66,10 +68,23 @@ Current state:
 - Smith Machine Squat
 - Seated Leg Curl (Machine)
 - Smith Machine Bench Press
+- Smith Machine Incline Bench Press
+- Smith Machine Hip Thrust
+- Smith Machine Romanian Deadlift
 - Dragon Flag
 - Smith Machine Bulgarian Split Squat
 - Machine Fly (Pec Fly)
 - Machine Pullover
+- Cable Pullover (Bar)
+- Cable Triceps Pushdown
+- Arnold Press (Dumbbell)
+- Box Jumps
+- Chin-ups
+- Ab Wheel Rollout
+- Upright Row (Barbell)
+- Power Clean (Barbell)
+- Muscle Up
+- Front Lever
 
 ## Batch 1
 
@@ -79,10 +94,8 @@ Highest-value gaps still missing a local asset:
 - Push-up
 - Tricep Extension
 - Lunges
-- Cable Tricep Pushdown
 - Dumbbell Fly
 - Cable Crossover
-- Arnold Press
 
 ## Batch 2
 
@@ -92,30 +105,21 @@ Strong next layer after the core catalog gaps:
 - EZ Bar Curl
 - Reverse Curl
 - Front Raise
-- Upright Row
 - Reverse Wrist Curl
 - Front Lat Pulldown
 - Smith Machine Shoulder Press
 - Dumbbell Overhead Press
-- Chin-up
 - Single Leg Curl
 
 ## Batch 3
 
 Lower-priority variants and specialty movements:
 
-- Box Jump
-- Power Clean
 - Burpee
 - Mountain Climber
 - Jump Squat
 - Pistol Squat
-- Muscle Up
-- Front Lever
 - Cable Pullover (Rope)
-- Cable Pullover (Bar)
-- Smith Machine Hip Thrust
-- Smith Machine Romanian Deadlift
 - Bodyweight Pull-up alt art
 - Machine Overhead Triceps Extension
 

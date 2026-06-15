@@ -52,6 +52,24 @@ class GetExercisesUseCaseTest {
             measureType = MeasureType.REPS_ONLY,
             instructions = "",
             imagePath = null
+        ),
+        Exercise(
+            id = "4",
+            name = "Lat Pulldown",
+            bodyParts = listOf(BodyPart.LATS, BodyPart.BICEPS),
+            category = ExerciseCategory.MACHINE,
+            measureType = MeasureType.REPS_AND_WEIGHT,
+            instructions = "",
+            imagePath = null
+        ),
+        Exercise(
+            id = "5",
+            name = "Shoulder Press",
+            bodyParts = listOf(BodyPart.FRONT_DELTS, BodyPart.TRICEPS),
+            category = ExerciseCategory.DUMBBELL,
+            measureType = MeasureType.REPS_AND_WEIGHT,
+            instructions = "",
+            imagePath = null
         )
     )
 
@@ -77,7 +95,7 @@ class GetExercisesUseCaseTest {
         val result = useCase(emptyFilter).first()
 
         // THEN
-        Assert.assertEquals(3, result.size)
+        Assert.assertEquals(5, result.size)
         Assert.assertTrue(result.any { it.name == "Bench Press" })
         Assert.assertTrue(result.any { it.name == "Squat" })
         Assert.assertTrue(result.any { it.name == "Push-ups" })
@@ -93,9 +111,10 @@ class GetExercisesUseCaseTest {
         val result = useCase(filter).first()
 
         // THEN
-        Assert.assertEquals(1, result.size)
+        Assert.assertEquals(2, result.size)
         Assert.assertTrue(result.all { it.name.contains("press", ignoreCase = true) })
         Assert.assertTrue(result.any { it.name == "Bench Press" })
+        Assert.assertTrue(result.any { it.name == "Shoulder Press" })
     }
 
     @Test
@@ -110,6 +129,26 @@ class GetExercisesUseCaseTest {
         // THEN
         Assert.assertEquals(2, result.size)
         Assert.assertTrue(result.all { it.bodyParts.contains(BodyPart.CHEST) })
+    }
+
+    @Test
+    fun `invoke expands generic back filter into specific back muscles`() = runTest {
+        coEvery { repository.getExercises() } returns flowOf(sampleExercises)
+        val filter = ExerciseFilter(bodyParts = setOf(BodyPart.BACK))
+
+        val result = useCase(filter).first()
+
+        Assert.assertEquals(listOf("Lat Pulldown"), result.map { it.name })
+    }
+
+    @Test
+    fun `invoke expands generic shoulders filter into specific delts`() = runTest {
+        coEvery { repository.getExercises() } returns flowOf(sampleExercises)
+        val filter = ExerciseFilter(bodyParts = setOf(BodyPart.SHOULDERS))
+
+        val result = useCase(filter).first()
+
+        Assert.assertEquals(listOf("Shoulder Press"), result.map { it.name })
     }
 
     @Test
@@ -137,8 +176,10 @@ class GetExercisesUseCaseTest {
 
         // THEN
         Assert.assertEquals("Bench Press", result[0].name)
-        Assert.assertEquals("Push-ups", result[1].name)
-        Assert.assertEquals("Squat", result[2].name)
+        Assert.assertEquals("Lat Pulldown", result[1].name)
+        Assert.assertEquals("Push-ups", result[2].name)
+        Assert.assertEquals("Shoulder Press", result[3].name)
+        Assert.assertEquals("Squat", result[4].name)
     }
 
     @Test
@@ -152,8 +193,10 @@ class GetExercisesUseCaseTest {
 
         // THEN
         Assert.assertEquals("Squat", result[0].name)
-        Assert.assertEquals("Push-ups", result[1].name)
-        Assert.assertEquals("Bench Press", result[2].name)
+        Assert.assertEquals("Shoulder Press", result[1].name)
+        Assert.assertEquals("Push-ups", result[2].name)
+        Assert.assertEquals("Lat Pulldown", result[3].name)
+        Assert.assertEquals("Bench Press", result[4].name)
     }
 
     @Test

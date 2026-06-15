@@ -90,11 +90,13 @@ fun AddExerciseScreen(
                     }
                 },
                 actions = {
-                    Button(
-                        onClick = { onEvent(AddExerciseUiEvent.SaveClicked) },
-                        enabled = uiState.isSaveEnabled && !uiState.isSaving
-                    ) {
-                        Text(stringResource(R.string.btn_save))
+                    if (!uiState.isSeeded) {
+                        Button(
+                            onClick = { onEvent(AddExerciseUiEvent.SaveClicked) },
+                            enabled = uiState.isSaveEnabled && !uiState.isSaving
+                        ) {
+                            Text(stringResource(R.string.btn_save))
+                        }
                     }
                 },
                 windowInsets = WindowInsets(0, 0, 0, 0),
@@ -117,6 +119,7 @@ fun AddExerciseScreen(
             OutlinedTextField(
                 value = uiState.name,
                 onValueChange = { onEvent(AddExerciseUiEvent.NameChanged(it)) },
+                enabled = !uiState.isSeeded,
                 label = { Text(stringResource(R.string.label_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -140,6 +143,16 @@ fun AddExerciseScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            if (uiState.isSeeded) {
+                Text(
+                    text = stringResource(R.string.exercise_seed_read_only),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
             Text(
                 text = stringResource(R.string.label_body_part),
                 style = MaterialTheme.typography.labelLarge,
@@ -154,6 +167,7 @@ fun AddExerciseScreen(
                 BodyPart.entries.forEach { part ->
                     FilterChip(
                         selected = part in uiState.selectedBodyParts,
+                        enabled = !uiState.isSeeded,
                         onClick = { onEvent(AddExerciseUiEvent.BodyPartToggled(part)) },
                         label = { Text(stringResource(part.labelRes)) },
                         leadingIcon = if (part in uiState.selectedBodyParts) {
@@ -170,7 +184,8 @@ fun AddExerciseScreen(
                 options = ExerciseCategory.entries,
                 selectedOption = uiState.category,
                 onOptionSelected = { onEvent(AddExerciseUiEvent.CategoryChanged(it)) },
-                labelProvider = { cat -> stringResource(cat.labelRes) }
+                labelProvider = { cat -> stringResource(cat.labelRes) },
+                enabled = !uiState.isSeeded
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -180,7 +195,8 @@ fun AddExerciseScreen(
                 options = MeasureType.entries,
                 selectedOption = uiState.measureType,
                 onOptionSelected = { onEvent(AddExerciseUiEvent.MeasureTypeChanged(it)) },
-                labelProvider = { type -> stringResource(type.labelRes) }
+                labelProvider = { type -> stringResource(type.labelRes) },
+                enabled = !uiState.isSeeded
             )
         }
     }

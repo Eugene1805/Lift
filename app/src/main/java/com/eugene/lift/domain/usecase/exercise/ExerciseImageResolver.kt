@@ -5,5 +5,6 @@ package com.eugene.lift.domain.usecase.exercise
  */
 interface ExerciseImageResolver {
     fun resolveDrawable(exerciseName: String): String?
+    fun resolveDrawableForSeedKey(seedKey: String): String?
 }
 

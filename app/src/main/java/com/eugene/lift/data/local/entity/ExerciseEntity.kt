@@ -13,5 +13,6 @@ data class ExerciseEntity(
     val category: ExerciseCategory,
     val measureType: MeasureType,
     val instructions: String = "",
-    val imagePath: String? = null
+    val imagePath: String? = null,
+    val seedKey: String? = null
 )

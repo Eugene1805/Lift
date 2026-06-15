@@ -8,8 +8,10 @@ import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.repository.ExerciseRepository
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
@@ -27,6 +29,7 @@ class SaveExerciseUseCaseTest {
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
+        coEvery { repository.getExerciseById(any()) } returns flowOf(null)
         useCase = SaveExerciseUseCase(repository, SafeExecutor(logger = null))
     }
 
@@ -112,5 +115,27 @@ class SaveExerciseUseCaseTest {
 
         // THEN
         coVerify(exactly = 1) { repository.saveExercise(exercise) }
+    }
+
+    @Test
+    fun `invoke does not overwrite seeded exercise`() = runTest {
+        val exercise = Exercise(
+            id = "seeded-1",
+            name = "Bench Press",
+            bodyParts = listOf(BodyPart.CHEST),
+            category = ExerciseCategory.BARBELL,
+            measureType = MeasureType.REPS_AND_WEIGHT,
+            instructions = "",
+            imagePath = null
+        )
+        coEvery {
+            repository.getExerciseById("seeded-1")
+        } returns flowOf(exercise.copy(seedKey = "seed_bench_press"))
+
+        val result = useCase(exercise)
+
+        Assert.assertTrue(result is AppResult.Error)
+        Assert.assertEquals(AppError.Validation, (result as AppResult.Error).error)
+        coVerify(exactly = 0) { repository.saveExercise(any()) }
     }
 }

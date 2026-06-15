@@ -44,21 +44,25 @@ fun <T> AppDropdown(
     selectedOption: T,
     onOptionSelected: (T) -> Unit,
     labelProvider: @Composable (T) -> String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it },
+        expanded = expanded && enabled,
+        onExpandedChange = { expanded = if (enabled) it else false },
         modifier = modifier
     ) {
         OutlinedTextField(
             readOnly = true,
+            enabled = enabled,
             value = labelProvider(selectedOption),
             onValueChange = {},
             label = { Text(label) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && enabled)
+            },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -75,7 +79,7 @@ fun <T> AppDropdown(
         )
 
         ExposedDropdownMenu(
-            expanded = expanded,
+            expanded = expanded && enabled,
             onDismissRequest = { expanded = false },
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ) {

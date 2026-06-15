@@ -97,4 +97,16 @@ class AssignMissingImagesUseCaseTest {
         coVerify(exactly = 0) { repository.updateImagePath(any(), any()) }
         verify(exactly = 0) { imageResolver.resolveDrawable(any()) }
     }
+
+    @Test
+    fun `invoke prefers seedKey mapping when present`() = runTest {
+        val seeded = exercise("Whatever", id = "seeded_id").copy(seedKey = "seed_smith_machine_hip_thrust")
+        coEvery { repository.getExercisesWithoutImage() } returns listOf(seeded)
+        every { imageResolver.resolveDrawableForSeedKey("seed_smith_machine_hip_thrust") } returns "smith_machine_hip_thrust"
+
+        useCase()
+
+        coVerify(exactly = 1) { repository.updateImagePath("seeded_id", "smith_machine_hip_thrust") }
+        verify(exactly = 0) { imageResolver.resolveDrawable(any()) }
+    }
 }

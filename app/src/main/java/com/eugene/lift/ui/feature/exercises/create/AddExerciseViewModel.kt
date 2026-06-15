@@ -16,6 +16,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -60,8 +61,14 @@ class AddExerciseViewModel @Inject constructor(
         when (event) {
             is AddExerciseUiEvent.NameChanged -> updateName(event.value)
             is AddExerciseUiEvent.BodyPartToggled -> toggleBodyPart(event.bodyPart)
-            is AddExerciseUiEvent.CategoryChanged -> _uiState.update { it.copy(category = event.category) }
-            is AddExerciseUiEvent.MeasureTypeChanged -> _uiState.update { it.copy(measureType = event.measureType) }
+            is AddExerciseUiEvent.CategoryChanged -> {
+                if (_uiState.value.isSeeded) return
+                _uiState.update { it.copy(category = event.category) }
+            }
+            is AddExerciseUiEvent.MeasureTypeChanged -> {
+                if (_uiState.value.isSeeded) return
+                _uiState.update { it.copy(measureType = event.measureType) }
+            }
             AddExerciseUiEvent.SaveClicked -> saveExercise()
             AddExerciseUiEvent.NavigationHandled -> _uiState.update { it.copy(isSaveCompleted = false) }
             AddExerciseUiEvent.BackClicked -> Unit
@@ -69,6 +76,7 @@ class AddExerciseViewModel @Inject constructor(
     }
 
     private fun updateName(newValue: String) {
+        if (_uiState.value.isSeeded) return
         if (newValue.length > MAX_EXERCISE_NAME_LENGTH) return
         val isNameError = newValue.isBlank()
         _uiState.update {
@@ -81,6 +89,7 @@ class AddExerciseViewModel @Inject constructor(
     }
 
     private fun toggleBodyPart(part: BodyPart) {
+        if (_uiState.value.isSeeded) return
         _uiState.update { state ->
             val updated = state.selectedBodyParts.toMutableSet()
             if (part in updated) {
@@ -101,19 +110,25 @@ class AddExerciseViewModel @Inject constructor(
                 selectedBodyParts = exercise.bodyParts.toSet().ifEmpty { setOf(BodyPart.OTHER) },
                 category = exercise.category,
                 measureType = exercise.measureType,
+                isSeeded = exercise.isSeeded,
                 isNameError = isNameError,
-                isSaveEnabled = name.isNotBlank() && !isNameError
+                isSaveEnabled = !exercise.isSeeded && name.isNotBlank() && !isNameError
             )
         }
     }
 
     private fun saveExercise() {
         val state = _uiState.value
-        if (state.isSaving || !state.isSaveEnabled) return
+        if (state.isSaving || state.isSeeded || !state.isSaveEnabled) return
 
         _uiState.update { it.copy(isSaving = true, isSaveCompleted = false) }
         viewModelScope.launch {
             val idToSave = exerciseId ?: UUID.randomUUID().toString()
+            val existingSeedKey = if (exerciseId != null) {
+                getExerciseDetailUseCase(exerciseId).first()?.seedKey
+            } else {
+                null
+            }
             when (val result = saveExerciseUseCase(
                 Exercise(
                     id = idToSave,
@@ -122,7 +137,8 @@ class AddExerciseViewModel @Inject constructor(
                     category = state.category,
                     measureType = state.measureType,
                     instructions = "",
-                    imagePath = null
+                    imagePath = null,
+                    seedKey = existingSeedKey
                 )
             )) {
                 is AppResult.Success -> {

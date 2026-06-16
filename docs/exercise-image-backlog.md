@@ -2,11 +2,12 @@
 
 Current state:
 - Local seed remains the source of truth for the visible exercise catalog.
-- `82` seeded exercises now resolve to local drawable assets.
+- `94` seeded exercises now resolve to local drawable assets.
 - Seeded exercises now persist a stable `seedKey`, so names/instructions can localize without mutating the catalog rows.
 - Seeded exercises are treated as read-only in the app; custom variants should come from user-created exercises.
 - Existing installs need the versioned seed worker rerun to backfill the new image paths.
-- Unused or alternate local assets left on purpose: `standing_dumbbell_shoulder_press`, `weigthed_dips`, `machine_lateral_raise`.
+- `0` local `webp` assets are orphaned in `drawable/`.
+- Alternate-only aliases still exist for future/custom exercises: `standing_dumbbell_shoulder_press`, `machine_lateral_raise`, `step_up`, `woodchopper`, `ez_bar_reverse_curl`.
 
 ## Already Covered
 
@@ -88,29 +89,40 @@ Current state:
 - Power Clean (Barbell)
 - Muscle Up
 - Front Lever
+- Dumbbell Chest Press
+- Push-ups
+- Hanging Leg Raises
+- Cable Crossover
+- EZ Bar Curl
+- Dumbbell Overhead Press (Standing)
+- Weighted Crunch
+- Rope Triceps Extension (Cable)
+- Rope Face Pull (Cable)
+- Sumo Deadlift (Barbell)
+- Decline Dumbbell Press
+- Reverse Wrist Curl (Barbell)
+- Smith Machine Shoulder Press
+- Cable Overhead Triceps Extension (Bilateral)
+- Cable Overhead Triceps Extension (Unilateral)
+- Cable Overhead Triceps Extension with Cuff (Unilateral)
 
 ## Batch 1
 
 Highest-value gaps still missing a local asset:
 
-- Dumbbell Press
-- Push-up
 - Tricep Extension
 - Lunges
-- Cable Crossover
+- Concentration Curl
 
 ## Batch 2
 
 Strong next layer after the core catalog gaps:
 
-- Hanging Leg Raise
-- EZ Bar Curl
 - Reverse Curl
-- Reverse Wrist Curl
 - Front Lat Pulldown
-- Smith Machine Shoulder Press
-- Dumbbell Overhead Press
 - Single Leg Curl
+- Good Morning
+- Rack Pull
 
 ## Batch 3
 
@@ -121,8 +133,9 @@ Lower-priority variants and specialty movements:
 - Jump Squat
 - Pistol Squat
 - Cable Pullover (Rope)
-- Bodyweight Pull-up alt art
 - Machine Overhead Triceps Extension
+- Neck Extension
+- Neck Curl
 
 ## Naming Rules
 

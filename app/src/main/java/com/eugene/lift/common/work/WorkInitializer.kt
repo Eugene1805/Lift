@@ -14,7 +14,7 @@ object WorkInitializer {
 
     private const val TAG = "WorkInitializer"
     // Versioned so existing installs rerun the idempotent image backfill after mapper and asset refreshes.
-    private const val SEED_DB_WORK_NAME = "seed_db_work_v8"
+    private const val SEED_DB_WORK_NAME = "seed_db_work_v9"
 
     /**
      * Enqueues the database seeding work if it hasn't been done yet.

@@ -4,12 +4,14 @@ import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.eugene.lift.R
+import com.eugene.lift.common.localization.createLocalizedContext
 import com.eugene.lift.data.repository.ExerciseRepositoryImpl
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -25,6 +27,7 @@ class ExerciseSeederTest {
     private lateinit var database: AppDatabase
     private lateinit var seeder: ExerciseSeeder
     private lateinit var repository: ExerciseRepositoryImpl
+    private lateinit var settingsDataSource: SettingsDataSource
 
     @Before
     fun setUp() {
@@ -32,7 +35,11 @@ class ExerciseSeederTest {
         database = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
             .allowMainThreadQueries()
             .build()
-        repository = ExerciseRepositoryImpl(database.exerciseDao(), context)
+        settingsDataSource = SettingsDataSource(context)
+        runBlocking {
+            settingsDataSource.setLanguageCode("en")
+        }
+        repository = ExerciseRepositoryImpl(database.exerciseDao(), settingsDataSource, context)
         seeder = ExerciseSeeder(repository, context)
     }
 
@@ -56,7 +63,7 @@ class ExerciseSeederTest {
     @Test
     fun populateIfEmpty_preservesSeedBodyParts() = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val benchName = context.getString(R.string.seed_bench_press)
+        val benchName = context.createLocalizedContext("en").getString(R.string.seed_bench_press)
 
         seeder.populateIfEmpty()
 
@@ -91,5 +98,24 @@ class ExerciseSeederTest {
         assertEquals("custom-local-id", exercises.single().id)
         assertEquals("Existing Custom Exercise", exercises.single().name)
         assertEquals(setOf(BodyPart.BICEPS), exercises.single().bodyParts.toSet())
+    }
+
+    @Test
+    fun seededExercises_relocalizeWhenLanguageChanges() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        seeder.populateIfEmpty()
+
+        val englishName = repository.getExercises().first()
+            .first { it.seedKey == "seed_bench_press" }
+            .name
+
+        settingsDataSource.setLanguageCode("es")
+
+        val spanishName = repository.getExercises().drop(1).first()
+            .first { it.seedKey == "seed_bench_press" }
+            .name
+
+        assertEquals(context.createLocalizedContext("en").getString(R.string.seed_bench_press), englishName)
+        assertEquals(context.createLocalizedContext("es").getString(R.string.seed_bench_press), spanishName)
     }
 }

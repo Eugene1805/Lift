@@ -1,7 +1,9 @@
 package com.eugene.lift.data.repository
 
 import android.content.Context
+import com.eugene.lift.common.localization.createLocalizedContext
 import com.eugene.lift.data.local.dao.ExerciseDao
+import com.eugene.lift.data.local.SettingsDataSource
 import com.eugene.lift.data.local.SeedExerciseStrings
 import com.eugene.lift.data.mapper.toCrossRefs
 import com.eugene.lift.data.mapper.toDomain
@@ -10,23 +12,28 @@ import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.repository.ExerciseRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class ExerciseRepositoryImpl @Inject constructor(
     private val dao: ExerciseDao,
+    private val settingsDataSource: SettingsDataSource,
     @ApplicationContext private val context: Context
 ) : ExerciseRepository {
 
     override fun getExercises(): Flow<List<Exercise>> {
-        return dao.getAllExercises().map { list ->
-            list.map { SeedExerciseStrings.localize(context, it.toDomain()) }
+        return dao.getAllExercises().combine(languageCodeFlow()) { list, languageCode ->
+            val localizedContext = context.createLocalizedContext(languageCode)
+            list.map { SeedExerciseStrings.localize(localizedContext, it.toDomain()) }
         }
     }
 
     override fun getExerciseById(id: String): Flow<Exercise?> {
-        return dao.getExerciseById(id).map { result ->
-            result?.toDomain()?.let { SeedExerciseStrings.localize(context, it) }
+        return dao.getExerciseById(id).combine(languageCodeFlow()) { result, languageCode ->
+            val localizedContext = context.createLocalizedContext(languageCode)
+            result?.toDomain()?.let { SeedExerciseStrings.localize(localizedContext, it) }
         }
     }
 
@@ -81,5 +88,11 @@ class ExerciseRepositoryImpl @Inject constructor(
 
     override suspend fun updateSeedKey(exerciseId: String, seedKey: String) {
         dao.updateSeedKey(exerciseId, seedKey)
+    }
+
+    private fun languageCodeFlow(): Flow<String> {
+        return settingsDataSource.userSettings
+            .map { it.languageCode }
+            .distinctUntilChanged()
     }
 }

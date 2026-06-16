@@ -82,8 +82,9 @@ object AppModule {
     @Singleton
     fun provideExerciseRepository(
         dao: ExerciseDao,
+        settingsDataSource: SettingsDataSource,
         @ApplicationContext context: Context
-    ): ExerciseRepository = ExerciseRepositoryImpl(dao, context)
+    ): ExerciseRepository = ExerciseRepositoryImpl(dao, settingsDataSource, context)
 
     @Provides
     @Singleton

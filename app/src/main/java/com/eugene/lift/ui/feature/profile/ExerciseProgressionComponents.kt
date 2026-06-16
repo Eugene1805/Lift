@@ -423,6 +423,17 @@ private fun ProgressionLineChart(
             }
         }
 
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = if (isWeightBased) {
+                stringResource(R.string.profile_progression_axis_weight, unitLabel)
+            } else {
+                stringResource(R.string.profile_progression_axis_reps)
+            },
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
         // Y axis range label
         Spacer(modifier = Modifier.height(2.dp))
         Row(
@@ -440,7 +451,7 @@ private fun ProgressionLineChart(
             )
             Text(
                 text = if (isWeightBased) "${WeightFormatters.formatWeight(maxValue, weightUnit)} $unitLabel"
-                else maxValue.toInt().toString(),
+                else stringResource(R.string.profile_value_reps_format, maxValue.toInt()),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )

@@ -57,7 +57,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.eugene.lift.R
+import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.model.UserProfile
+import com.eugene.lift.ui.util.WeightFormatters
 
 @Composable
 fun ProfileRoute(
@@ -125,6 +127,7 @@ fun ProfileScreen(
                     HistogramSection(
                         stats = uiState.stats,
                         selectedTimeRange = uiState.selectedTimeRange,
+                        weightUnit = uiState.weightUnit,
                         onTimeRangeChange = onTimeRangeChange
                     )
                 }
@@ -243,9 +246,11 @@ private fun ProfileHeader(
 private fun HistogramSection(
     stats: ProfileStats,
     selectedTimeRange: TimeRange,
+    weightUnit: WeightUnit,
     onTimeRangeChange: (TimeRange) -> Unit
 ) {
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
+    val context = LocalContext.current
     val tabs = listOf(
         stringResource(R.string.profile_tab_duration),
         stringResource(R.string.profile_tab_volume),
@@ -300,6 +305,58 @@ private fun HistogramSection(
                 }
             }
 
+            val axisLabel = when (selectedTabIndex) {
+                0 -> stringResource(
+                    R.string.profile_chart_axes_format,
+                    stringResource(R.string.profile_axis_x_dates),
+                    stringResource(R.string.profile_axis_y_duration)
+                )
+                1 -> stringResource(
+                    R.string.profile_chart_axes_format,
+                    stringResource(R.string.profile_axis_x_dates),
+                    stringResource(
+                        R.string.profile_axis_y_volume,
+                        if (weightUnit == WeightUnit.KG) {
+                            stringResource(R.string.unit_kg)
+                        } else {
+                            stringResource(R.string.unit_lbs)
+                        }
+                    )
+                )
+                else -> stringResource(
+                    R.string.profile_chart_axes_format,
+                    stringResource(R.string.profile_axis_x_dates),
+                    stringResource(R.string.profile_axis_y_reps)
+                )
+            }
+
+            val valueFormatter: (Double) -> String = when (selectedTabIndex) {
+                0 -> { value ->
+                    context.getString(
+                        R.string.profile_value_duration_format,
+                        value.toInt()
+                    )
+                }
+                1 -> { value ->
+                    val unitLabel = if (weightUnit == WeightUnit.KG) {
+                        context.getString(R.string.unit_kg)
+                    } else {
+                        context.getString(R.string.unit_lbs)
+                    }
+                    context.getString(
+                        R.string.profile_value_volume_format,
+                        WeightFormatters.formatWeight(value, weightUnit),
+                        unitLabel
+                    )
+                }
+                else -> { value ->
+                    context.getString(
+                        R.string.profile_value_reps_format,
+                        value.toInt()
+                    )
+                }
+            }
+
             if (data.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -314,8 +371,17 @@ private fun HistogramSection(
                     )
                 }
             } else {
+                Text(
+                    text = axisLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 SimpleBarChart(
                     data = data,
+                    valueFormatter = valueFormatter,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(150.dp)
@@ -364,6 +430,7 @@ private fun TimeRangeDropdown(
 @Composable
 private fun SimpleBarChart(
     data: List<HistogramDataPoint>,
+    valueFormatter: (Double) -> String = { it.toInt().toString() },
     modifier: Modifier = Modifier
 ) {
     val maxValue = data.maxOfOrNull { it.value } ?: 1.0
@@ -387,7 +454,7 @@ private fun SimpleBarChart(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = point.value.toInt().toString(),
+                        text = valueFormatter(point.value),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1

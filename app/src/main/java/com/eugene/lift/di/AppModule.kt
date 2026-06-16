@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.eugene.lift.data.local.AppDatabase
+import com.eugene.lift.data.local.ActiveWorkoutDraftDataSource
 import com.eugene.lift.data.local.ExerciseBootstrapDataSource
 import com.eugene.lift.data.local.ExerciseImageResolverImpl
 import com.eugene.lift.data.local.ExerciseSeeder
@@ -18,6 +19,7 @@ import com.eugene.lift.data.local.dao.FolderDao
 import com.eugene.lift.data.local.dao.TemplateDao
 import com.eugene.lift.data.local.dao.UserProfileDao
 import com.eugene.lift.data.local.dao.WorkoutDao
+import com.eugene.lift.data.repository.ActiveWorkoutDraftRepositoryImpl
 import com.eugene.lift.data.repository.ExerciseRepositoryImpl
 import com.eugene.lift.data.repository.FolderRepositoryImpl
 import com.eugene.lift.data.repository.ImageRepositoryImpl
@@ -25,6 +27,7 @@ import com.eugene.lift.data.repository.SettingsRepositoryImpl
 import com.eugene.lift.data.repository.TemplateRepositoryImpl
 import com.eugene.lift.data.repository.UserProfileRepositoryImpl
 import com.eugene.lift.data.repository.WorkoutRepositoryImpl
+import com.eugene.lift.domain.repository.ActiveWorkoutDraftRepository
 import com.eugene.lift.domain.repository.ExerciseRepository
 import com.eugene.lift.domain.repository.FolderRepository
 import com.eugene.lift.domain.repository.ImageRepository
@@ -92,6 +95,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideActiveWorkoutDraftDataSource(
+        @ApplicationContext context: Context
+    ): ActiveWorkoutDraftDataSource = ActiveWorkoutDraftDataSource(context)
+
+    @Provides
+    @Singleton
     fun provideTemplateRepository(dao: TemplateDao): TemplateRepository = TemplateRepositoryImpl(dao)
 
     @Provides
@@ -104,6 +113,12 @@ object AppModule {
     @Provides
     @Singleton
     fun provideSettingsRepository(dataSource: SettingsDataSource): SettingsRepository = SettingsRepositoryImpl(dataSource)
+
+    @Provides
+    @Singleton
+    fun provideActiveWorkoutDraftRepository(
+        dataSource: ActiveWorkoutDraftDataSource
+    ): ActiveWorkoutDraftRepository = ActiveWorkoutDraftRepositoryImpl(dataSource)
 
     @Provides
     @Singleton

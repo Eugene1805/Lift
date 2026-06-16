@@ -1,5 +1,6 @@
 package com.eugene.lift.ui.feature.workout
 
+import com.eugene.lift.domain.model.ActiveWorkoutDraftSummary
 import com.eugene.lift.domain.model.Folder
 import com.eugene.lift.domain.model.WorkoutTemplate
 
@@ -12,6 +13,7 @@ data class WorkoutUiState(
     val selectedTab: Int = 0,
     val folders: List<Folder> = emptyList(),
     val currentFolderId: String? = null,
+    val activeDraft: ActiveWorkoutDraftSummary? = null,
     val dragState: DragUiState = DragUiState(),
     val reorderState: ReorderUiState = ReorderUiState()
 )
@@ -30,6 +32,8 @@ sealed interface WorkoutUiEvent {
     data class TemplateDuplicated(val templateId: String) : WorkoutUiEvent
     data class TemplateShared(val templateId: String) : WorkoutUiEvent
     data object StartEmptyClicked : WorkoutUiEvent
+    data object ResumeDraftClicked : WorkoutUiEvent
+    data object DiscardDraftClicked : WorkoutUiEvent
     data object AddTemplateClicked : WorkoutUiEvent
     data object ToggleReorderMode : WorkoutUiEvent
     data class TemplatesReordered(val fromIndex: Int, val toIndex: Int, val isArchived: Boolean) : WorkoutUiEvent

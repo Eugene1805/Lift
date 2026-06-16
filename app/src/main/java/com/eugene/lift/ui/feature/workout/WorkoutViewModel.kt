@@ -2,7 +2,9 @@ package com.eugene.lift.ui.feature.workout
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eugene.lift.common.work.ActiveWorkoutReminderScheduler
 import com.eugene.lift.domain.error.AppResult
+import com.eugene.lift.domain.repository.ActiveWorkoutDraftRepository
 import com.eugene.lift.domain.usecase.folder.CreateFolderUseCase
 import com.eugene.lift.domain.usecase.folder.DeleteFolderUseCase
 import com.eugene.lift.domain.usecase.folder.GetFoldersUseCase
@@ -28,6 +30,8 @@ import javax.inject.Inject
 @HiltViewModel
 class WorkoutViewModel @Inject constructor(
     getAllTemplatesUseCase: GetAllTemplatesUseCase,
+    private val activeWorkoutDraftRepository: ActiveWorkoutDraftRepository,
+    private val activeWorkoutReminderScheduler: ActiveWorkoutReminderScheduler,
     private val toggleArchiveUseCase: ToggleTemplateArchiveUseCase,
     private val deleteTemplateUseCase: DeleteTemplateUseCase,
     private val duplicateTemplateUseCase: DuplicateTemplateUseCase,
@@ -58,6 +62,9 @@ class WorkoutViewModel @Inject constructor(
     private val foldersFlow = getFoldersUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    private val activeDraftFlow = activeWorkoutDraftRepository.observeSummary()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
 
     private val _dragState = MutableStateFlow(com.eugene.lift.ui.dragdrop.DragUiState())
     private val dropTargets = mutableMapOf<String, androidx.compose.ui.geometry.Rect>()
@@ -69,6 +76,7 @@ class WorkoutViewModel @Inject constructor(
         _selectedTab,
         _currentFolderId,
         _isLoading,
+        activeDraftFlow,
         _dragState,
         _reorderState
     ) { args: Array<Any?> ->
@@ -79,8 +87,9 @@ class WorkoutViewModel @Inject constructor(
             selectedTab = args[2] as Int,
             currentFolderId = args[3] as String?,
             isLoading = args[4] as Boolean,
-            dragState = args[5] as com.eugene.lift.ui.dragdrop.DragUiState,
-            reorderState = args[6] as ReorderUiState
+            activeDraft = args[5] as com.eugene.lift.domain.model.ActiveWorkoutDraftSummary?,
+            dragState = args[6] as com.eugene.lift.ui.dragdrop.DragUiState,
+            reorderState = args[7] as ReorderUiState
         )
     }.stateIn(
         viewModelScope,
@@ -112,8 +121,11 @@ class WorkoutViewModel @Inject constructor(
             is WorkoutUiEvent.TemplateClicked,
             is WorkoutUiEvent.TemplateEditClicked,
             is WorkoutUiEvent.TemplateStartClicked,
+            WorkoutUiEvent.ResumeDraftClicked,
             is WorkoutUiEvent.TemplateShared,
             WorkoutUiEvent.StartEmptyClicked -> Unit
+
+            WorkoutUiEvent.DiscardDraftClicked -> discardDraft()
             
             WorkoutUiEvent.ToggleReorderMode -> toggleReorderMode()
             is WorkoutUiEvent.TemplatesReordered -> reorderTemplates(event.fromIndex, event.toIndex, event.isArchived)
@@ -149,6 +161,13 @@ class WorkoutViewModel @Inject constructor(
             is WorkoutUiEvent.OnDropTargetBoundsChanged -> {
                 dropTargets[event.targetId] = event.bounds
             }
+        }
+    }
+
+    private fun discardDraft() {
+        viewModelScope.launch {
+            activeWorkoutDraftRepository.clearDraft()
+            activeWorkoutReminderScheduler.cancel()
         }
     }
 

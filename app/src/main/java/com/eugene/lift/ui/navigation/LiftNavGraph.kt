@@ -144,6 +144,9 @@ private fun NavGraphBuilder.workoutScreen(navController: NavHostController) {
             },
             onStartEmptyClick = {
                 navController.navigate(ActiveWorkoutRoute(templateId = null))
+            },
+            onResumeDraftClick = {
+                navController.navigate(ActiveWorkoutRoute(resumeDraft = true))
             }
         )
     }

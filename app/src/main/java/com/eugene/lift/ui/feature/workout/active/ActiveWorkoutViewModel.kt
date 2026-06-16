@@ -3,13 +3,17 @@ package com.eugene.lift.ui.feature.workout.active
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import com.eugene.lift.common.work.ActiveWorkoutReminderScheduler
 import com.eugene.lift.domain.error.AppResult
 import com.eugene.lift.domain.manager.RestTimerManager
+import com.eugene.lift.domain.model.ActiveWorkoutDraft
 import com.eugene.lift.domain.model.SessionExercise
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.WorkoutSet
+import com.eugene.lift.domain.repository.ActiveWorkoutDraftRepository
 import com.eugene.lift.domain.usecase.exercise.GetExerciseDetailUseCase
 import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateAutoTimerUseCase
@@ -17,6 +21,7 @@ import com.eugene.lift.domain.usecase.settings.UpdateEffortMetricUseCase
 import com.eugene.lift.ui.feature.workout.active.service.ActiveWorkoutServiceManager
 import com.eugene.lift.ui.feature.workout.active.service.WorkoutNotificationAction
 import com.eugene.lift.ui.feature.workout.active.service.WorkoutNotificationState
+import com.eugene.lift.ui.navigation.ActiveWorkoutRoute
 import com.eugene.lift.domain.usecase.template.CreateTemplateFromWorkoutUseCase
 import com.eugene.lift.domain.usecase.template.UpdateTemplateFromWorkoutUseCase
 import com.eugene.lift.domain.usecase.workout.StartEmptyWorkoutUseCase
@@ -38,6 +43,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
@@ -60,15 +66,26 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val getSettingsUseCase: GetSettingsUseCase,  // kept private to call cold flow on init
     private val updateEffortMetricUseCase: UpdateEffortMetricUseCase,
     private val updateAutoTimerUseCase: UpdateAutoTimerUseCase,
+    private val activeWorkoutDraftRepository: ActiveWorkoutDraftRepository,
+    private val activeWorkoutReminderScheduler: ActiveWorkoutReminderScheduler,
     private val serviceManager: ActiveWorkoutServiceManager
 ) : ViewModel() {
 
-    private val templateId: String? = savedStateHandle["templateId"]
+    private val routeArgs: ActiveWorkoutRoute? = try {
+        savedStateHandle.toRoute<ActiveWorkoutRoute>()
+    } catch (_: Exception) {
+        null
+    }
+    private val templateId: String? = routeArgs?.templateId
+    private val shouldResumeDraft: Boolean = routeArgs?.resumeDraft == true
 
     private val _activeSession = MutableStateFlow<WorkoutSession?>(null)
 
     // Store original template exercises for comparison
     private var originalTemplateExercises: List<SessionExercise> = emptyList()
+    private var startedAtEpochMillis = System.currentTimeMillis()
+    private var lastInteractedAtEpochMillis = startedAtEpochMillis
+    private var persistDraftJob: Job? = null
 
     private val timerState = restTimerManager.timerState
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), restTimerManager.timerState.value)
@@ -187,7 +204,7 @@ class ActiveWorkoutViewModel @Inject constructor(
         val exercises = currentSession.exercises.toMutableList()
         if (exerciseIndex in exercises.indices) {
             exercises.removeAt(exerciseIndex)
-            _activeSession.value = currentSession.copy(exercises = exercises)
+            setActiveSession(currentSession.copy(exercises = exercises))
         }
     }
 
@@ -196,7 +213,7 @@ class ActiveWorkoutViewModel @Inject constructor(
         val exercises = session.exercises.toMutableList()
         if (fromIndex !in exercises.indices || toIndex !in exercises.indices) return
         exercises.add(toIndex, exercises.removeAt(fromIndex))
-        _activeSession.value = session.copy(exercises = exercises)
+        setActiveSession(session.copy(exercises = exercises))
     }
 
     private fun completeNextAvailableSet() {
@@ -249,16 +266,43 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private fun initializeSession() {
         viewModelScope.launch {
-            val session = createSession() ?: run {
+            _historyState.value = emptyMap()
+            _prefillHistoryState.value = emptyMap()
+
+            val draft = activeWorkoutDraftRepository.getDraft()
+            val session = restoreOrCreateSession(draft) ?: run {
                 _activeSession.value = null
                 return@launch
             }
 
-            originalTemplateExercises = session.exercises.map { it.copy() }
-
             loadHistoryForSession(session)
-            _activeSession.value = updatedSessionWithHistory(session)
+            val sessionWithHistory = if (draft != null && shouldUseDraft(draft)) {
+                session
+            } else {
+                updatedSessionWithHistory(session)
+            }
+            setActiveSession(sessionWithHistory)
         }
+    }
+
+    private suspend fun restoreOrCreateSession(draft: ActiveWorkoutDraft?): WorkoutSession? {
+        if (draft != null && shouldUseDraft(draft)) {
+            originalTemplateExercises = draft.originalTemplateExercises.map { it.copy() }
+            startedAtEpochMillis = draft.startedAtEpochMillis
+            lastInteractedAtEpochMillis = draft.lastInteractedAtEpochMillis
+            return draft.session
+        }
+
+        val session = createSession() ?: return null
+        originalTemplateExercises = session.exercises.map { it.copy() }
+        startedAtEpochMillis = System.currentTimeMillis()
+        lastInteractedAtEpochMillis = startedAtEpochMillis
+        return session
+    }
+
+    private fun shouldUseDraft(draft: ActiveWorkoutDraft): Boolean {
+        if (shouldResumeDraft) return true
+        return draft.session.templateId == templateId
     }
 
     private suspend fun createSession(): WorkoutSession? {
@@ -313,10 +357,9 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private fun startSessionTicker() {
         viewModelScope.launch {
-            val startTime = System.currentTimeMillis()
             while (isActive) {
                 val now = System.currentTimeMillis()
-                val elapsed = (now - startTime) / 1000
+                val elapsed = (now - startedAtEpochMillis) / 1000
                 _elapsedTimeSeconds.value = elapsed
                 delay(1000)
             }
@@ -343,7 +386,7 @@ class ActiveWorkoutViewModel @Inject constructor(
         sets[setIndex] = update(sets[setIndex])
 
         exercises[exerciseIndex] = targetExercise.copy(sets = sets)
-        _activeSession.value = currentSession.copy(exercises = exercises)
+        setActiveSession(currentSession.copy(exercises = exercises))
     }
 
     private fun onWeightChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
@@ -454,6 +497,7 @@ class ActiveWorkoutViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            persistDraftJob?.cancel()
             val finalSession = session.copy(
                 durationSeconds = _elapsedTimeSeconds.value
             )
@@ -469,6 +513,7 @@ class ActiveWorkoutViewModel @Inject constructor(
             when (val result = finishWorkoutUseCase(finalSession)) {
                 is AppResult.Success -> {
                     restTimerManager.stopTimer()
+                    clearDraftArtifacts()
                     _effects.emit(ActiveWorkoutEffect.NavigateBack)
                 }
                 is AppResult.Error -> {
@@ -480,7 +525,9 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private fun cancelWorkout() {
         viewModelScope.launch {
+            persistDraftJob?.cancel()
             restTimerManager.stopTimer()
+            clearDraftArtifacts()
             _effects.emit(ActiveWorkoutEffect.NavigateBack)
         }
     }
@@ -490,7 +537,7 @@ class ActiveWorkoutViewModel @Inject constructor(
         val exercises = currentSession.exercises.toMutableList()
         val targetExercise = exercises[exerciseIndex]
         exercises[exerciseIndex] = targetExercise.copy(note = note)
-        _activeSession.value = currentSession.copy(exercises = exercises)
+        setActiveSession(currentSession.copy(exercises = exercises))
     }
 
     private fun onExerciseNoteChange(exerciseIndex: Int, newValue: String) {
@@ -499,7 +546,7 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private fun onSessionNoteChange(newValue: String) {
         val currentSession = _activeSession.value ?: return
-        _activeSession.value = currentSession.copy(note = newValue.ifEmpty { null })
+        setActiveSession(currentSession.copy(note = newValue.ifEmpty { null }))
     }
 
     private fun hasWorkoutBeenModified(session: WorkoutSession): Boolean {
@@ -548,7 +595,7 @@ class ActiveWorkoutViewModel @Inject constructor(
 
         val newSets = targetExercise.sets + newSet
         exercises[exerciseIndex] = targetExercise.copy(sets = newSets)
-        _activeSession.value = currentSession.copy(exercises = exercises)
+        setActiveSession(currentSession.copy(exercises = exercises))
     }
 
     private fun removeSet(exerciseIndex: Int, setIndex: Int) {
@@ -566,7 +613,7 @@ class ActiveWorkoutViewModel @Inject constructor(
             exercises[exerciseIndex] = targetExercise.copy(sets = newSets)
         }
 
-        _activeSession.value = currentSession.copy(exercises = exercises)
+        setActiveSession(currentSession.copy(exercises = exercises))
     }
 
     fun onAddExercisesToSession(exerciseIds: List<String>) {
@@ -577,9 +624,9 @@ class ActiveWorkoutViewModel @Inject constructor(
                 createSessionExerciseFromId(exerciseId)
             }
 
-            _activeSession.value = currentSession.copy(
+            setActiveSession(currentSession.copy(
                 exercises = currentSession.exercises + newExercises
-            )
+            ))
         }
     }
 
@@ -593,7 +640,7 @@ class ActiveWorkoutViewModel @Inject constructor(
             val newExerciseDef = getExerciseDetailUseCase(newExerciseId).firstOrNull() ?: return@launch
 
             loadHistoryFor(newExerciseId)
-            val historySets = _historyState.value[newExerciseId].orEmpty()
+            val historySets = _prefillHistoryState.value[newExerciseId].orEmpty()
 
             val newSets = List(oldExercise.sets.size) { idx ->
                 val historicalSet = historySets.getOrNull(idx)
@@ -610,7 +657,7 @@ class ActiveWorkoutViewModel @Inject constructor(
                 exercise = newExerciseDef,
                 sets = newSets
             )
-            _activeSession.value = currentSession.copy(exercises = exercises)
+            setActiveSession(currentSession.copy(exercises = exercises))
         }
     }
 
@@ -641,6 +688,43 @@ class ActiveWorkoutViewModel @Inject constructor(
         val historySets = _prefillHistoryState.value[exerciseId]
         val first = historySets?.firstOrNull()
         return if (first != null) first.weight to first.reps else 0.0 to 0
+    }
+
+    private fun setActiveSession(
+        session: WorkoutSession,
+        markInteraction: Boolean = true
+    ) {
+        _activeSession.value = session
+        if (markInteraction) {
+            lastInteractedAtEpochMillis = System.currentTimeMillis()
+        }
+        scheduleDraftPersistence()
+        activeWorkoutReminderScheduler.schedule()
+    }
+
+    private fun scheduleDraftPersistence() {
+        persistDraftJob?.cancel()
+        persistDraftJob = viewModelScope.launch {
+            delay(300)
+            persistCurrentDraft()
+        }
+    }
+
+    private suspend fun persistCurrentDraft() {
+        val session = _activeSession.value ?: return
+        activeWorkoutDraftRepository.saveDraft(
+            ActiveWorkoutDraft(
+                session = session,
+                originalTemplateExercises = originalTemplateExercises,
+                startedAtEpochMillis = startedAtEpochMillis,
+                lastInteractedAtEpochMillis = lastInteractedAtEpochMillis
+            )
+        )
+    }
+
+    private suspend fun clearDraftArtifacts() {
+        activeWorkoutDraftRepository.clearDraft()
+        activeWorkoutReminderScheduler.cancel()
     }
 }
 

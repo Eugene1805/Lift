@@ -100,6 +100,7 @@ fun WorkoutRoute(
     onTemplateClick: (String) -> Unit,
     onStartWorkoutClick: (String) -> Unit,
     onStartEmptyClick: (String?) -> Unit,
+    onResumeDraftClick: () -> Unit,
     viewModel: WorkoutViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -113,6 +114,7 @@ fun WorkoutRoute(
             is WorkoutUiEvent.TemplateClicked -> onTemplateClick(event.templateId)
             is WorkoutUiEvent.TemplateStartClicked -> onStartWorkoutClick(event.templateId)
             WorkoutUiEvent.StartEmptyClicked -> onStartEmptyClick(null)
+            WorkoutUiEvent.ResumeDraftClicked -> onResumeDraftClick()
             is WorkoutUiEvent.TemplateShared -> {
                 val template = uiState.templates.find { it.id == event.templateId } ?: return@rememberUpdatedState
                 val shareText = resources.getString(
@@ -231,6 +233,32 @@ fun WorkoutScreen(
             },
             title = { Text(stringResource(R.string.template_delete_title)) },
             text = { Text(stringResource(R.string.template_delete_message)) }
+        )
+    }
+
+    uiState.activeDraft?.let { draft ->
+        AlertDialog(
+            onDismissRequest = {},
+            confirmButton = {
+                TextButton(onClick = { onEvent(WorkoutUiEvent.ResumeDraftClicked) }) {
+                    Text(stringResource(R.string.workout_draft_resume))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onEvent(WorkoutUiEvent.DiscardDraftClicked) }) {
+                    Text(stringResource(R.string.workout_draft_discard))
+                }
+            },
+            title = { Text(stringResource(R.string.workout_draft_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.workout_draft_message,
+                        draft.sessionName,
+                        draft.exerciseCount
+                    )
+                )
+            }
         )
     }
 }

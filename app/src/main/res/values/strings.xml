@@ -175,6 +175,8 @@
     <string name="seed_dips_desc">1. Grip parallel bars, arms extended supporting body.\n2. Lean slightly forward for chest emphasis.\n3. Lower body by bending elbows to 90 degrees.\n4. Keep elbows at about 45-degree angle.\n5. Press back up to starting position.</string>
     <string name="seed_face_pull">Face Pulls (Cable)</string>
     <string name="seed_face_pull_desc">1. Set cable at upper chest height with rope attachment.\n2. Grab rope with overhand grip, step back.\n3. Pull rope toward face, separating hands at end.\n4. Focus on pulling elbows back and squeezing rear delts.\n5. Return under control to starting position.</string>
+    <string name="seed_machine_lateral_raise">Machine Lateral Raise</string>
+    <string name="seed_machine_lateral_raise_desc">1. Sit in the lateral raise machine with chest tall.\n2. Place upper arms or elbows against the pads.\n3. Raise arms out to shoulder height.\n4. Keep traps relaxed and lead with elbows.\n5. Lower under control to the start.</string>
     <string name="seed_hip_thrust">Hip Thrust (Barbell)</string>
     <string name="seed_hip_thrust_desc">1. Sit on ground with upper back against bench, bar over hips.\n2. Plant feet flat, shoulder-width apart.\n3. Drive through heels, lifting hips until body forms straight line.\n4. Squeeze glutes hard at the top.\n5. Lower hips under control without touching ground.</string>
     <string name="seed_incline_bench">Incline Bench Press (Barbell)</string>
@@ -185,12 +187,16 @@
     <string name="seed_skull_crusher_desc">1. Lie on bench holding bar with narrow grip.\n2. Extend arms straight up over chest.\n3. Lower bar toward forehead by bending elbows only.\n4. Keep upper arms stationary and perpendicular to floor.\n5. Extend arms back to starting position.</string>
     <string name="seed_hammer_curl">Hammer Curl (Dumbbell)</string>
     <string name="seed_hammer_curl_desc">1. Stand with dumbbells at sides, palms facing each other.\n2. Keep elbows close to torso.\n3. Curl weights up without rotating wrists.\n4. Maintain neutral grip throughout movement.\n5. Lower under control to starting position.</string>
+    <string name="seed_reverse_curl">Reverse Curl (EZ Bar)</string>
+    <string name="seed_reverse_curl_desc">1. Stand holding EZ bar with overhand grip.\n2. Keep elbows close to torso.\n3. Curl bar upward without swinging.\n4. Focus on forearms and brachialis.\n5. Lower under control to full extension.</string>
     <string name="seed_shrugs">Shrugs (Dumbbell)</string>
     <string name="seed_shrugs_desc">1. Stand holding dumbbells at sides with arms straight.\n2. Keep arms extended throughout movement.\n3. Elevate shoulders straight up toward ears.\n4. Hold peak contraction for 1–2 seconds.\n5. Lower shoulders under control.</string>
     <string name="seed_bulgarian_split_squat">Bulgarian Split Squat (Dumbbell)</string>
     <string name="seed_bulgarian_split_squat_desc">1. Hold dumbbells at sides, place rear foot on bench behind you.\n2. Front foot far enough forward for comfortable stance.\n3. Lower hips by bending front knee to 90 degrees.\n4. Keep torso upright, weight on front heel.\n5. Drive through front heel to return to start.</string>
     <string name="seed_lunges">Walking Lunges (Dumbbell)</string>
     <string name="seed_lunges_desc">1. Hold dumbbells at sides, stand with feet together.\n2. Step forward with one leg into lunge position.\n3. Lower back knee toward ground, front thigh parallel to floor.\n4. Push through front heel to step forward with rear leg.\n5. Alternate legs with each forward step.</string>
+    <string name="seed_step_up">Step Up (Dumbbell)</string>
+    <string name="seed_step_up_desc">1. Hold dumbbells at your sides facing a bench or box.\n2. Place one foot fully on the platform.\n3. Drive through that foot to stand up.\n4. Control the descent back to the floor.\n5. Finish all reps, then switch legs.</string>
     <string name="seed_cable_tricep_pushdown">Cable Triceps Pushdown</string>
     <string name="seed_cable_tricep_pushdown_desc">1. Stand facing cable machine with rope or bar attachment.\n2. Grip attachment with elbows at sides.\n3. Push down until arms are fully extended.\n4. Keep elbows stationary throughout movement.\n5. Return under control without letting elbows move forward.</string>
     <string name="seed_chest_supported_row">Chest Supported Row (Machine)</string>
@@ -445,6 +451,8 @@
     <!-- Overhead Triceps Extensions - Machine -->
     <string name="seed_machine_overhead_triceps_extension">Machine Overhead Triceps Extension</string>
     <string name="seed_machine_overhead_triceps_extension_desc">1. Sit in overhead triceps extension machine.\n2. Adjust seat so arms align with pivot point.\n3. Grip handles overhead or behind head.\n4. Extend arms upward, squeezing triceps.\n5. Lower under control to starting position.</string>
+    <string name="seed_single_arm_triceps_extension">Single Arm Triceps Extension</string>
+    <string name="seed_single_arm_triceps_extension_desc">1. Stand beside a high cable with one handle.\n2. Pin elbow close to your side.\n3. Extend the arm down until fully straight.\n4. Squeeze triceps without letting shoulder roll forward.\n5. Return under control and switch arms after the set.</string>
 
     <string name="section_appearance">Appearance</string>
     <string name="section_units">Units</string>

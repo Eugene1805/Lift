@@ -2,8 +2,10 @@ package com.eugene.lift.data.local
 
 import android.database.sqlite.SQLiteDatabase
 import androidx.room.Room
+import androidx.room.migration.Migration
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.sqlite.db.SupportSQLiteDatabase
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -13,6 +15,12 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class AppDatabaseMigrationTest {
+
+    private val migration12To13 = object : Migration(12, 13) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE exercises ADD COLUMN seedKey TEXT")
+        }
+    }
 
     @After
     fun cleanUp() {
@@ -27,7 +35,7 @@ class AppDatabaseMigrationTest {
         createVersion12Database(context.getDatabasePath(TEST_DB_NAME).path)
 
         val database = Room.databaseBuilder(context, AppDatabase::class.java, TEST_DB_NAME)
-            .addMigrations(MIGRATION_12_13)
+            .addMigrations(migration12To13)
             .build()
 
         database.openHelper.writableDatabase

@@ -2,12 +2,12 @@
 
 Current state:
 - Local seed remains the source of truth for the visible exercise catalog.
-- `94` seeded exercises now resolve to local drawable assets.
+- `99` seeded exercises now resolve to local drawable assets.
 - Seeded exercises now persist a stable `seedKey`, so names/instructions can localize without mutating the catalog rows.
 - Seeded exercises are treated as read-only in the app; custom variants should come from user-created exercises.
 - Existing installs need the versioned seed worker rerun to backfill the new image paths.
 - `0` local `webp` assets are orphaned in `drawable/`.
-- Alternate-only aliases still exist for future/custom exercises: `standing_dumbbell_shoulder_press`, `machine_lateral_raise`, `step_up`, `woodchopper`, `ez_bar_reverse_curl`.
+- `0` tracked drawable aliases remain seedless; every local `webp` now maps to at least one seeded exercise.
 
 ## Already Covered
 
@@ -105,6 +105,11 @@ Current state:
 - Cable Overhead Triceps Extension (Bilateral)
 - Cable Overhead Triceps Extension (Unilateral)
 - Cable Overhead Triceps Extension with Cuff (Unilateral)
+- Machine Lateral Raise
+- Reverse Curl (EZ Bar)
+- Step Up (Dumbbell)
+- Cable Oblique Twist
+- Single Arm Triceps Extension
 
 ## Batch 1
 

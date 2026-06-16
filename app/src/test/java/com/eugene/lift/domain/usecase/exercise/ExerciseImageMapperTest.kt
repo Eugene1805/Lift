@@ -86,6 +86,11 @@ class ExerciseImageMapperTest {
         assertEquals("dumbell_chest_fly", ExerciseImageMapper.getDrawableForSeedKey("seed_dumbbell_fly"))
         assertEquals("dumbell_front_raise", ExerciseImageMapper.getDrawableForSeedKey("seed_front_raise"))
         assertEquals("sissy_squat", ExerciseImageMapper.getDrawableForSeedKey("seed_sissy_squat"))
+        assertEquals("machine_lateral_raise", ExerciseImageMapper.getDrawableForSeedKey("seed_machine_lateral_raise"))
+        assertEquals("ez_bar_reverse_curl", ExerciseImageMapper.getDrawableForSeedKey("seed_reverse_curl"))
+        assertEquals("step_up", ExerciseImageMapper.getDrawableForSeedKey("seed_step_up"))
+        assertEquals("woodchopper", ExerciseImageMapper.getDrawableForSeedKey("seed_cable_oblique_twist"))
+        assertEquals("single_arm_triceps_extension", ExerciseImageMapper.getDrawableForSeedKey("seed_single_arm_triceps_extension"))
     }
 
     @Test
@@ -123,6 +128,9 @@ class ExerciseImageMapperTest {
         assertEquals("machine_lateral_raise", ExerciseImageMapper.getDrawable("Machine Lateral Raise"))
         assertEquals("step_up", ExerciseImageMapper.getDrawable("Step Up (Dumbbell)"))
         assertEquals("woodchopper", ExerciseImageMapper.getDrawable("Woodchopper (Cable)"))
+        assertEquals("woodchopper", ExerciseImageMapper.getDrawable("Cable Oblique Twist"))
+        assertEquals("ez_bar_reverse_curl", ExerciseImageMapper.getDrawable("Reverse Curl (EZ Bar)"))
+        assertEquals("single_arm_triceps_extension", ExerciseImageMapper.getDrawable("Single Arm Triceps Extension"))
     }
 
     @Test

@@ -129,6 +129,8 @@
     <string name="seed_dips_desc">1. Agarra las barras paralelas, brazos extendidos soportando el cuerpo.\n2. Inclínate ligeramente hacia adelante para énfasis en pecho.\n3. Baja el cuerpo doblando los codos a 90 grados.\n4. Mantén los codos en un ángulo de aproximadamente 45 grados.\n5. Empuja de vuelta a la posición inicial.</string>
     <string name="seed_face_pull">Jalones a la Cara (Polea)</string>
     <string name="seed_face_pull_desc">1. Ajusta la polea a la altura del pecho superior con cuerda.\n2. Agarra la cuerda con agarre prono, retrocede.\n3. Lleva la cuerda hacia la cara, separando las manos al final.\n4. Enfócate en llevar los codos hacia atrás y apretar los deltoides posteriores.\n5. Regresa controladamente a la posición inicial.</string>
+    <string name="seed_machine_lateral_raise">Elevación Lateral en Máquina</string>
+    <string name="seed_machine_lateral_raise_desc">1. Siéntate en la máquina con el pecho erguido.\n2. Coloca brazos superiores o codos contra las almohadillas.\n3. Eleva los brazos hasta la altura de los hombros.\n4. Mantén trapecios relajados y guía con los codos.\n5. Baja controladamente al inicio.</string>
     <string name="seed_hip_thrust">Empuje de Cadera (Barra)</string>
     <string name="seed_hip_thrust_desc">1. Siéntate en el suelo con la espalda superior contra el banco, barra sobre las caderas.\n2. Planta los pies planos, al ancho de hombros.\n3. Empuja con los talones, elevando las caderas hasta formar línea recta.\n4. Aprieta los glúteos fuertemente en la parte superior.\n5. Baja las caderas controladamente sin tocar el suelo.</string>
     <string name="seed_incline_bench">Press de Banca Inclinado (Barra)</string>
@@ -139,12 +141,16 @@
     <string name="seed_skull_crusher_desc">1. Acuéstate en el banco sosteniendo la barra con agarre estrecho.\n2. Extiende los brazos rectos sobre el pecho.\n3. Baja la barra hacia la frente doblando solo los codos.\n4. Mantén la parte superior de los brazos estacionaria y perpendicular al suelo.\n5. Extiende los brazos de vuelta a la posición inicial.</string>
     <string name="seed_hammer_curl">Curl Martillo (Mancuernas)</string>
     <string name="seed_hammer_curl_desc">1. Párate con mancuernas a los lados, palmas enfrentadas.\n2. Mantén los codos cerca del torso.\n3. Lleva las pesas arriba sin rotar las muñecas.\n4. Mantén el agarre neutral durante todo el movimiento.\n5. Baja controladamente a la posición inicial.</string>
+    <string name="seed_reverse_curl">Curl Inverso (Barra Z)</string>
+    <string name="seed_reverse_curl_desc">1. Párate sosteniendo barra Z con agarre prono.\n2. Mantén codos cerca del torso.\n3. Eleva la barra sin balancearte.\n4. Enfócate en antebrazos y braquial.\n5. Baja controladamente hasta extensión completa.</string>
     <string name="seed_shrugs">Encogimientos (Mancuernas)</string>
     <string name="seed_shrugs_desc">1. Párate sosteniendo mancuernas a los lados con brazos rectos.\n2. Mantén los brazos extendidos durante todo el movimiento.\n3. Eleva los hombros directamente hacia las orejas.\n4. Mantén la contracción máxima durante 1–2 segundos.\n5. Baja los hombros controladamente.</string>
     <string name="seed_bulgarian_split_squat">Sentadilla Búlgara (Mancuernas)</string>
     <string name="seed_bulgarian_split_squat_desc">1. Sostén mancuernas a los lados, coloca pie trasero en banco detrás de ti.\n2. Pie frontal lo suficientemente adelante para una postura cómoda.\n3. Baja las caderas doblando la rodilla frontal a 90 grados.\n4. Mantén el torso erguido, peso en el talón frontal.\n5. Empuja con el talón frontal para volver al inicio.</string>
     <string name="seed_lunges">Zancadas con Mancuernas</string>
     <string name="seed_lunges_desc">1. Sostén mancuernas a los lados, párate con pies juntos.\n2. Da un paso adelante con una pierna a posición de zancada.\n3. Baja la rodilla trasera hacia el suelo, muslo frontal paralelo al suelo.\n4. Empuja con el talón frontal para dar paso adelante con pierna trasera.\n5. Alterna las piernas con cada paso hacia adelante.</string>
+    <string name="seed_step_up">Subida al Banco (Mancuernas)</string>
+    <string name="seed_step_up_desc">1. Sostén mancuernas a los lados frente a un banco o cajón.\n2. Coloca un pie completamente sobre la plataforma.\n3. Empuja con ese pie hasta quedar de pie arriba.\n4. Controla el descenso de vuelta al suelo.\n5. Completa las repeticiones y luego cambia de pierna.</string>
     <string name="seed_cable_tricep_pushdown">Extensión de Tríceps en Polea</string>
     <string name="seed_cable_tricep_pushdown_desc">1. Párate frente a la máquina de polea con cuerda o barra.\n2. Agarra el accesorio con codos a los lados.\n3. Empuja hacia abajo hasta que los brazos estén completamente extendidos.\n4. Mantén los codos estacionarios durante todo el movimiento.\n5. Regresa controladamente sin dejar que los codos se muevan hacia adelante.</string>
     <string name="seed_chest_supported_row">Remo con Apoyo de Pecho (Máquina)</string>
@@ -399,6 +405,8 @@
     <!-- Extensiones de Tríceps sobre Cabeza - Máquina -->
     <string name="seed_machine_overhead_triceps_extension">Extensión de Tríceps sobre Cabeza en Máquina</string>
     <string name="seed_machine_overhead_triceps_extension_desc">1. Siéntate en máquina de extensión de tríceps sobre cabeza.\n2. Ajusta asiento para alinear brazos con punto de pivote.\n3. Agarra manijas sobre la cabeza o detrás de la cabeza.\n4. Extiende brazos hacia arriba, apretando tríceps.\n5. Baja controladamente a posición inicial.</string>
+    <string name="seed_single_arm_triceps_extension">Extensión de Tríceps con Una Mano</string>
+    <string name="seed_single_arm_triceps_extension_desc">1. Párate junto a una polea alta con una manija.\n2. Mantén el codo pegado al costado.\n3. Extiende el brazo hacia abajo hasta quedar recto.\n4. Aprieta tríceps sin dejar que el hombro se vaya al frente.\n5. Regresa controladamente y cambia de brazo al terminar la serie.</string>
 
     <string name="section_appearance">Apariencia</string>
     <string name="section_units">Unidades</string>

@@ -1,6 +1,7 @@
 package com.eugene.lift.domain.usecase.exercise
 
 import com.eugene.lift.domain.repository.ExerciseRepository
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 /**
@@ -21,11 +22,14 @@ class AssignMissingImagesUseCase @Inject constructor(
      * Executes the mapping process for all unassigned exercises currently in the repository.
      */
     suspend operator fun invoke() {
-        val unassigned = repository.getExercisesWithoutImage()
-        unassigned.forEach { exercise ->
-            val drawable = exercise.seedKey?.let(imageResolver::resolveDrawableForSeedKey)
-                ?: imageResolver.resolveDrawable(exercise.name)
-            if (drawable != null) {
+        val exercises = repository.getExercises().first()
+        exercises.forEach { exercise ->
+            val drawable = when {
+                exercise.seedKey != null -> imageResolver.resolveDrawableForSeedKey(exercise.seedKey)
+                exercise.imagePath == null -> imageResolver.resolveDrawable(exercise.name)
+                else -> null
+            }
+            if (drawable != null && drawable != exercise.imagePath) {
                 repository.updateImagePath(exercise.id, drawable)
             }
         }

@@ -10,6 +10,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -41,7 +42,7 @@ class AssignMissingImagesUseCaseTest {
     fun `invoke updates imagePath for exercises with a known mapping`() = runTest {
         // GIVEN
         val bench = exercise("Bench Press (Barbell)", id = "bench_id")
-        coEvery { repository.getExercisesWithoutImage() } returns listOf(bench)
+        every { repository.getExercises() } returns flowOf(listOf(bench))
         every { imageResolver.resolveDrawable("Bench Press (Barbell)") } returns "bench_press"
 
         // WHEN
@@ -55,7 +56,7 @@ class AssignMissingImagesUseCaseTest {
     fun `invoke does NOT call updateImagePath for exercises with no mapping`() = runTest {
         // GIVEN
         val unknown = exercise("Unknown Exercise XYZ", id = "unknown_id")
-        coEvery { repository.getExercisesWithoutImage() } returns listOf(unknown)
+        every { repository.getExercises() } returns flowOf(listOf(unknown))
         every { imageResolver.resolveDrawable("Unknown Exercise XYZ") } returns null
 
         // WHEN
@@ -71,7 +72,7 @@ class AssignMissingImagesUseCaseTest {
         val bench = exercise("Bench Press (Barbell)", id = "bench_id")
         val unknown = exercise("Some Obscure Exercise", id = "unknown_id")
         val deadlift = exercise("Deadlift (Barbell)", id = "dead_id")
-        coEvery { repository.getExercisesWithoutImage() } returns listOf(bench, unknown, deadlift)
+        every { repository.getExercises() } returns flowOf(listOf(bench, unknown, deadlift))
         every { imageResolver.resolveDrawable("Bench Press (Barbell)") } returns "bench_press"
         every { imageResolver.resolveDrawable("Some Obscure Exercise") } returns null
         every { imageResolver.resolveDrawable("Deadlift (Barbell)") } returns "deadlift"
@@ -86,9 +87,9 @@ class AssignMissingImagesUseCaseTest {
     }
 
     @Test
-    fun `invoke does nothing when no exercises are missing images`() = runTest {
+    fun `invoke does nothing when there are no exercises to repair`() = runTest {
         // GIVEN
-        coEvery { repository.getExercisesWithoutImage() } returns emptyList()
+        every { repository.getExercises() } returns flowOf(emptyList())
 
         // WHEN
         useCase()
@@ -100,13 +101,30 @@ class AssignMissingImagesUseCaseTest {
 
     @Test
     fun `invoke prefers seedKey mapping when present`() = runTest {
-        val seeded = exercise("Whatever", id = "seeded_id").copy(seedKey = "seed_smith_machine_hip_thrust")
-        coEvery { repository.getExercisesWithoutImage() } returns listOf(seeded)
+        val seeded = exercise("Whatever", id = "seeded_id").copy(
+            seedKey = "seed_smith_machine_hip_thrust"
+        )
+        every { repository.getExercises() } returns flowOf(listOf(seeded))
         every { imageResolver.resolveDrawableForSeedKey("seed_smith_machine_hip_thrust") } returns "smith_machine_hip_thrust"
 
         useCase()
 
         coVerify(exactly = 1) { repository.updateImagePath("seeded_id", "smith_machine_hip_thrust") }
+        verify(exactly = 0) { imageResolver.resolveDrawable(any()) }
+    }
+
+    @Test
+    fun `invoke repairs stale seeded image paths`() = runTest {
+        val seeded = exercise("Weighted Dips", id = "weighted_dips_id").copy(
+            imagePath = "weigthed_dips",
+            seedKey = "seed_weighted_dip"
+        )
+        every { repository.getExercises() } returns flowOf(listOf(seeded))
+        every { imageResolver.resolveDrawableForSeedKey("seed_weighted_dip") } returns "weighted_dips"
+
+        useCase()
+
+        coVerify(exactly = 1) { repository.updateImagePath("weighted_dips_id", "weighted_dips") }
         verify(exactly = 0) { imageResolver.resolveDrawable(any()) }
     }
 }

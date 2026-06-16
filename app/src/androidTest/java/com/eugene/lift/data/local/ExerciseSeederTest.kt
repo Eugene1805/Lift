@@ -1,10 +1,12 @@
 package com.eugene.lift.data.local
 
+import android.content.Context
+import android.content.res.Configuration
+import androidx.annotation.StringRes
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.eugene.lift.R
-import com.eugene.lift.common.localization.createLocalizedContext
 import com.eugene.lift.data.repository.ExerciseRepositoryImpl
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
@@ -20,6 +22,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.Locale
 
 @RunWith(AndroidJUnit4::class)
 class ExerciseSeederTest {
@@ -48,6 +51,12 @@ class ExerciseSeederTest {
         database.close()
     }
 
+    private fun localizedString(context: Context, languageCode: String, @StringRes resId: Int): String {
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(Locale(languageCode))
+        return context.createConfigurationContext(config).getString(resId)
+    }
+
     @Test
     fun populateIfEmpty_insertsCatalogOnlyOnce() = runBlocking {
         seeder.populateIfEmpty()
@@ -63,7 +72,7 @@ class ExerciseSeederTest {
     @Test
     fun populateIfEmpty_preservesSeedBodyParts() = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val benchName = context.createLocalizedContext("en").getString(R.string.seed_bench_press)
+        val benchName = localizedString(context, "en", R.string.seed_bench_press)
 
         seeder.populateIfEmpty()
 
@@ -94,10 +103,32 @@ class ExerciseSeederTest {
 
         val exercises = repository.getExercises().first()
 
-        assertEquals(1, repository.getCount())
-        assertEquals("custom-local-id", exercises.single().id)
-        assertEquals("Existing Custom Exercise", exercises.single().name)
-        assertEquals(setOf(BodyPart.BICEPS), exercises.single().bodyParts.toSet())
+        assertTrue(repository.getCount() > 1)
+        val custom = exercises.first { it.id == "custom-local-id" }
+        assertEquals("Existing Custom Exercise", custom.name)
+        assertEquals(setOf(BodyPart.BICEPS), custom.bodyParts.toSet())
+    }
+
+    @Test
+    fun populateIfEmpty_addsOnlyMissingSeedKeys() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val seededBench = Exercise(
+            id = "seed-bench-id",
+            name = localizedString(context, "en", R.string.seed_bench_press),
+            category = ExerciseCategory.BARBELL,
+            measureType = MeasureType.REPS_AND_WEIGHT,
+            instructions = localizedString(context, "en", R.string.seed_bench_desc),
+            imagePath = "bench_press",
+            bodyParts = listOf(BodyPart.CHEST, BodyPart.TRICEPS, BodyPart.FRONT_DELTS),
+            seedKey = "seed_bench_press"
+        )
+        repository.saveExercise(seededBench)
+
+        seeder.populateIfEmpty()
+
+        val exercises = repository.getExercises().first()
+        assertEquals(1, exercises.count { it.seedKey == "seed_bench_press" })
+        assertTrue(exercises.any { it.seedKey == "seed_step_up" })
     }
 
     @Test
@@ -115,7 +146,7 @@ class ExerciseSeederTest {
             .first { it.seedKey == "seed_bench_press" }
             .name
 
-        assertEquals(context.createLocalizedContext("en").getString(R.string.seed_bench_press), englishName)
-        assertEquals(context.createLocalizedContext("es").getString(R.string.seed_bench_press), spanishName)
+        assertEquals(localizedString(context, "en", R.string.seed_bench_press), englishName)
+        assertEquals(localizedString(context, "es", R.string.seed_bench_press), spanishName)
     }
 }

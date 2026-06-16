@@ -2,11 +2,11 @@
 
 Current state:
 - Local seed remains the source of truth for the visible exercise catalog.
-- `79` seeded exercises now resolve to local drawable assets.
+- `82` seeded exercises now resolve to local drawable assets.
 - Seeded exercises now persist a stable `seedKey`, so names/instructions can localize without mutating the catalog rows.
 - Seeded exercises are treated as read-only in the app; custom variants should come from user-created exercises.
 - Existing installs need the versioned seed worker rerun to backfill the new image paths.
-- Unused or alternate local assets left on purpose: `standing_dumbbell_shoulder_press`, `weigthed_dips`, `dumbell_chest_fly`, `dumbell_front_raise`, `machine_lateral_raise`, `sissy_squat`.
+- Unused or alternate local assets left on purpose: `standing_dumbbell_shoulder_press`, `weigthed_dips`, `machine_lateral_raise`.
 
 ## Already Covered
 
@@ -81,6 +81,9 @@ Current state:
 - Box Jumps
 - Chin-ups
 - Ab Wheel Rollout
+- Dumbbell Fly
+- Front Raise (Dumbbell)
+- Sissy Squat
 - Upright Row (Barbell)
 - Power Clean (Barbell)
 - Muscle Up
@@ -94,7 +97,6 @@ Highest-value gaps still missing a local asset:
 - Push-up
 - Tricep Extension
 - Lunges
-- Dumbbell Fly
 - Cable Crossover
 
 ## Batch 2
@@ -104,7 +106,6 @@ Strong next layer after the core catalog gaps:
 - Hanging Leg Raise
 - EZ Bar Curl
 - Reverse Curl
-- Front Raise
 - Reverse Wrist Curl
 - Front Lat Pulldown
 - Smith Machine Shoulder Press

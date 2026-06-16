@@ -96,7 +96,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.DUMBBELL,
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_dumbbell_press_desc),
-                imagePath = imageFor(context, R.string.seed_cable_fly),
+                imagePath = null,
                 bodyParts = listOf(BodyPart.CHEST, BodyPart.TRICEPS, BodyPart.FRONT_DELTS)
             ),
             Exercise(
@@ -192,7 +192,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.DUMBBELL,
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_tricep_extension_desc),
-                imagePath = imageFor(context, R.string.seed_cable_crunch),
+                imagePath = null,
                 bodyParts = listOf(BodyPart.TRICEPS)
             ),
             Exercise(
@@ -593,7 +593,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.DUMBBELL,
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_dumbbell_fly_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_dumbbell_fly),
                 bodyParts = listOf(BodyPart.CHEST, BodyPart.FRONT_DELTS)
             ),
             Exercise(
@@ -664,7 +664,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.DUMBBELL,
                 measureType = MeasureType.REPS_AND_WEIGHT,
                 instructions = context.getString(R.string.seed_front_raise_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_front_raise),
                 bodyParts = listOf(BodyPart.FRONT_DELTS)
             ),
 
@@ -1010,7 +1010,7 @@ class ExerciseSeeder @Inject constructor(
                 category = ExerciseCategory.BODYWEIGHT,
                 measureType = MeasureType.REPS_ONLY,
                 instructions = context.getString(R.string.seed_sissy_squat_desc),
-                imagePath = null,
+                imagePath = imageFor(context, R.string.seed_sissy_squat),
                 bodyParts = listOf(BodyPart.QUADRICEPS)
             ),
             Exercise(

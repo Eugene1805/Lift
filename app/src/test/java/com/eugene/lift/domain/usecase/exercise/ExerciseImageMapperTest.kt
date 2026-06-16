@@ -68,6 +68,10 @@ class ExerciseImageMapperTest {
         assertEquals("smith_machine_hip_thrust", ExerciseImageMapper.getDrawableForSeedKey("seed_smith_machine_hip_thrust"))
         assertEquals("arnold_press", ExerciseImageMapper.getDrawableForSeedKey("seed_arnold_press"))
         assertEquals("smith_machine_incline_chest_press", ExerciseImageMapper.getDrawableForSeedKey("seed_smith_machine_incline_bench"))
+        assertEquals("ab_wheel", ExerciseImageMapper.getDrawableForSeedKey("seed_ab_wheel"))
+        assertEquals("dumbell_chest_fly", ExerciseImageMapper.getDrawableForSeedKey("seed_dumbbell_fly"))
+        assertEquals("dumbell_front_raise", ExerciseImageMapper.getDrawableForSeedKey("seed_front_raise"))
+        assertEquals("sissy_squat", ExerciseImageMapper.getDrawableForSeedKey("seed_sissy_squat"))
     }
 
     @Test
@@ -85,6 +89,9 @@ class ExerciseImageMapperTest {
         assertEquals("smith_machine_romanian_deadlift", ExerciseImageMapper.getDrawable("Smith Machine Romanian Deadlift"))
         assertEquals("arnold_press", ExerciseImageMapper.getDrawable("Arnold Press (Dumbbell)"))
         assertEquals("ab_wheel", ExerciseImageMapper.getDrawable("Ab Wheel Rollout"))
+        assertEquals("dumbell_chest_fly", ExerciseImageMapper.getDrawable("Dumbbell Fly"))
+        assertEquals("dumbell_front_raise", ExerciseImageMapper.getDrawable("Front Raise (Dumbbell)"))
+        assertEquals("sissy_squat", ExerciseImageMapper.getDrawable("Sissy Squat"))
         assertEquals("upright_row", ExerciseImageMapper.getDrawable("Upright Row (Barbell)"))
     }
 

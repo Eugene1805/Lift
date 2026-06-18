@@ -15,8 +15,7 @@ data class LiftThemeSpec(
     @StringRes val nameRes: Int,
     val lightScheme: ColorScheme,
     val darkScheme: ColorScheme,
-    val previewColors: List<Color>,
-    val forceLight: Boolean = false
+    val previewColors: List<Color>
 )
 
 private val orcaTheme = LiftThemeSpec(
@@ -346,8 +345,7 @@ private val jellyfishTheme = LiftThemeSpec(
         Color(0xFFB64FC8),
         Color(0xFF4F86D9),
         Color(0xFFFCF7FF)
-    ),
-    forceLight = true
+    )
 )
 
 private val themeSpecs = listOf(orcaTheme, makoTheme, foxTheme, viperTheme, lionTheme, jellyfishTheme)
@@ -357,9 +355,8 @@ fun liftThemeSpecFor(theme: AppTheme): LiftThemeSpec =
 
 fun AppTheme.colorScheme(darkTheme: Boolean, highContrast: Boolean = false): ColorScheme {
     val spec = liftThemeSpecFor(this)
-    val resolvedDarkTheme = if (spec.forceLight) false else darkTheme
-    val scheme = if (resolvedDarkTheme) spec.darkScheme else spec.lightScheme
-    return if (highContrast) scheme.asHighContrast(resolvedDarkTheme) else scheme
+    val scheme = if (darkTheme) spec.darkScheme else spec.lightScheme
+    return if (highContrast) scheme.asHighContrast(darkTheme) else scheme
 }
 
 private fun ColorScheme.asHighContrast(darkTheme: Boolean): ColorScheme = copy(

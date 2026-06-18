@@ -7,7 +7,8 @@ enum class AppTheme {
     MAKO,
     FOX,
     VIPER,
-    LION;
+    LION,
+    JELLYFISH;
 
     companion object {
         fun fromStorageValue(value: String?): AppTheme = when (value) {

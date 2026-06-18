@@ -447,6 +447,13 @@ private fun ThemeOptionCard(
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
+            if (spec.forceLight) {
+                Text(
+                    text = stringResource(R.string.theme_light_only),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 spec.previewColors.forEach { color ->
                     Box(

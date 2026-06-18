@@ -439,6 +439,8 @@
     <string name="theme_fox">Zorro</string>
     <string name="theme_viper">Víbora</string>
     <string name="theme_lion">León</string>
+    <string name="theme_jellyfish">Medusa</string>
+    <string name="theme_light_only">Solo claro</string>
     <string name="unit_kg">kg</string>
     <string name="unit_lbs">lbs</string>
     <string name="unit_km">km</string>

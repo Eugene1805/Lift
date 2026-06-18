@@ -15,7 +15,8 @@ data class LiftThemeSpec(
     @StringRes val nameRes: Int,
     val lightScheme: ColorScheme,
     val darkScheme: ColorScheme,
-    val previewColors: List<Color>
+    val previewColors: List<Color>,
+    val forceLight: Boolean = false
 )
 
 private val orcaTheme = LiftThemeSpec(
@@ -293,15 +294,72 @@ private val lionTheme = LiftThemeSpec(
     )
 )
 
-private val themeSpecs = listOf(orcaTheme, makoTheme, foxTheme, viperTheme, lionTheme)
+private val jellyfishTheme = LiftThemeSpec(
+    theme = AppTheme.JELLYFISH,
+    nameRes = R.string.theme_jellyfish,
+    lightScheme = lightColorScheme(
+        primary = Color(0xFF7A57C8),
+        onPrimary = Color(0xFFFFFFFF),
+        primaryContainer = Color(0xFFEBDDFF),
+        onPrimaryContainer = Color(0xFF2C0051),
+        secondary = Color(0xFFB64FC8),
+        onSecondary = Color(0xFFFFFFFF),
+        secondaryContainer = Color(0xFFFFD6FA),
+        onSecondaryContainer = Color(0xFF3C003F),
+        tertiary = Color(0xFF4F86D9),
+        onTertiary = Color(0xFFFFFFFF),
+        tertiaryContainer = Color(0xFFD9E2FF),
+        onTertiaryContainer = Color(0xFF001B43),
+        background = Color(0xFFFCF7FF),
+        onBackground = Color(0xFF201A29),
+        surface = Color(0xFFFCF7FF),
+        onSurface = Color(0xFF201A29),
+        surfaceVariant = Color(0xFFE9DFF0),
+        onSurfaceVariant = Color(0xFF4C4454),
+        outline = Color(0xFF7D7485),
+        outlineVariant = Color(0xFFD0C5D8)
+    ),
+    darkScheme = lightColorScheme(
+        primary = Color(0xFF7A57C8),
+        onPrimary = Color(0xFFFFFFFF),
+        primaryContainer = Color(0xFFEBDDFF),
+        onPrimaryContainer = Color(0xFF2C0051),
+        secondary = Color(0xFFB64FC8),
+        onSecondary = Color(0xFFFFFFFF),
+        secondaryContainer = Color(0xFFFFD6FA),
+        onSecondaryContainer = Color(0xFF3C003F),
+        tertiary = Color(0xFF4F86D9),
+        onTertiary = Color(0xFFFFFFFF),
+        tertiaryContainer = Color(0xFFD9E2FF),
+        onTertiaryContainer = Color(0xFF001B43),
+        background = Color(0xFFFCF7FF),
+        onBackground = Color(0xFF201A29),
+        surface = Color(0xFFFCF7FF),
+        onSurface = Color(0xFF201A29),
+        surfaceVariant = Color(0xFFE9DFF0),
+        onSurfaceVariant = Color(0xFF4C4454),
+        outline = Color(0xFF7D7485),
+        outlineVariant = Color(0xFFD0C5D8)
+    ),
+    previewColors = listOf(
+        Color(0xFF7A57C8),
+        Color(0xFFB64FC8),
+        Color(0xFF4F86D9),
+        Color(0xFFFCF7FF)
+    ),
+    forceLight = true
+)
+
+private val themeSpecs = listOf(orcaTheme, makoTheme, foxTheme, viperTheme, lionTheme, jellyfishTheme)
 
 fun liftThemeSpecFor(theme: AppTheme): LiftThemeSpec =
     themeSpecs.firstOrNull { it.theme == theme } ?: orcaTheme
 
 fun AppTheme.colorScheme(darkTheme: Boolean, highContrast: Boolean = false): ColorScheme {
     val spec = liftThemeSpecFor(this)
-    val scheme = if (darkTheme) spec.darkScheme else spec.lightScheme
-    return if (highContrast) scheme.asHighContrast(darkTheme) else scheme
+    val resolvedDarkTheme = if (spec.forceLight) false else darkTheme
+    val scheme = if (resolvedDarkTheme) spec.darkScheme else spec.lightScheme
+    return if (highContrast) scheme.asHighContrast(resolvedDarkTheme) else scheme
 }
 
 private fun ColorScheme.asHighContrast(darkTheme: Boolean): ColorScheme = copy(

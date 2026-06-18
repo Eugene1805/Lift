@@ -16,6 +16,7 @@ class AppThemeTest {
     fun `fromStorageValue keeps new palette values`() {
         assertEquals(AppTheme.MAKO, AppTheme.fromStorageValue("MAKO"))
         assertEquals(AppTheme.VIPER, AppTheme.fromStorageValue("VIPER"))
+        assertEquals(AppTheme.JELLYFISH, AppTheme.fromStorageValue("JELLYFISH"))
     }
 
     @Test

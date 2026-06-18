@@ -496,6 +496,8 @@
     <string name="theme_fox">Fox</string>
     <string name="theme_viper">Viper</string>
     <string name="theme_lion">Lion</string>
+    <string name="theme_jellyfish">Jellyfish</string>
+    <string name="theme_light_only">Light only</string>
     <string name="unit_kg">kg</string>
     <string name="unit_lbs">lbs</string>
     <string name="unit_km">km</string>

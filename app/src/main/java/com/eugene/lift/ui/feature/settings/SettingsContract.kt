@@ -6,7 +6,7 @@ import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.WeightUnit
 
 data class SettingsUiState(
-    val theme: AppTheme = AppTheme.SYSTEM,
+    val theme: AppTheme = AppTheme.ORCA,
     val weightUnit: WeightUnit = WeightUnit.KG,
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
     val languageCode: String = systemLanguageCode(),

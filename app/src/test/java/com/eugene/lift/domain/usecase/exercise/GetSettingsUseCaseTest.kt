@@ -27,7 +27,7 @@ class GetSettingsUseCaseTest {
     private lateinit var useCase: GetSettingsUseCase
 
     private val defaultSettings = UserSettings(
-        theme = AppTheme.SYSTEM,
+        theme = AppTheme.ORCA,
         weightUnit = WeightUnit.KG,
         distanceUnit = DistanceUnit.KM,
         languageCode = "en"
@@ -48,36 +48,36 @@ class GetSettingsUseCaseTest {
         val result = useCase().first()
 
         // THEN
-        Assert.assertEquals(AppTheme.SYSTEM, result.theme)
+        Assert.assertEquals(AppTheme.ORCA, result.theme)
         Assert.assertEquals(WeightUnit.KG, result.weightUnit)
         Assert.assertEquals(DistanceUnit.KM, result.distanceUnit)
         Assert.assertEquals("en", result.languageCode)
     }
 
     @Test
-    fun `invoke returns settings with LIGHT theme`() = runTest {
+    fun `invoke returns settings with MAKO theme`() = runTest {
         // GIVEN
-        val settings = defaultSettings.copy(theme = AppTheme.LIGHT)
+        val settings = defaultSettings.copy(theme = AppTheme.MAKO)
         coEvery { repository.getSettings() } returns flowOf(settings)
 
         // WHEN
         val result = useCase().first()
 
         // THEN
-        Assert.assertEquals(AppTheme.LIGHT, result.theme)
+        Assert.assertEquals(AppTheme.MAKO, result.theme)
     }
 
     @Test
-    fun `invoke returns settings with DARK theme`() = runTest {
+    fun `invoke returns settings with VIPER theme`() = runTest {
         // GIVEN
-        val settings = defaultSettings.copy(theme = AppTheme.DARK)
+        val settings = defaultSettings.copy(theme = AppTheme.VIPER)
         coEvery { repository.getSettings() } returns flowOf(settings)
 
         // WHEN
         val result = useCase().first()
 
         // THEN
-        Assert.assertEquals(AppTheme.DARK, result.theme)
+        Assert.assertEquals(AppTheme.VIPER, result.theme)
     }
 
     @Test
@@ -136,7 +136,7 @@ class GetSettingsUseCaseTest {
     fun `invoke returns settings with all custom values`() = runTest {
         // GIVEN
         val customSettings = UserSettings(
-            theme = AppTheme.DARK,
+            theme = AppTheme.FOX,
             weightUnit = WeightUnit.LBS,
             distanceUnit = DistanceUnit.MILES,
             languageCode = "es"
@@ -147,7 +147,7 @@ class GetSettingsUseCaseTest {
         val result = useCase().first()
 
         // THEN
-        Assert.assertEquals(AppTheme.DARK, result.theme)
+        Assert.assertEquals(AppTheme.FOX, result.theme)
         Assert.assertEquals(WeightUnit.LBS, result.weightUnit)
         Assert.assertEquals(DistanceUnit.MILES, result.distanceUnit)
         Assert.assertEquals("es", result.languageCode)
@@ -159,9 +159,9 @@ class GetSettingsUseCaseTest {
         val flow = flow {
             emit(defaultSettings)
             delay(100)
-            emit(defaultSettings.copy(theme = AppTheme.DARK))
+            emit(defaultSettings.copy(theme = AppTheme.LION))
             delay(100)
-            emit(defaultSettings.copy(theme = AppTheme.LIGHT))
+            emit(defaultSettings.copy(theme = AppTheme.MAKO))
         }
         coEvery { repository.getSettings() } returns flow
 
@@ -174,9 +174,9 @@ class GetSettingsUseCaseTest {
 
         // THEN
         Assert.assertEquals(3, results.size)
-        Assert.assertEquals(AppTheme.SYSTEM, results[0].theme)
-        Assert.assertEquals(AppTheme.DARK, results[1].theme)
-        Assert.assertEquals(AppTheme.LIGHT, results[2].theme)
+        Assert.assertEquals(AppTheme.ORCA, results[0].theme)
+        Assert.assertEquals(AppTheme.LION, results[1].theme)
+        Assert.assertEquals(AppTheme.MAKO, results[2].theme)
     }
 
     @Test
@@ -196,7 +196,7 @@ class GetSettingsUseCaseTest {
     fun `invoke returns settings reflecting multiple updates`() = runTest {
         // GIVEN - Simulating settings after multiple user updates
         val updatedSettings = UserSettings(
-            theme = AppTheme.LIGHT,
+            theme = AppTheme.MAKO,
             weightUnit = WeightUnit.LBS,
             distanceUnit = DistanceUnit.KM,
             languageCode = "es"
@@ -207,7 +207,7 @@ class GetSettingsUseCaseTest {
         val result = useCase().first()
 
         // THEN
-        Assert.assertEquals(AppTheme.LIGHT, result.theme)
+        Assert.assertEquals(AppTheme.MAKO, result.theme)
         Assert.assertEquals(WeightUnit.LBS, result.weightUnit)
         Assert.assertEquals(DistanceUnit.KM, result.distanceUnit)
         Assert.assertEquals("es", result.languageCode)

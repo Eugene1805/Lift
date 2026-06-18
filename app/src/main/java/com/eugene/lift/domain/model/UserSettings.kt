@@ -3,7 +3,18 @@ package com.eugene.lift.domain.model
 import com.eugene.lift.common.localization.systemLanguageCode
 
 enum class AppTheme {
-    LIGHT, DARK, SYSTEM
+    ORCA,
+    MAKO,
+    FOX,
+    VIPER,
+    LION;
+
+    companion object {
+        fun fromStorageValue(value: String?): AppTheme = when (value) {
+            null, "", "LIGHT", "DARK", "SYSTEM" -> ORCA
+            else -> entries.firstOrNull { it.name == value } ?: ORCA
+        }
+    }
 }
 
 enum class WeightUnit {
@@ -15,7 +26,7 @@ enum class DistanceUnit {
 }
 
 data class UserSettings(
-    val theme: AppTheme = AppTheme.SYSTEM,
+    val theme: AppTheme = AppTheme.ORCA,
     val weightUnit: WeightUnit = WeightUnit.KG,
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
     val languageCode: String = systemLanguageCode(),

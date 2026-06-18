@@ -490,9 +490,12 @@
     <string name="setting_email_chooser_title">Send Email</string>
     <string name="language_english">English</string>
     <string name="language_spanish">Español</string>
-    <string name="theme_light">Light</string>
-    <string name="theme_dark">Dark</string>
-    <string name="theme_system">System</string>
+    <string name="theme_selector_hint">Pick the color vibe used across buttons, cards, and charts.</string>
+    <string name="theme_orca">Orca</string>
+    <string name="theme_mako">Mako</string>
+    <string name="theme_fox">Fox</string>
+    <string name="theme_viper">Viper</string>
+    <string name="theme_lion">Lion</string>
     <string name="unit_kg">kg</string>
     <string name="unit_lbs">lbs</string>
     <string name="unit_km">km</string>

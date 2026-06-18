@@ -46,7 +46,7 @@ class SettingsDataSource @Inject constructor(
 
     // Leemos y convertimos los Strings guardados a Enums
     val userSettings: Flow<UserSettings> = dataStore.data.map { preferences ->
-        val themeName = preferences[Keys.THEME] ?: AppTheme.SYSTEM.name
+        val themeName = preferences[Keys.THEME]
         val weightName = preferences[Keys.WEIGHT_UNIT] ?: WeightUnit.KG.name
         val distanceName = preferences[Keys.DISTANCE_UNIT] ?: DistanceUnit.KM.name
         val langCode = resolveSupportedLanguageCode(preferences[Keys.LANGUAGE_CODE])
@@ -62,7 +62,7 @@ class SettingsDataSource @Inject constructor(
         Log.d(TAG, "Reading settings from DataStore - theme: $themeName, weight: $weightName, distance: $distanceName, language: $langCode, effort: $effortRaw, autoTimer: $autoTimer")
 
         UserSettings(
-            theme = runCatching { AppTheme.valueOf(themeName) }.getOrDefault(AppTheme.SYSTEM),
+            theme = AppTheme.fromStorageValue(themeName),
             weightUnit = runCatching { WeightUnit.valueOf(weightName) }.getOrDefault(WeightUnit.KG),
             distanceUnit = runCatching { DistanceUnit.valueOf(distanceName) }.getOrDefault(DistanceUnit.KM),
             languageCode = langCode,

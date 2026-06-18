@@ -33,54 +33,54 @@ class UpdateThemeUseCaseTest {
     }
 
     @Test
-    fun `invoke updates theme to LIGHT`() = runTest {
+    fun `invoke updates theme to ORCA`() = runTest {
         // WHEN
-        useCase(AppTheme.LIGHT)
+        useCase(AppTheme.ORCA)
 
         // THEN
-        coVerify(exactly = 1) { repository.setTheme(AppTheme.LIGHT) }
+        coVerify(exactly = 1) { repository.setTheme(AppTheme.ORCA) }
     }
 
     @Test
-    fun `invoke updates theme to DARK`() = runTest {
+    fun `invoke updates theme to MAKO`() = runTest {
         // WHEN
-        useCase(AppTheme.DARK)
+        useCase(AppTheme.MAKO)
 
         // THEN
-        coVerify(exactly = 1) { repository.setTheme(AppTheme.DARK) }
+        coVerify(exactly = 1) { repository.setTheme(AppTheme.MAKO) }
     }
 
     @Test
-    fun `invoke updates theme to SYSTEM`() = runTest {
+    fun `invoke updates theme to FOX`() = runTest {
         // WHEN
-        useCase(AppTheme.SYSTEM)
+        useCase(AppTheme.FOX)
 
         // THEN
-        coVerify(exactly = 1) { repository.setTheme(AppTheme.SYSTEM) }
+        coVerify(exactly = 1) { repository.setTheme(AppTheme.FOX) }
     }
 
     @Test
     fun `invoke handles multiple theme updates`() = runTest {
         // WHEN
-        useCase(AppTheme.LIGHT)
-        useCase(AppTheme.DARK)
-        useCase(AppTheme.SYSTEM)
+        useCase(AppTheme.ORCA)
+        useCase(AppTheme.VIPER)
+        useCase(AppTheme.LION)
 
         // THEN
-        coVerify(exactly = 1) { repository.setTheme(AppTheme.LIGHT) }
-        coVerify(exactly = 1) { repository.setTheme(AppTheme.DARK) }
-        coVerify(exactly = 1) { repository.setTheme(AppTheme.SYSTEM) }
+        coVerify(exactly = 1) { repository.setTheme(AppTheme.ORCA) }
+        coVerify(exactly = 1) { repository.setTheme(AppTheme.VIPER) }
+        coVerify(exactly = 1) { repository.setTheme(AppTheme.LION) }
     }
 
     @Test
     fun `invoke can toggle between themes`() = runTest {
         // WHEN
-        useCase(AppTheme.LIGHT)
-        useCase(AppTheme.DARK)
-        useCase(AppTheme.LIGHT)
+        useCase(AppTheme.ORCA)
+        useCase(AppTheme.MAKO)
+        useCase(AppTheme.ORCA)
 
         // THEN
-        coVerify(exactly = 2) { repository.setTheme(AppTheme.LIGHT) }
-        coVerify(exactly = 1) { repository.setTheme(AppTheme.DARK) }
+        coVerify(exactly = 2) { repository.setTheme(AppTheme.ORCA) }
+        coVerify(exactly = 1) { repository.setTheme(AppTheme.MAKO) }
     }
 }

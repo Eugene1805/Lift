@@ -41,7 +41,7 @@ fun LiftApp(
     val settingsState by getSettingsUseCase()
         .collectAsStateWithLifecycle(
             initialValue = UserSettings(
-                theme = AppTheme.SYSTEM,
+                theme = AppTheme.ORCA,
                 weightUnit = WeightUnit.KG,
                 distanceUnit = DistanceUnit.KM,
                 languageCode = systemLanguageCode()
@@ -57,14 +57,13 @@ fun LiftApp(
     // Provide localized context to all composables
     CompositionLocalProvider(LocalContext provides localizedContext) {
         // Determine theme based on settings
-        val useDarkTheme = when (settingsState.theme) {
-            AppTheme.LIGHT -> false
-            AppTheme.DARK -> true
-            AppTheme.SYSTEM -> isSystemInDarkTheme()
-        }
+        val useDarkTheme = isSystemInDarkTheme()
 
         // Apply theme and render app
-        LiftTheme(darkTheme = useDarkTheme) {
+        LiftTheme(
+            appTheme = settingsState.theme,
+            darkTheme = useDarkTheme
+        ) {
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background

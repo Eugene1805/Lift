@@ -43,7 +43,7 @@ class SettingsViewModelTest {
     private lateinit var viewModel: SettingsViewModel
 
     private val defaultSettings = UserSettings(
-        theme = AppTheme.SYSTEM,
+        theme = AppTheme.ORCA,
         weightUnit = WeightUnit.KG,
         distanceUnit = DistanceUnit.KM,
         languageCode = "en"
@@ -89,14 +89,14 @@ class SettingsViewModelTest {
         viewModel.uiState.test {
             val state = awaitItem()
             // It could be either the initialized version or the flow emitted version first
-            if (state.theme == AppTheme.SYSTEM) {
-                assertEquals(AppTheme.SYSTEM, state.theme)
+            if (state.theme == AppTheme.ORCA) {
+                assertEquals(AppTheme.ORCA, state.theme)
                 assertEquals(WeightUnit.KG, state.weightUnit)
                 assertEquals(DistanceUnit.KM, state.distanceUnit)
                 assertEquals("en", state.languageCode)
             } else {
                 val state2 = awaitItem()
-                assertEquals(AppTheme.SYSTEM, state2.theme)
+                assertEquals(AppTheme.ORCA, state2.theme)
                 assertEquals(WeightUnit.KG, state2.weightUnit)
                 assertEquals(DistanceUnit.KM, state2.distanceUnit)
                 assertEquals("en", state2.languageCode)
@@ -108,10 +108,10 @@ class SettingsViewModelTest {
     fun `ThemeChanged event calls use case`() = runTest {
         createViewModel()
 
-        viewModel.onEvent(SettingsUiEvent.ThemeChanged(AppTheme.DARK))
+        viewModel.onEvent(SettingsUiEvent.ThemeChanged(AppTheme.MAKO))
         mainDispatcherRule.testDispatcher.scheduler.advanceUntilIdle()
 
-        coVerify(exactly = 1) { updateThemeUseCase(AppTheme.DARK) }
+        coVerify(exactly = 1) { updateThemeUseCase(AppTheme.MAKO) }
     }
 
     @Test
@@ -146,18 +146,18 @@ class SettingsViewModelTest {
 
     @Test
     fun `uiState emits updated settings`() = runTest {
-        val updatedSettings = defaultSettings.copy(theme = AppTheme.DARK)
+        val updatedSettings = defaultSettings.copy(theme = AppTheme.VIPER)
         coEvery { getSettingsUseCase() } returns flowOf(defaultSettings, updatedSettings)
         
         createViewModel()
 
         viewModel.uiState.test {
             val state1 = awaitItem() // Initial
-            if (state1.theme != AppTheme.SYSTEM) {
+            if (state1.theme != AppTheme.ORCA) {
                 val state2 = awaitItem() // Wait for real emissions
             }
             val state3 = awaitItem() // The update
-            assertEquals(AppTheme.DARK, state3.theme)
+            assertEquals(AppTheme.VIPER, state3.theme)
         }
     }
 }

@@ -433,9 +433,12 @@
     <string name="setting_email_chooser_title">Enviar Correo</string>
     <string name="language_english">English</string>
     <string name="language_spanish">Español</string>
-    <string name="theme_light">Claro</string>
-    <string name="theme_dark">Oscuro</string>
-    <string name="theme_system">Sistema</string>
+    <string name="theme_selector_hint">Elige la vibra de color que usarán botones, tarjetas y gráficas.</string>
+    <string name="theme_orca">Orca</string>
+    <string name="theme_mako">Mako</string>
+    <string name="theme_fox">Zorro</string>
+    <string name="theme_viper">Víbora</string>
+    <string name="theme_lion">León</string>
     <string name="unit_kg">kg</string>
     <string name="unit_lbs">lbs</string>
     <string name="unit_km">km</string>

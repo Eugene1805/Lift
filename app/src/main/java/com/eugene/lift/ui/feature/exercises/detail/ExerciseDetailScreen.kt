@@ -86,6 +86,7 @@ private fun DynamicColorImageBox(
 ) {
     val context = LocalContext.current
     var dominantColor by remember(imageModel) { mutableStateOf(Color.White) }
+    var imageAspectRatio by remember(imageModel) { mutableStateOf(16f / 9f) }
 
     val painter = rememberAsyncImagePainter(
         model = ImageRequest.Builder(context)
@@ -102,7 +103,11 @@ private fun DynamicColorImageBox(
     LaunchedEffect(painter.state) {
         val success = painter.state as? AsyncImagePainter.State.Success ?: return@LaunchedEffect
         val bitmap = (success.result.drawable as? BitmapDrawable)?.bitmap ?: return@LaunchedEffect
-        
+
+        if (bitmap.height > 0) {
+            imageAspectRatio = bitmap.width.toFloat() / bitmap.height.toFloat()
+        }
+
         val palette = Palette.from(bitmap).generate()
         // We prioritize the dominant swatch to ensure the background most closely
         // matches the largest color area of the diagram, with fallback steps for safety.
@@ -119,7 +124,9 @@ private fun DynamicColorImageBox(
     )
 
     Box(
-        modifier = modifier.background(animatedBg),
+        modifier = modifier
+            .aspectRatio(imageAspectRatio)
+            .background(animatedBg),
         contentAlignment = Alignment.Center
     ) {
 
@@ -219,9 +226,7 @@ fun ExerciseDetailScreen(
                 DynamicColorImageBox(
                     imageModel = imageModel,
                     contentDescription = state.name,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
+                    modifier = Modifier.fillMaxWidth()
                 )
             } else {
                 Box(

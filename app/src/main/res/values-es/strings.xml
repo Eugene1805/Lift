@@ -614,7 +614,10 @@
     <string name="profile_chart_reps_headline">Repeticiones completadas en el periodo seleccionado</string>
     <string name="profile_chart_best">Mejor</string>
     <string name="profile_chart_latest">Último</string>
+    <string name="profile_chart_best_estimated">Mejor estimado</string>
+    <string name="profile_chart_latest_estimated">Último estimado</string>
     <string name="profile_chart_progress">Cambio</string>
+    <string name="profile_chart_estimated_hint">Estimado a partir de tu mejor peso y repeticiones en cada sesión</string>
     <string name="profile_chart_range_start">Desde %1$s</string>
     <string name="profile_chart_range_end">Hasta %1$s</string>
     <string name="profile_chart_axes_format">%1$s • %2$s</string>
@@ -638,6 +641,7 @@
     <string name="profile_personal_record">Récord personal</string>
     <string name="profile_pr_history">Historial de PR</string>
     <string name="profile_stop_tracking">Dejar de registrar</string>
+    <string name="profile_streak_best">Mejor: %1$d</string>
     <string name="profile_show_less">Mostrar menos</string>
     <string name="profile_show_all_prs">Mostrar todo (%1$d)</string>
     <string name="profile_min_reps">Mín: %1$d</string>

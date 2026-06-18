@@ -1,5 +1,11 @@
 package com.eugene.lift.ui.feature.profile
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -48,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -121,6 +129,8 @@ fun ProfileScreen(
                 item {
                     ProfileHeader(
                         profile = uiState.profile,
+                        currentStreak = uiState.currentStreak,
+                        longestStreak = uiState.longestStreak,
                         onEditClick = onEditProfileClick
                     )
                 }
@@ -164,6 +174,8 @@ fun ProfileScreen(
 @Composable
 private fun ProfileHeader(
     profile: UserProfile?,
+    currentStreak: Int,
+    longestStreak: Int,
     onEditClick: () -> Unit
 ) {
     Card(
@@ -240,7 +252,79 @@ private fun ProfileHeader(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
+                Spacer(modifier = Modifier.height(10.dp))
+                StreakChip(
+                    currentStreak = currentStreak,
+                    longestStreak = longestStreak
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun StreakChip(
+    currentStreak: Int,
+    longestStreak: Int
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "streak_icon_pulse")
+    val iconScale = if (currentStreak > 0) {
+        infiniteTransition.animateFloat(
+            initialValue = 0.96f,
+            targetValue = 1.08f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 900),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "streak_icon_scale"
+        ).value
+    } else {
+        1f
+    }
+
+    Row(
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.large)
+            .background(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.78f))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.LocalFireDepartment,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.tertiary,
+            modifier = Modifier
+                .size(20.dp)
+                .graphicsLayer {
+                    scaleX = iconScale
+                    scaleY = iconScale
+                }
+        )
+        Column(modifier = Modifier.weight(1f, fill = false)) {
+            Text(
+                text = stringResource(R.string.history_calendar_streak_label),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+            AnimatedContent(
+                targetState = currentStreak,
+                label = "streak_count"
+            ) { streak ->
+                Text(
+                    text = stringResource(R.string.history_calendar_streak_weeks, streak),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            }
+        }
+        if (longestStreak > currentStreak) {
+            Text(
+                text = stringResource(R.string.profile_streak_best, longestStreak),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.82f)
+            )
         }
     }
 }

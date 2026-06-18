@@ -7,8 +7,10 @@ import com.eugene.lift.domain.model.UserProfile
 import com.eugene.lift.domain.repository.UserProfileRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -73,10 +75,21 @@ class UserProfileRepositoryImpl @Inject constructor(
     override suspend fun recordWorkoutCompleted(id: String, volume: Double, duration: Long, prCount: Int) {
         val now = LocalDateTime.now()
         val today = LocalDate.now()
+        val profile = userProfileDao.getProfileByIdOnce(id)
+
         userProfileDao.incrementWorkoutCount(id, today, now)
         if (volume > 0) userProfileDao.addVolume(id, volume, now)
         if (duration > 0) userProfileDao.addDuration(id, duration, now)
         if (prCount > 0) userProfileDao.addPRs(id, prCount, now)
+
+        profile?.let {
+            val newStreak = calculateWeeklyStreak(
+                lastWorkoutDate = it.lastWorkoutDate,
+                currentStreak = it.currentStreak,
+                completedOn = today
+            )
+            userProfileDao.updateStreak(id, newStreak, now)
+        }
     }
 
     override suspend fun updateStreak(id: String, streak: Int) {
@@ -92,6 +105,23 @@ class UserProfileRepositoryImpl @Inject constructor(
         val animal = ANIMALS.random()
         val number = (10..99).random()
         return "${adjective}_${animal}_$number"
+    }
+
+    private fun calculateWeeklyStreak(
+        lastWorkoutDate: LocalDate?,
+        currentStreak: Int,
+        completedOn: LocalDate
+    ): Int {
+        if (lastWorkoutDate == null) return 1
+
+        val currentWeekStart = completedOn.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val lastWeekStart = lastWorkoutDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+
+        return when {
+            lastWeekStart == currentWeekStart -> currentStreak.coerceAtLeast(1)
+            lastWeekStart == currentWeekStart.minusWeeks(1) -> currentStreak.coerceAtLeast(1) + 1
+            else -> 1
+        }
     }
 
     companion object {

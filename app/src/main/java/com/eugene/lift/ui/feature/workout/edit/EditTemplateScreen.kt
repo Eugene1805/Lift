@@ -185,6 +185,7 @@ fun EditTemplateScreen(
                                 }
                                 CompactExerciseRow(
                                     exerciseName = item.exercise.name,
+                                    imagePath = item.exercise.imagePath,
                                     dragHandle = dragHandle
                                 )
                             } else {

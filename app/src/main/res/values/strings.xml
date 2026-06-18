@@ -99,7 +99,10 @@
     <string name="profile_chart_reps_headline">Completed reps over the selected period</string>
     <string name="profile_chart_best">Best</string>
     <string name="profile_chart_latest">Latest</string>
+    <string name="profile_chart_best_estimated">Best estimate</string>
+    <string name="profile_chart_latest_estimated">Latest estimate</string>
     <string name="profile_chart_progress">Change</string>
+    <string name="profile_chart_estimated_hint">Estimated from your best weight and reps in each session</string>
     <string name="profile_chart_range_start">From %1$s</string>
     <string name="profile_chart_range_end">To %1$s</string>
     <string name="profile_chart_axes_format">%1$s • %2$s</string>
@@ -123,6 +126,7 @@
     <string name="profile_personal_record">Personal record</string>
     <string name="profile_pr_history">PR history</string>
     <string name="profile_stop_tracking">Stop tracking</string>
+    <string name="profile_streak_best">Best: %1$d</string>
     <string name="profile_show_less">Show less</string>
     <string name="profile_show_all_prs">Show all (%1$d)</string>
     <string name="profile_min_reps">Min: %1$d</string>

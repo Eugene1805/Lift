@@ -192,6 +192,8 @@ class UserProfileRepositoryImplTest {
 
     @Test
     fun `recordWorkoutCompleted calls incrementWorkoutCount`() = runTest {
+        coEvery { userProfileDao.getProfileByIdOnce("test-id") } returns buildEntity()
+
         repository.recordWorkoutCompleted("test-id", volume = 0.0, duration = 0L, prCount = 0)
 
         coVerify(exactly = 1) { userProfileDao.incrementWorkoutCount(eq("test-id"), any<LocalDate>(), any()) }
@@ -199,6 +201,8 @@ class UserProfileRepositoryImplTest {
 
     @Test
     fun `recordWorkoutCompleted adds volume only when greater than zero`() = runTest {
+        coEvery { userProfileDao.getProfileByIdOnce("test-id") } returns buildEntity()
+
         repository.recordWorkoutCompleted("test-id", volume = 150.0, duration = 0L, prCount = 0)
 
         coVerify(exactly = 1) { userProfileDao.addVolume(eq("test-id"), eq(150.0), any()) }
@@ -206,6 +210,8 @@ class UserProfileRepositoryImplTest {
 
     @Test
     fun `recordWorkoutCompleted skips volume when zero`() = runTest {
+        coEvery { userProfileDao.getProfileByIdOnce("test-id") } returns buildEntity()
+
         repository.recordWorkoutCompleted("test-id", volume = 0.0, duration = 0L, prCount = 0)
 
         coVerify(exactly = 0) { userProfileDao.addVolume(any(), any(), any()) }
@@ -213,6 +219,8 @@ class UserProfileRepositoryImplTest {
 
     @Test
     fun `recordWorkoutCompleted adds duration only when greater than zero`() = runTest {
+        coEvery { userProfileDao.getProfileByIdOnce("test-id") } returns buildEntity()
+
         repository.recordWorkoutCompleted("test-id", volume = 0.0, duration = 3600L, prCount = 0)
 
         coVerify(exactly = 1) { userProfileDao.addDuration(eq("test-id"), eq(3600L), any()) }
@@ -220,8 +228,57 @@ class UserProfileRepositoryImplTest {
 
     @Test
     fun `recordWorkoutCompleted adds PRs only when greater than zero`() = runTest {
+        coEvery { userProfileDao.getProfileByIdOnce("test-id") } returns buildEntity()
+
         repository.recordWorkoutCompleted("test-id", volume = 0.0, duration = 0L, prCount = 2)
 
         coVerify(exactly = 1) { userProfileDao.addPRs(eq("test-id"), eq(2), any()) }
+    }
+
+    @Test
+    fun `recordWorkoutCompleted starts streak at one for first workout`() = runTest {
+        coEvery { userProfileDao.getProfileByIdOnce("test-id") } returns buildEntity(
+            id = "test-id"
+        ).copy(currentStreak = 0, longestStreak = 0, lastWorkoutDate = null)
+
+        repository.recordWorkoutCompleted("test-id", volume = 0.0, duration = 0L, prCount = 0)
+
+        coVerify(exactly = 1) { userProfileDao.updateStreak("test-id", 1, any()) }
+    }
+
+    @Test
+    fun `recordWorkoutCompleted keeps streak in same week`() = runTest {
+        val today = LocalDate.now()
+        coEvery { userProfileDao.getProfileByIdOnce("test-id") } returns buildEntity(
+            id = "test-id"
+        ).copy(currentStreak = 3, longestStreak = 4, lastWorkoutDate = today.minusDays(1))
+
+        repository.recordWorkoutCompleted("test-id", volume = 0.0, duration = 0L, prCount = 0)
+
+        coVerify(exactly = 1) { userProfileDao.updateStreak("test-id", 3, any()) }
+    }
+
+    @Test
+    fun `recordWorkoutCompleted increments streak in consecutive week`() = runTest {
+        val today = LocalDate.now()
+        coEvery { userProfileDao.getProfileByIdOnce("test-id") } returns buildEntity(
+            id = "test-id"
+        ).copy(currentStreak = 2, longestStreak = 2, lastWorkoutDate = today.minusWeeks(1))
+
+        repository.recordWorkoutCompleted("test-id", volume = 0.0, duration = 0L, prCount = 0)
+
+        coVerify(exactly = 1) { userProfileDao.updateStreak("test-id", 3, any()) }
+    }
+
+    @Test
+    fun `recordWorkoutCompleted resets streak after gap`() = runTest {
+        val today = LocalDate.now()
+        coEvery { userProfileDao.getProfileByIdOnce("test-id") } returns buildEntity(
+            id = "test-id"
+        ).copy(currentStreak = 5, longestStreak = 5, lastWorkoutDate = today.minusWeeks(3))
+
+        repository.recordWorkoutCompleted("test-id", volume = 0.0, duration = 0L, prCount = 0)
+
+        coVerify(exactly = 1) { userProfileDao.updateStreak("test-id", 1, any()) }
     }
 }

@@ -39,8 +39,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.Job
@@ -159,6 +161,12 @@ class ActiveWorkoutViewModel @Inject constructor(
             }
         }.onEach { _uiState.value = it }.launchIn(viewModelScope)
 
+        userSettings
+            .map { it.languageCode }
+            .distinctUntilChanged()
+            .onEach { refreshLocalizedActiveSession() }
+            .launchIn(viewModelScope)
+
         serviceManager.actions.onEach { action ->
             when (action) {
                 is WorkoutNotificationAction.CompleteCurrentSet -> completeNextAvailableSet()
@@ -276,10 +284,11 @@ class ActiveWorkoutViewModel @Inject constructor(
             }
 
             loadHistoryForSession(session)
+            val localizedSession = localizeSession(session)
             val sessionWithHistory = if (draft != null && shouldUseDraft(draft)) {
-                session
+                localizedSession
             } else {
-                updatedSessionWithHistory(session)
+                updatedSessionWithHistory(localizedSession)
             }
             setActiveSession(sessionWithHistory)
         }
@@ -363,6 +372,26 @@ class ActiveWorkoutViewModel @Inject constructor(
                 _elapsedTimeSeconds.value = elapsed
                 delay(1000)
             }
+        }
+    }
+
+    private suspend fun localizeSession(session: WorkoutSession): WorkoutSession {
+        val localizedExercises = session.exercises.map { sessionExercise ->
+            val localizedExercise = getExerciseDetailUseCase(sessionExercise.exercise.id).firstOrNull()
+            if (localizedExercise != null) {
+                sessionExercise.copy(exercise = localizedExercise)
+            } else {
+                sessionExercise
+            }
+        }
+        return session.copy(exercises = localizedExercises)
+    }
+
+    private suspend fun refreshLocalizedActiveSession() {
+        val session = _activeSession.value ?: return
+        val localizedSession = localizeSession(session)
+        if (localizedSession != session) {
+            setActiveSession(localizedSession, markInteraction = false)
         }
     }
 

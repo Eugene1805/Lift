@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -171,7 +172,11 @@ private fun WorkoutExerciseCardBody(
     }
 
     if (uiState.reorderState.isReorderMode) {
-        CompactExerciseRow(exerciseName = exercise.exercise.name, dragHandle = dragHandle)
+        CompactExerciseRow(
+            exerciseName = exercise.exercise.name,
+            imagePath = exercise.exercise.imagePath,
+            dragHandle = dragHandle
+        )
     } else {
         ActiveExerciseCard(
             exercise = exercise,
@@ -317,18 +322,31 @@ private fun DraggedExerciseOverlay(
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         shape = MaterialTheme.shapes.medium
     ) {
-        Text(
-            text = draggedExercise.exercise.name,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
-        )
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            WorkoutExerciseThumbnail(
+                exerciseName = draggedExercise.exercise.name,
+                imagePath = draggedExercise.exercise.imagePath,
+                size = 36.dp,
+                cornerRadius = 10.dp
+            )
+            Text(
+                text = draggedExercise.exercise.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
 }
 
 @Composable
 fun CompactExerciseRow(
     exerciseName: String,
+    imagePath: String?,
     dragHandle: @Composable () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -341,6 +359,13 @@ fun CompactExerciseRow(
             modifier = Modifier.padding(horizontal = 16.dp),
             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
         ) {
+            WorkoutExerciseThumbnail(
+                exerciseName = exerciseName,
+                imagePath = imagePath,
+                size = 34.dp,
+                cornerRadius = 10.dp
+            )
+            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = exerciseName,
                 style = MaterialTheme.typography.titleMedium,

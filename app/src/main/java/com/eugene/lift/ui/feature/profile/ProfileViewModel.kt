@@ -61,6 +61,8 @@ data class ProfileUiState(
     val isLoading: Boolean = true,
     val selectedTimeRange: TimeRange = TimeRange.MONTH,
     val stats: ProfileStats = ProfileStats(),
+    val currentStreak: Int = 0,
+    val longestStreak: Int = 0,
     // Exercise progression
     val progressions: List<ExerciseProgression> = emptyList(),
     val allExercises: List<Exercise> = emptyList(),
@@ -292,6 +294,8 @@ class ProfileViewModel @Inject constructor(
             sessions.size.toDouble() / groupedByWeek.size
         } else 0.0
 
+        val workoutDays = allSessions.map { it.date.toLocalDate() }.toSet()
+
         _uiState.value = _uiState.value.copy(
             stats = ProfileStats(
                 durationData = durationData,
@@ -299,7 +303,59 @@ class ProfileViewModel @Inject constructor(
                 repsData = repsData,
                 workoutsPerWeek = workoutsPerWeek,
                 averageWorkoutsPerWeek = avgWorkoutsPerWeek
-            )
+            ),
+            currentStreak = calculateCurrentWeekStreak(workoutDays, now),
+            longestStreak = calculateLongestWeekStreak(workoutDays)
         )
+    }
+
+    private fun calculateCurrentWeekStreak(
+        workoutDays: Set<LocalDate>,
+        today: LocalDate
+    ): Int {
+        if (workoutDays.isEmpty()) return 0
+
+        val weekStarts = workoutDays
+            .map { it.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)) }
+            .toSet()
+
+        val currentWeekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        var cursor = if (weekStarts.contains(currentWeekStart)) {
+            currentWeekStart
+        } else {
+            weekStarts.maxOrNull() ?: return 0
+        }
+
+        var streak = 0
+        while (weekStarts.contains(cursor)) {
+            streak += 1
+            cursor = cursor.minusWeeks(1)
+        }
+        return streak
+    }
+
+    private fun calculateLongestWeekStreak(workoutDays: Set<LocalDate>): Int {
+        if (workoutDays.isEmpty()) return 0
+
+        val weekStarts = workoutDays
+            .map { it.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)) }
+            .toSet()
+            .sorted()
+
+        var best = 0
+        var current = 0
+        var previous: LocalDate? = null
+
+        for (weekStart in weekStarts) {
+            current = when {
+                previous == null -> 1
+                weekStart == previous.plusWeeks(1) -> current + 1
+                else -> 1
+            }
+            if (current > best) best = current
+            previous = weekStart
+        }
+
+        return best
     }
 }

@@ -1,7 +1,9 @@
 package com.eugene.lift.ui.feature.workout.active
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Note
 import androidx.compose.material.icons.filled.Add
@@ -18,10 +20,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.eugene.lift.R
 import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.MeasureType
@@ -47,6 +53,7 @@ fun ActiveExerciseCard(
         Column(modifier = Modifier.fillMaxWidth()) {
             ExerciseHeader(
                 title = exercise.exercise.name,
+                imagePath = exercise.exercise.imagePath,
                 hasNote = !exercise.note.isNullOrEmpty(),
                 onExerciseClick = callbacks.onExerciseClick,
                 onAddEditNote = { showNoteField = true },
@@ -111,6 +118,7 @@ fun ActiveExerciseCard(
 @Composable
 private fun ExerciseHeader(
     title: String,
+    imagePath: String?,
     hasNote: Boolean,
     onExerciseClick: () -> Unit,
     onAddEditNote: () -> Unit,
@@ -126,16 +134,29 @@ private fun ExerciseHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontWeight = FontWeight.Black
-            ),
-            color = MaterialTheme.colorScheme.primary,
+        Row(
             modifier = Modifier
                 .weight(1f)
                 .clickable(onClick = onExerciseClick)
-        )
+                .padding(end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            WorkoutExerciseThumbnail(
+                exerciseName = title,
+                imagePath = imagePath,
+                size = 42.dp,
+                cornerRadius = 12.dp
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Black
+                ),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f)
+            )
+        }
 
         Box {
             IconButton(onClick = { menuExpanded = true }) {
@@ -282,3 +303,51 @@ private fun ExerciseCallbacks.asSetRowCallbacks(setIndex: Int): SetRowCallbacks 
         onRirChange = { onRirChange(setIndex, it) },
         onCompleted = { onSetCompleted(setIndex) }
     )
+
+@Composable
+fun WorkoutExerciseThumbnail(
+    exerciseName: String,
+    imagePath: String?,
+    size: androidx.compose.ui.unit.Dp,
+    cornerRadius: androidx.compose.ui.unit.Dp,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val imageModel = remember(context, imagePath) {
+        when {
+            imagePath?.startsWith("http://", ignoreCase = true) == true -> imagePath
+            imagePath?.startsWith("https://", ignoreCase = true) == true -> imagePath
+            imagePath.isNullOrBlank() -> null
+            else -> {
+                val resId = context.resources.getIdentifier(imagePath, "drawable", context.packageName)
+                resId.takeIf { it != 0 }
+            }
+        }
+    }
+
+    if (imageModel != null) {
+        AsyncImage(
+            model = imageModel,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = modifier
+                .size(size)
+                .clip(RoundedCornerShape(cornerRadius))
+        )
+    } else {
+        Box(
+            modifier = modifier
+                .size(size)
+                .clip(RoundedCornerShape(cornerRadius))
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = exerciseName.take(1).uppercase(),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}

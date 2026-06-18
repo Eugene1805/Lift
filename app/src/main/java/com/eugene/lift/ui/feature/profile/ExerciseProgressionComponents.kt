@@ -213,7 +213,7 @@ private fun ExerciseProgressionDetail(
                 primaryColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(160.dp)
+                    .height(196.dp)
             )
         } else if (progression.dataPoints.size == 1) {
             SingleDataPointNote()
@@ -312,6 +312,7 @@ private fun ProgressionLineChart(
     primaryColor: Color,
     modifier: Modifier = Modifier
 ) {
+    val chartPoints = dataPoints.takeLast(10)
     val isWeightBased = measureType == MeasureType.REPS_AND_WEIGHT
     val unitLabel = when (weightUnit) {
         WeightUnit.KG -> stringResource(R.string.unit_kg)
@@ -319,11 +320,9 @@ private fun ProgressionLineChart(
     }
 
     val values = if (isWeightBased) {
-        dataPoints.map {
-            if (it.estimatedOneRepMax > 0) it.estimatedOneRepMax else it.weight.toDouble()
-        }
+        chartPoints.map { it.weight }
     } else {
-        dataPoints.map { it.reps.toDouble() }
+        chartPoints.map { it.reps.toDouble() }
     }
 
     val minValue = values.minOrNull() ?: 0.0
@@ -364,11 +363,14 @@ private fun ProgressionLineChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .height(IntrinsicSize.Min),
+                .height(IntrinsicSize.Min)
+                .padding(vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Column(
-                modifier = Modifier.fillMaxHeight(),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(vertical = 4.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.End
             ) {
@@ -392,13 +394,15 @@ private fun ProgressionLineChart(
             ) {
                 val w = size.width
                 val h = size.height
-                val pointCount = dataPoints.size
+                val pointCount = chartPoints.size
                 if (pointCount < 2) return@Canvas
 
                 val stepX = w / (pointCount - 1).toFloat()
+                val verticalInset = 10.dp.toPx()
+                val drawableHeight = (h - verticalInset * 2).coerceAtLeast(1f)
 
                 fun xAt(i: Int) = i * stepX
-                fun yAt(v: Double) = (h * (1.0 - (v - minValue) / valueRange)).toFloat()
+                fun yAt(v: Double) = (verticalInset + (drawableHeight * (1.0 - (v - minValue) / valueRange))).toFloat()
 
                 val path = Path()
                 val fillPath = Path()
@@ -419,7 +423,7 @@ private fun ProgressionLineChart(
                     val y = yAt(v)
                     if (i == 0) {
                         path.moveTo(x, y)
-                        fillPath.moveTo(x, h)
+                        fillPath.moveTo(x, h - verticalInset)
                         fillPath.lineTo(x, y)
                     } else {
                         val prevX = xAt(i - 1)
@@ -430,7 +434,7 @@ private fun ProgressionLineChart(
                     }
                 }
 
-                fillPath.lineTo(xAt(pointCount - 1), h)
+                fillPath.lineTo(xAt(pointCount - 1), h - verticalInset)
                 fillPath.close()
 
                 drawPath(path = fillPath, color = fillColor)
@@ -463,13 +467,13 @@ private fun ProgressionLineChart(
         ) {
             val displayPoints = if (dataPoints.size > 6) {
                 listOf(
-                    dataPoints.first(),
-                    dataPoints[dataPoints.size / 3],
-                    dataPoints[2 * dataPoints.size / 3],
-                    dataPoints.last()
+                    chartPoints.first(),
+                    chartPoints[chartPoints.size / 3],
+                    chartPoints[2 * chartPoints.size / 3],
+                    chartPoints.last()
                 ).distinct()
             } else {
-                dataPoints
+                chartPoints
             }
 
             displayPoints.forEach { point ->
@@ -490,7 +494,7 @@ private fun ProgressionLineChart(
             Text(
                 text = stringResource(
                     R.string.profile_chart_range_start,
-                    dataPoints.first().date.format(FULL_DATE)
+                    chartPoints.first().date.format(FULL_DATE)
                 ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -498,7 +502,7 @@ private fun ProgressionLineChart(
             Text(
                 text = stringResource(
                     R.string.profile_chart_range_end,
-                    dataPoints.last().date.format(FULL_DATE)
+                    chartPoints.last().date.format(FULL_DATE)
                 ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)

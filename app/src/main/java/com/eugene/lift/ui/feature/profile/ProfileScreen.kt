@@ -5,10 +5,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,6 +26,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -305,31 +308,6 @@ private fun HistogramSection(
                 }
             }
 
-            val axisLabel = when (selectedTabIndex) {
-                0 -> stringResource(
-                    R.string.profile_chart_axes_format,
-                    stringResource(R.string.profile_axis_x_dates),
-                    stringResource(R.string.profile_axis_y_duration)
-                )
-                1 -> stringResource(
-                    R.string.profile_chart_axes_format,
-                    stringResource(R.string.profile_axis_x_dates),
-                    stringResource(
-                        R.string.profile_axis_y_volume,
-                        if (weightUnit == WeightUnit.KG) {
-                            stringResource(R.string.unit_kg)
-                        } else {
-                            stringResource(R.string.unit_lbs)
-                        }
-                    )
-                )
-                else -> stringResource(
-                    R.string.profile_chart_axes_format,
-                    stringResource(R.string.profile_axis_x_dates),
-                    stringResource(R.string.profile_axis_y_reps)
-                )
-            }
-
             val valueFormatter: (Double) -> String = when (selectedTabIndex) {
                 0 -> { value ->
                     context.getString(
@@ -371,17 +349,31 @@ private fun HistogramSection(
                     )
                 }
             } else {
+                val headline = when (selectedTabIndex) {
+                    0 -> stringResource(R.string.profile_chart_duration_headline)
+                    1 -> {
+                        val unitLabel = if (weightUnit == WeightUnit.KG) {
+                            stringResource(R.string.unit_kg)
+                        } else {
+                            stringResource(R.string.unit_lbs)
+                        }
+                        stringResource(R.string.profile_chart_volume_headline, unitLabel)
+                    }
+                    else -> stringResource(R.string.profile_chart_reps_headline)
+                }
+
                 Text(
-                    text = axisLabel,
-                    style = MaterialTheme.typography.labelSmall,
+                    text = headline,
+                    style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 SimpleBarChart(
                     data = data,
                     valueFormatter = valueFormatter,
+                    metricValueFormatter = valueFormatter,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(150.dp)
@@ -431,69 +423,125 @@ private fun TimeRangeDropdown(
 private fun SimpleBarChart(
     data: List<HistogramDataPoint>,
     valueFormatter: (Double) -> String = { it.toInt().toString() },
+    metricValueFormatter: (Double) -> String = valueFormatter,
     modifier: Modifier = Modifier
 ) {
     val maxValue = data.maxOfOrNull { it.value } ?: 1.0
+    val midValue = maxValue / 2.0
 
     val displayData = data.takeLast(8)
 
     Column(modifier = modifier) {
-        // Bars row — each column takes equal weight so bars align with labels
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.Bottom
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            displayData.forEach { point ->
-                val barHeight = if (maxValue > 0) (point.value / maxValue) else 0.0
+            Column(
+                modifier = Modifier.fillMaxHeight(),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.End
+            ) {
+                ChartScaleText(metricValueFormatter(maxValue), true)
+                ChartScaleText(metricValueFormatter(midValue))
+                ChartScaleText(metricValueFormatter(0.0))
+            }
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.weight(1f)
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
                 ) {
-                    Text(
-                        text = valueFormatter(point.value),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        repeat(3) {
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+                        }
+                    }
 
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    Box(
+                    Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height((80 * barHeight).dp.coerceAtLeast(4.dp))
-                            .background(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = MaterialTheme.shapes.small
-                            )
-                    )
+                            .fillMaxSize()
+                            .padding(top = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        displayData.forEach { point ->
+                            val barHeight = if (maxValue > 0) (point.value / maxValue) else 0.0
+
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = valueFormatter(point.value),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1
+                                )
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height((84 * barHeight).dp.coerceAtLeast(4.dp))
+                                        .background(
+                                            color = MaterialTheme.colorScheme.primary,
+                                            shape = MaterialTheme.shapes.small
+                                        )
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // X-axis labels — same weight(1f) so they line up with bars above
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            displayData.forEach { point ->
-                Text(
-                    text = point.label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center,
-                    maxLines = 1
-                )
+            Spacer(modifier = Modifier.width(52.dp))
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                displayData.forEach { point ->
+                    Text(
+                        text = point.label,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center,
+                        maxLines = 1
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+private fun ChartScaleText(
+    text: String,
+    emphasis: Boolean = false
+) {
+    Text(
+        text = text,
+        style = if (emphasis) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelSmall,
+        fontWeight = if (emphasis) FontWeight.SemiBold else FontWeight.Normal,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.End
+    )
 }
 
 @Composable

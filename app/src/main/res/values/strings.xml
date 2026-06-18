@@ -94,6 +94,14 @@
     <string name="profile_workouts_per_week">Workouts per Week</string>
     <string name="profile_average">Average</string>
     <string name="profile_workouts_week_format">%.1f workouts/week</string>
+    <string name="profile_chart_duration_headline">Session time over the selected period</string>
+    <string name="profile_chart_volume_headline">Training volume over the selected period (%1$s)</string>
+    <string name="profile_chart_reps_headline">Completed reps over the selected period</string>
+    <string name="profile_chart_best">Best</string>
+    <string name="profile_chart_latest">Latest</string>
+    <string name="profile_chart_progress">Change</string>
+    <string name="profile_chart_range_start">From %1$s</string>
+    <string name="profile_chart_range_end">To %1$s</string>
     <string name="profile_chart_axes_format">%1$s • %2$s</string>
     <string name="profile_axis_x_dates">X: dates</string>
     <string name="profile_axis_y_duration">Y: duration (m)</string>

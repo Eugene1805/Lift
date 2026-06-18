@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -70,6 +72,7 @@ import com.eugene.lift.domain.model.ProgressionDataPoint
 import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.usecase.exercise.GetExerciseProgressionUseCase
 import com.eugene.lift.ui.util.WeightFormatters
+import kotlin.math.abs
 import java.time.format.DateTimeFormatter
 
 // ── Short date formatter ──────────────────────────────────────────────────────
@@ -326,82 +329,139 @@ private fun ProgressionLineChart(
     val minValue = values.minOrNull() ?: 0.0
     val maxValue = values.maxOrNull() ?: 1.0
     val valueRange = (maxValue - minValue).let { if (it == 0.0) 1.0 else it }
+    val midValue = minValue + (valueRange / 2.0)
+    val latestValue = values.lastOrNull() ?: 0.0
+    val firstValue = values.firstOrNull() ?: 0.0
+    val progressDelta = latestValue - firstValue
 
     val fillColor = primaryColor.copy(alpha = 0.15f)
     val lineColor = primaryColor
+    val guideColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
+    val latestPointColor = MaterialTheme.colorScheme.tertiary
 
     Column(modifier = modifier) {
-        Canvas(
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ProgressionSummaryChip(
+                label = stringResource(R.string.profile_chart_best),
+                value = formatProgressValue(maxValue, isWeightBased, weightUnit, unitLabel)
+            )
+            ProgressionSummaryChip(
+                label = stringResource(R.string.profile_chart_latest),
+                value = formatProgressValue(latestValue, isWeightBased, weightUnit, unitLabel)
+            )
+            ProgressionSummaryChip(
+                label = stringResource(R.string.profile_chart_progress),
+                value = formatProgressDelta(progressDelta, isWeightBased, weightUnit, unitLabel)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
+                .height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            val w = size.width
-            val h = size.height
-            val pointCount = dataPoints.size
-            if (pointCount < 2) return@Canvas
-
-            val stepX = w / (pointCount - 1).toFloat()
-
-            fun xAt(i: Int) = i * stepX
-            fun yAt(v: Double) = (h * (1.0 - (v - minValue) / valueRange)).toFloat()
-
-            val path = Path()
-            val fillPath = Path()
-
-            values.forEachIndexed { i, v ->
-                val x = xAt(i)
-                val y = yAt(v)
-                if (i == 0) {
-                    path.moveTo(x, y)
-                    fillPath.moveTo(x, h)
-                    fillPath.lineTo(x, y)
-                } else {
-                    // Smooth cubic bezier
-                    val prevX = xAt(i - 1)
-                    val prevY = yAt(values[i - 1])
-                    val cpX = (prevX + x) / 2f
-                    path.cubicTo(cpX, prevY, cpX, y, x, y)
-                    fillPath.cubicTo(cpX, prevY, cpX, y, x, y)
-                }
+            Column(
+                modifier = Modifier.fillMaxHeight(),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.End
+            ) {
+                ChartScaleLabel(
+                    text = formatProgressValue(maxValue, isWeightBased, weightUnit, unitLabel),
+                    emphasis = true
+                )
+                ChartScaleLabel(
+                    text = formatProgressValue(midValue, isWeightBased, weightUnit, unitLabel)
+                )
+                ChartScaleLabel(
+                    text = formatProgressValue(minValue, isWeightBased, weightUnit, unitLabel)
+                )
             }
 
-            // Close fill area
-            fillPath.lineTo(xAt(pointCount - 1), h)
-            fillPath.close()
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .fillMaxHeight()
+            ) {
+                val w = size.width
+                val h = size.height
+                val pointCount = dataPoints.size
+                if (pointCount < 2) return@Canvas
 
-            // Draw fill
-            drawPath(path = fillPath, color = fillColor)
-            // Draw line
-            drawPath(
-                path = path,
-                color = lineColor,
-                style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
-            )
-            // Draw dots at each point
-            values.forEachIndexed { i, v ->
-                drawCircle(
+                val stepX = w / (pointCount - 1).toFloat()
+
+                fun xAt(i: Int) = i * stepX
+                fun yAt(v: Double) = (h * (1.0 - (v - minValue) / valueRange)).toFloat()
+
+                val path = Path()
+                val fillPath = Path()
+
+                val baselineValues = listOf(minValue, midValue, maxValue)
+                baselineValues.forEach { baseline ->
+                    val y = yAt(baseline)
+                    drawLine(
+                        color = guideColor,
+                        start = Offset(0f, y),
+                        end = Offset(w, y),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                }
+
+                values.forEachIndexed { i, v ->
+                    val x = xAt(i)
+                    val y = yAt(v)
+                    if (i == 0) {
+                        path.moveTo(x, y)
+                        fillPath.moveTo(x, h)
+                        fillPath.lineTo(x, y)
+                    } else {
+                        val prevX = xAt(i - 1)
+                        val prevY = yAt(values[i - 1])
+                        val cpX = (prevX + x) / 2f
+                        path.cubicTo(cpX, prevY, cpX, y, x, y)
+                        fillPath.cubicTo(cpX, prevY, cpX, y, x, y)
+                    }
+                }
+
+                fillPath.lineTo(xAt(pointCount - 1), h)
+                fillPath.close()
+
+                drawPath(path = fillPath, color = fillColor)
+                drawPath(
+                    path = path,
                     color = lineColor,
-                    radius = 4.dp.toPx(),
-                    center = Offset(xAt(i), yAt(v))
+                    style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
                 )
-                drawCircle(
-                    color = Color.White,
-                    radius = 2.dp.toPx(),
-                    center = Offset(xAt(i), yAt(v))
-                )
+                values.forEachIndexed { i, v ->
+                    val isLatest = i == values.lastIndex
+                    drawCircle(
+                        color = if (isLatest) latestPointColor else lineColor,
+                        radius = if (isLatest) 6.dp.toPx() else 4.dp.toPx(),
+                        center = Offset(xAt(i), yAt(v))
+                    )
+                    drawCircle(
+                        color = Color.White,
+                        radius = if (isLatest) 3.dp.toPx() else 2.dp.toPx(),
+                        center = Offset(xAt(i), yAt(v))
+                    )
+                }
             }
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // X-axis labels
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             val displayPoints = if (dataPoints.size > 6) {
-                // Show first, last, and evenly spaced in between
                 listOf(
                     dataPoints.first(),
                     dataPoints[dataPoints.size / 3],
@@ -423,39 +483,98 @@ private fun ProgressionLineChart(
             }
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = if (isWeightBased) {
-                stringResource(R.string.profile_progression_axis_weight, unitLabel)
-            } else {
-                stringResource(R.string.profile_progression_axis_reps)
-            },
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        // Y axis range label
-        Spacer(modifier = Modifier.height(2.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = if (isWeightBased) stringResource(
-                    R.string.profile_e1rm_label,
-                    WeightFormatters.formatWeight(minValue, weightUnit),
-                    unitLabel
-                ) else stringResource(R.string.profile_min_reps, minValue.toInt()),
+                text = stringResource(
+                    R.string.profile_chart_range_start,
+                    dataPoints.first().date.format(FULL_DATE)
+                ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
             Text(
-                text = if (isWeightBased) "${WeightFormatters.formatWeight(maxValue, weightUnit)} $unitLabel"
-                else stringResource(R.string.profile_value_reps_format, maxValue.toInt()),
+                text = stringResource(
+                    R.string.profile_chart_range_end,
+                    dataPoints.last().date.format(FULL_DATE)
+                ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
         }
+    }
+}
+
+@Composable
+private fun ProgressionSummaryChip(
+    label: String,
+    value: String
+) {
+    Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.6f))
+            .padding(horizontal = 10.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+private fun ChartScaleLabel(
+    text: String,
+    emphasis: Boolean = false
+) {
+    Text(
+        text = text,
+        style = if (emphasis) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelSmall,
+        fontWeight = if (emphasis) FontWeight.SemiBold else FontWeight.Normal,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.End
+    )
+}
+
+private fun formatProgressValue(
+    value: Double,
+    isWeightBased: Boolean,
+    weightUnit: WeightUnit,
+    unitLabel: String
+): String {
+    return if (isWeightBased) {
+        "${WeightFormatters.formatWeight(value, weightUnit)} $unitLabel"
+    } else {
+        value.toInt().toString()
+    }
+}
+
+private fun formatProgressDelta(
+    value: Double,
+    isWeightBased: Boolean,
+    weightUnit: WeightUnit,
+    unitLabel: String
+): String {
+    val prefix = when {
+        value > 0 -> "+"
+        value < 0 -> "-"
+        else -> ""
+    }
+    val absolute = abs(value)
+    return if (isWeightBased) {
+        "$prefix${WeightFormatters.formatWeight(absolute, weightUnit)} $unitLabel"
+    } else {
+        "$prefix${absolute.toInt()}"
     }
 }
 

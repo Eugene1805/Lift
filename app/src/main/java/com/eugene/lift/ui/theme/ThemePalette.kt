@@ -2,8 +2,8 @@ package com.eugene.lift.ui.theme
 
 import androidx.annotation.StringRes
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import com.eugene.lift.R
@@ -318,27 +318,27 @@ private val jellyfishTheme = LiftThemeSpec(
         outline = Color(0xFF7D7485),
         outlineVariant = Color(0xFFD0C5D8)
     ),
-    darkScheme = lightColorScheme(
-        primary = Color(0xFF7A57C8),
-        onPrimary = Color(0xFFFFFFFF),
-        primaryContainer = Color(0xFFEBDDFF),
-        onPrimaryContainer = Color(0xFF2C0051),
-        secondary = Color(0xFFB64FC8),
-        onSecondary = Color(0xFFFFFFFF),
-        secondaryContainer = Color(0xFFFFD6FA),
-        onSecondaryContainer = Color(0xFF3C003F),
-        tertiary = Color(0xFF4F86D9),
-        onTertiary = Color(0xFFFFFFFF),
-        tertiaryContainer = Color(0xFFD9E2FF),
-        onTertiaryContainer = Color(0xFF001B43),
-        background = Color(0xFFFCF7FF),
-        onBackground = Color(0xFF201A29),
-        surface = Color(0xFFFCF7FF),
-        onSurface = Color(0xFF201A29),
-        surfaceVariant = Color(0xFFE9DFF0),
-        onSurfaceVariant = Color(0xFF4C4454),
-        outline = Color(0xFF7D7485),
-        outlineVariant = Color(0xFFD0C5D8)
+    darkScheme = darkColorScheme(
+        primary = Color(0xFFD1BCFF),
+        onPrimary = Color(0xFF432077),
+        primaryContainer = Color(0xFF5A3890),
+        onPrimaryContainer = Color(0xFFEBDDFF),
+        secondary = Color(0xFFF0A8F5),
+        onSecondary = Color(0xFF5E1168),
+        secondaryContainer = Color(0xFF862E91),
+        onSecondaryContainer = Color(0xFFFFD6FA),
+        tertiary = Color(0xFFADC6FF),
+        onTertiary = Color(0xFF0D376C),
+        tertiaryContainer = Color(0xFF2E5A91),
+        onTertiaryContainer = Color(0xFFD9E2FF),
+        background = Color(0xFF17131D),
+        onBackground = Color(0xFFE9E0F0),
+        surface = Color(0xFF17131D),
+        onSurface = Color(0xFFE9E0F0),
+        surfaceVariant = Color(0xFF4C4454),
+        onSurfaceVariant = Color(0xFFD0C5D8),
+        outline = Color(0xFF998E9F),
+        outlineVariant = Color(0xFF4C4454)
     ),
     previewColors = listOf(
         Color(0xFF7A57C8),

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.eugene.lift.common.work.ActiveWorkoutReminderScheduler
+import com.eugene.lift.domain.error.AppError
 import com.eugene.lift.domain.error.AppResult
 import com.eugene.lift.domain.manager.RestTimerManager
 import com.eugene.lift.domain.model.ActiveWorkoutDraft
@@ -190,6 +191,7 @@ class ActiveWorkoutViewModel @Inject constructor(
             ActiveWorkoutUiEvent.TimerStopped -> stopTimer()
             ActiveWorkoutUiEvent.ToggleAutoTimer -> toggleAutoTimer()
             is ActiveWorkoutUiEvent.FinishClicked -> finishWorkout(event.updateTemplate)
+            ActiveWorkoutUiEvent.SaveDraftAndExitClicked -> saveDraftAndExit()
             ActiveWorkoutUiEvent.CancelClicked -> cancelWorkout()
             is ActiveWorkoutUiEvent.AddExerciseClicked -> Unit
             is ActiveWorkoutUiEvent.ExerciseClicked -> Unit
@@ -515,16 +517,6 @@ class ActiveWorkoutViewModel @Inject constructor(
     private fun finishWorkout(updateTemplate: Boolean?) {
         val session = _activeSession.value ?: return
 
-        val allSets = session.exercises.flatMap { it.sets }
-        val hasTrulyEmptySet = allSets.any { it.weight == 0.0 && it.reps == 0 }
-        val hasWeightButNoReps = allSets.any { it.weight > 0.0 && it.reps <= 0 }
-        if (hasTrulyEmptySet || hasWeightButNoReps) {
-            viewModelScope.launch {
-                _effects.emit(ActiveWorkoutEffect.ShowSnackbar(com.eugene.lift.domain.error.AppError.Validation))
-            }
-            return
-        }
-
         viewModelScope.launch {
             persistDraftJob?.cancel()
             val finalSession = session.copy(
@@ -546,9 +538,23 @@ class ActiveWorkoutViewModel @Inject constructor(
                     _effects.emit(ActiveWorkoutEffect.NavigateBack)
                 }
                 is AppResult.Error -> {
-                    _effects.emit(ActiveWorkoutEffect.ShowSnackbar(result.error))
+                    if (result.error == AppError.Validation) {
+                        _effects.emit(ActiveWorkoutEffect.ShowSnackbarMessage(com.eugene.lift.R.string.workout_finish_needs_completed_set))
+                    } else {
+                        _effects.emit(ActiveWorkoutEffect.ShowSnackbar(result.error))
+                    }
                 }
             }
+        }
+    }
+
+    private fun saveDraftAndExit() {
+        viewModelScope.launch {
+            persistDraftJob?.cancel()
+            restTimerManager.stopTimer()
+            lastInteractedAtEpochMillis = System.currentTimeMillis()
+            persistCurrentDraft()
+            _effects.emit(ActiveWorkoutEffect.NavigateBack)
         }
     }
 

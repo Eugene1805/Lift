@@ -623,6 +623,13 @@
     <string name="workout_draft_notification_message">\"%1$s\" is still waiting for you.</string>
     <string name="workout_draft_notification_channel">Workout reminders</string>
     <string name="workout_draft_notification_channel_desc">Reminds you about unfinished workouts</string>
+    <string name="workout_finish_empty_title">Workout not ready to finish</string>
+    <string name="workout_finish_empty_message">You have not completed any sets yet. Finish the workout after marking at least one set done, or save it as a draft and come back later.</string>
+    <string name="workout_finish_incomplete_title">Some sets are still in progress</string>
+    <string name="workout_finish_incomplete_message">Some sets already have data but are not marked complete yet. Complete them or clear them before finishing, or save the workout as a draft.</string>
+    <string name="workout_finish_keep_editing">Keep editing</string>
+    <string name="workout_finish_save_draft">Save draft</string>
+    <string name="workout_finish_needs_completed_set">Complete at least one set before saving this workout.</string>
     <string name="update_template_title">Update Template?</string>
     <string name="update_template_message">Do you want to update the template with the changes made during this workout?</string>
     <string name="update_template_confirm">Update Template</string>

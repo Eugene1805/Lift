@@ -43,6 +43,7 @@ sealed interface ActiveWorkoutUiEvent {
     data object TimerStopped : ActiveWorkoutUiEvent
     data object ToggleAutoTimer : ActiveWorkoutUiEvent
     data class FinishClicked(val updateTemplate: Boolean?) : ActiveWorkoutUiEvent
+    data object SaveDraftAndExitClicked : ActiveWorkoutUiEvent
     data object CancelClicked : ActiveWorkoutUiEvent
     data object AddExerciseClicked : ActiveWorkoutUiEvent
     data class ExerciseClicked(val exerciseId: String) : ActiveWorkoutUiEvent
@@ -57,6 +58,7 @@ sealed interface ActiveWorkoutUiEvent {
 sealed interface ActiveWorkoutEffect {
     data object NavigateBack : ActiveWorkoutEffect
     data class ShowSnackbar(val error: AppError) : ActiveWorkoutEffect
+    data class ShowSnackbarMessage(val messageResId: Int) : ActiveWorkoutEffect
     data class ShowExerciseSnackbar(
         val name: String,
         val weight: Double,

@@ -276,8 +276,8 @@ class FinishWorkoutUseCaseTest {
         val savedSession = slot.captured
         val savedSets = savedSession.exercises.first().sets
 
-        assertFalse("Incomplete set should NOT be PR even with higher weight", savedSets[0].isPr)
-        assertTrue("Completed set should be PR", savedSets[1].isPr)
+        assertEquals(1, savedSets.size)
+        assertTrue("Completed set should be PR", savedSets[0].isPr)
     }
 
     @Test
@@ -329,8 +329,8 @@ class FinishWorkoutUseCaseTest {
     }
 
     @Test
-    fun `invoke handles exercise with only incomplete sets`() = runTest {
-        // GIVEN - Exercise with only incomplete sets
+    fun `invoke returns Validation error when workout has only incomplete sets`() = runTest {
+        // GIVEN
         val sets = listOf(
             createSet(weight = 100.0, completed = false),
             createSet(weight = 90.0, completed = false)
@@ -338,18 +338,36 @@ class FinishWorkoutUseCaseTest {
         val session = createSessionWithSets(sets)
 
         // WHEN
-        useCase(session)
+        val result = useCase(session)
 
         // THEN
+        assertTrue(result is AppResult.Error)
+        assertEquals(AppError.Validation, (result as AppResult.Error).error)
+        coVerify(exactly = 0) { repository.saveSession(any()) }
+    }
+
+    @Test
+    fun `invoke drops incomplete sets when workout has completed work`() = runTest {
+        // GIVEN
+        val sets = listOf(
+            createSet(weight = 100.0, completed = true),
+            createSet(weight = 90.0, completed = false)
+        )
+        val session = createSessionWithSets(sets)
+        every { repository.getExerciseHistory("exercise-1") } returns flowOf(emptyList())
+
+        // WHEN
+        val result = useCase(session)
+
+        // THEN
+        assertTrue(result is AppResult.Success)
         val slot = slot<WorkoutSession>()
         coVerify { repository.saveSession(capture(slot)) }
 
         val savedSession = slot.captured
         val savedSets = savedSession.exercises.first().sets
-
-        // All sets should remain but none marked as PR
-        assertEquals(2, savedSets.size)
-        assertTrue(savedSets.none { it.isPr })
+        assertEquals(1, savedSets.size)
+        assertTrue(savedSets.all { it.completed })
     }
 
     @Test

@@ -53,6 +53,7 @@ class FinishWorkoutUseCase @Inject constructor(
     ): List<SessionExercise> {
         return exercises
             .map { processExercise(it) }
+            .map { exercise -> exercise.copy(sets = exercise.sets.filter { it.completed }) }
             .filter { it.sets.isNotEmpty() }
     }
 

@@ -91,6 +91,7 @@ private fun ActiveWorkoutLayout(
                 uiState = uiState,
                 formattedTime = formattedTime,
                 onEvent = onEvent,
+                screenState = screenState,
                 onRequestExit = screenState::requestExit,
                 onShowTemplateUpdate = screenState::showTemplateUpdate,
                 onShowSaveAsTemplate = screenState::showSaveAsTemplate
@@ -134,6 +135,7 @@ private fun CollectActiveWorkoutEffects(
                     screenState.showSnackbar(effect.name, weightText, effect.isPr)
                 }
                 is ActiveWorkoutEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.error.toMessage(context))
+                is ActiveWorkoutEffect.ShowSnackbarMessage -> snackbarHostState.showSnackbar(context.getString(effect.messageResId))
                 ActiveWorkoutEffect.NavigateBack -> Unit
             }
         }
@@ -189,6 +191,18 @@ private fun ActiveWorkoutDialogsHost(
             onEvent(ActiveWorkoutUiEvent.CancelClicked)
         }
     )
+
+    ActiveFinishBlockedDialog(
+        show = screenState.showFinishBlockedDialog,
+        titleResId = screenState.finishBlockedTitleResId,
+        messageResId = screenState.finishBlockedMessageResId,
+        onDismiss = screenState::hideFinishBlocked,
+        onKeepEditing = screenState::hideFinishBlocked,
+        onSaveDraft = {
+            screenState.hideFinishBlocked()
+            onEvent(ActiveWorkoutUiEvent.SaveDraftAndExitClicked)
+        }
+    )
 }
 
 @Composable
@@ -214,6 +228,7 @@ private fun ActiveWorkoutTopBarSection(
     uiState: ActiveWorkoutUiState,
     formattedTime: String,
     onEvent: (ActiveWorkoutUiEvent) -> Unit,
+    screenState: WorkoutScreenState,
     onRequestExit: () -> Unit,
     onShowTemplateUpdate: () -> Unit,
     onShowSaveAsTemplate: () -> Unit
@@ -230,6 +245,7 @@ private fun ActiveWorkoutTopBarSection(
                 handleFinishAction(
                     uiState = uiState,
                     updateTemplate = updateTemplate,
+                    screenState = screenState,
                     onEvent = onEvent,
                     onShowTemplateUpdate = onShowTemplateUpdate,
                     onShowSaveAsTemplate = onShowSaveAsTemplate
@@ -244,11 +260,37 @@ private fun ActiveWorkoutTopBarSection(
 private fun handleFinishAction(
     uiState: ActiveWorkoutUiState,
     updateTemplate: Boolean?,
+    screenState: WorkoutScreenState,
     onEvent: (ActiveWorkoutUiEvent) -> Unit,
     onShowTemplateUpdate: () -> Unit,
     onShowSaveAsTemplate: () -> Unit
 ) {
+    val allSets = uiState.exercises.flatMap { it.sets }
+    val hasCompletedSets = allSets.any { it.completed }
+    val hasStartedButIncompleteSets = allSets.any { set ->
+        !set.completed && (
+            set.weight > 0.0 ||
+                set.reps > 0 ||
+                (set.timeSeconds ?: 0L) > 0L ||
+                (set.distance ?: 0.0) > 0.0 ||
+                set.rpe != null ||
+                set.rir != null
+            )
+    }
+
     when {
+        !hasCompletedSets && hasStartedButIncompleteSets -> screenState.showFinishBlocked(
+            titleResId = com.eugene.lift.R.string.workout_finish_incomplete_title,
+            messageResId = com.eugene.lift.R.string.workout_finish_incomplete_message
+        )
+        !hasCompletedSets -> screenState.showFinishBlocked(
+            titleResId = com.eugene.lift.R.string.workout_finish_empty_title,
+            messageResId = com.eugene.lift.R.string.workout_finish_empty_message
+        )
+        hasStartedButIncompleteSets -> screenState.showFinishBlocked(
+            titleResId = com.eugene.lift.R.string.workout_finish_incomplete_title,
+            messageResId = com.eugene.lift.R.string.workout_finish_incomplete_message
+        )
         uiState.hasTemplate && uiState.hasWorkoutBeenModified -> onShowTemplateUpdate()
         !uiState.hasTemplate -> onShowSaveAsTemplate()
         else -> onEvent(ActiveWorkoutUiEvent.FinishClicked(updateTemplate))
@@ -299,6 +341,9 @@ class WorkoutScreenState {
     var showExitDialog by mutableStateOf(false)
     var showTemplateUpdateDialog by mutableStateOf(false)
     var showSaveAsTemplateDialog by mutableStateOf(false)
+    var showFinishBlockedDialog by mutableStateOf(false)
+    var finishBlockedTitleResId by mutableStateOf(com.eugene.lift.R.string.workout_finish_empty_title)
+    var finishBlockedMessageResId by mutableStateOf(com.eugene.lift.R.string.workout_finish_empty_message)
 
     var isSnackbarVisible by mutableStateOf(false)
     var snackbarExerciseName by mutableStateOf("")
@@ -313,6 +358,14 @@ class WorkoutScreenState {
 
     fun showSaveAsTemplate() { showSaveAsTemplateDialog = true }
     fun hideSaveAsTemplate() { showSaveAsTemplateDialog = false }
+
+    fun showFinishBlocked(titleResId: Int, messageResId: Int) {
+        finishBlockedTitleResId = titleResId
+        finishBlockedMessageResId = messageResId
+        showFinishBlockedDialog = true
+    }
+
+    fun hideFinishBlocked() { showFinishBlockedDialog = false }
 
     fun showSnackbar(exerciseName: String, weight: String, isPr: Boolean = false) {
         snackbarExerciseName = exerciseName

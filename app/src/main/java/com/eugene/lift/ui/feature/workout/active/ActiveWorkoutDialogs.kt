@@ -42,3 +42,30 @@ fun ActiveExitWorkoutDialog(show: Boolean, onDismiss: () -> Unit, onConfirmExit:
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.exit_workout_cancel)) } }
     )
 }
+
+@Composable
+fun ActiveFinishBlockedDialog(
+    show: Boolean,
+    titleResId: Int,
+    messageResId: Int,
+    onDismiss: () -> Unit,
+    onKeepEditing: () -> Unit,
+    onSaveDraft: () -> Unit
+) {
+    if (!show) return
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(titleResId)) },
+        text = { Text(stringResource(messageResId)) },
+        confirmButton = {
+            TextButton(onClick = onKeepEditing) {
+                Text(stringResource(R.string.workout_finish_keep_editing))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onSaveDraft) {
+                Text(stringResource(R.string.workout_finish_save_draft))
+            }
+        }
+    )
+}

@@ -579,6 +579,13 @@
     <string name="workout_draft_notification_message">\"%1$s\" sigue esperándote.</string>
     <string name="workout_draft_notification_channel">Recordatorios de entrenamiento</string>
     <string name="workout_draft_notification_channel_desc">Recuerda los entrenamientos que dejaste sin terminar</string>
+    <string name="workout_finish_empty_title">Este entrenamiento todavía no se puede guardar</string>
+    <string name="workout_finish_empty_message">Aún no has completado ninguna serie. Termínalo cuando marques al menos una como hecha, o guárdalo como borrador para seguir después.</string>
+    <string name="workout_finish_incomplete_title">Todavía hay series en progreso</string>
+    <string name="workout_finish_incomplete_message">Hay series con datos capturados pero sin marcar como completadas. Complétalas o límpialas antes de terminar, o guarda el entrenamiento como borrador.</string>
+    <string name="workout_finish_keep_editing">Seguir editando</string>
+    <string name="workout_finish_save_draft">Guardar borrador</string>
+    <string name="workout_finish_needs_completed_set">Completa al menos una serie antes de guardar este entrenamiento.</string>
     <string name="update_template_title">¿Actualizar Plantilla?</string>
     <string name="update_template_message">¿Deseas actualizar la plantilla con los cambios realizados durante este entrenamiento?</string>
     <string name="update_template_confirm">Actualizar Plantilla</string>

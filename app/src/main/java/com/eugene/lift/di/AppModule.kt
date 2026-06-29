@@ -14,11 +14,14 @@ import com.eugene.lift.data.local.MIGRATION_12_13
 import com.eugene.lift.data.local.MIGRATION_8_9
 import com.eugene.lift.data.local.MIGRATION_9_10
 import com.eugene.lift.data.local.SettingsDataSource
+import com.eugene.lift.data.backup.AppBackupLocalStore
+import com.eugene.lift.data.backup.RoomAppBackupLocalStore
 import com.eugene.lift.data.local.dao.ExerciseDao
 import com.eugene.lift.data.local.dao.FolderDao
 import com.eugene.lift.data.local.dao.TemplateDao
 import com.eugene.lift.data.local.dao.UserProfileDao
 import com.eugene.lift.data.local.dao.WorkoutDao
+import com.eugene.lift.data.repository.AppDataTransferRepositoryImpl
 import com.eugene.lift.data.repository.ActiveWorkoutDraftRepositoryImpl
 import com.eugene.lift.data.repository.ExerciseRepositoryImpl
 import com.eugene.lift.data.repository.FolderRepositoryImpl
@@ -28,6 +31,7 @@ import com.eugene.lift.data.repository.TemplateRepositoryImpl
 import com.eugene.lift.data.repository.UserProfileRepositoryImpl
 import com.eugene.lift.data.repository.WorkoutRepositoryImpl
 import com.eugene.lift.domain.repository.ActiveWorkoutDraftRepository
+import com.eugene.lift.domain.repository.AppDataTransferRepository
 import com.eugene.lift.domain.repository.ExerciseRepository
 import com.eugene.lift.domain.repository.FolderRepository
 import com.eugene.lift.domain.repository.ImageRepository
@@ -113,6 +117,18 @@ object AppModule {
     @Provides
     @Singleton
     fun provideSettingsRepository(dataSource: SettingsDataSource): SettingsRepository = SettingsRepositoryImpl(dataSource)
+
+    @Provides
+    @Singleton
+    fun provideAppBackupLocalStore(
+        impl: RoomAppBackupLocalStore
+    ): AppBackupLocalStore = impl
+
+    @Provides
+    @Singleton
+    fun provideAppDataTransferRepository(
+        impl: AppDataTransferRepositoryImpl
+    ): AppDataTransferRepository = impl
 
     @Provides
     @Singleton

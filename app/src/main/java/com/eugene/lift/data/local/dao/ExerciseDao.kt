@@ -42,6 +42,9 @@ interface ExerciseDao {
     @Query("SELECT * FROM exercises")
     suspend fun getAllExerciseEntities(): List<ExerciseEntity>
 
+    @Query("SELECT * FROM exercise_body_part_cross_ref")
+    suspend fun getAllCrossRefs(): List<ExerciseBodyPartCrossRef>
+
     @Upsert
     suspend fun insertExercise(exercise: ExerciseEntity)
 
@@ -57,8 +60,14 @@ interface ExerciseDao {
     @Query("DELETE FROM exercise_body_part_cross_ref WHERE exerciseId = :exerciseId")
     suspend fun deleteCrossRefs(exerciseId: String)
 
+    @Query("DELETE FROM exercise_body_part_cross_ref")
+    suspend fun deleteAllCrossRefs()
+
     @Query("DELETE FROM exercises WHERE id = :exerciseId")
     suspend fun deleteExerciseBase(exerciseId: String)
+
+    @Query("DELETE FROM exercises")
+    suspend fun deleteAllExercises()
 
     @Transaction
     suspend fun saveExerciseComplete(

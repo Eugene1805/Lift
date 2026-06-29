@@ -467,6 +467,7 @@
     <string name="seed_single_arm_triceps_extension_desc">1. Stand beside a high cable with one handle.\n2. Pin elbow close to your side.\n3. Extend the arm down until fully straight.\n4. Squeeze triceps without letting shoulder roll forward.\n5. Return under control and switch arms after the set.</string>
 
     <string name="section_appearance">Appearance</string>
+    <string name="section_data">Data</string>
     <string name="section_units">Units</string>
     <string name="section_workout">Workout</string>
     <string name="section_about">About</string>
@@ -475,6 +476,19 @@
     <string name="label_weight">Weight Unit</string>
     <string name="label_distance">Distance Unit</string>
     <string name="btn_contact_us">Contact Us</string>
+    <string name="settings_export_title">Export data</string>
+    <string name="settings_export_subtitle">Save your workouts, templates, settings, and profile to a JSON backup.</string>
+    <string name="settings_import_title">Import data</string>
+    <string name="settings_import_subtitle">Replace current local data with a JSON backup file.</string>
+    <string name="settings_export_success">Backup exported successfully.</string>
+    <string name="settings_export_failure">Could not export your backup.</string>
+    <string name="settings_import_success">Backup imported successfully.</string>
+    <string name="settings_import_failure">Could not import this backup.</string>
+    <string name="settings_import_invalid">This backup file is invalid or not supported.</string>
+    <string name="settings_import_confirm_title">Replace current data?</string>
+    <string name="settings_import_confirm_message">Importing a backup will replace your current local workouts, templates, exercises, profile, and settings.</string>
+    <string name="settings_import_confirm">Import backup</string>
+    <string name="settings_import_cancel">Cancel</string>
     <string name="exercise_detail_edit">Edit</string>
     <string name="exercise_detail_no_image">No Image</string>
     <string name="exercise_detail_details">Details</string>

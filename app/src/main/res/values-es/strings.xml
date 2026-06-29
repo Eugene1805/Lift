@@ -409,6 +409,7 @@
     <string name="seed_single_arm_triceps_extension_desc">1. Párate junto a una polea alta con una manija.\n2. Mantén el codo pegado al costado.\n3. Extiende el brazo hacia abajo hasta quedar recto.\n4. Aprieta tríceps sin dejar que el hombro se vaya al frente.\n5. Regresa controladamente y cambia de brazo al terminar la serie.</string>
 
     <string name="section_appearance">Apariencia</string>
+    <string name="section_data">Datos</string>
     <string name="section_units">Unidades</string>
     <string name="section_workout">Entrenamiento</string>
     <string name="section_about">Acerca de</string>
@@ -417,6 +418,19 @@
     <string name="label_weight">Unidad de peso</string>
     <string name="label_distance">Unidad de distancia</string>
     <string name="btn_contact_us">"Contáctanos "</string>
+    <string name="settings_export_title">Exportar datos</string>
+    <string name="settings_export_subtitle">Guarda entrenamientos, rutinas, ajustes y perfil en un respaldo JSON.</string>
+    <string name="settings_import_title">Importar datos</string>
+    <string name="settings_import_subtitle">Reemplaza los datos locales actuales con un archivo de respaldo JSON.</string>
+    <string name="settings_export_success">Respaldo exportado correctamente.</string>
+    <string name="settings_export_failure">No se pudo exportar el respaldo.</string>
+    <string name="settings_import_success">Respaldo importado correctamente.</string>
+    <string name="settings_import_failure">No se pudo importar el respaldo.</string>
+    <string name="settings_import_invalid">Este archivo de respaldo no es válido o no es compatible.</string>
+    <string name="settings_import_confirm_title">¿Reemplazar los datos actuales?</string>
+    <string name="settings_import_confirm_message">Importar un respaldo reemplazará los entrenamientos, rutinas, ejercicios, perfil y ajustes locales actuales.</string>
+    <string name="settings_import_confirm">Importar respaldo</string>
+    <string name="settings_import_cancel">Cancelar</string>
     <string name="exercise_detail_back">Atrás</string>
     <string name="exercise_detail_edit">Editar</string>
     <string name="exercise_detail_no_image">Sin Imagen</string>

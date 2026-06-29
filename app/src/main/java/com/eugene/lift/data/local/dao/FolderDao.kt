@@ -14,12 +14,21 @@ interface FolderDao {
     @Query("SELECT * FROM workout_folders ORDER BY createdAt DESC")
     fun getAllFolders(): Flow<List<FolderEntity>>
 
+    @Query("SELECT * FROM workout_folders")
+    suspend fun getAllFolderEntities(): List<FolderEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFolder(folder: FolderEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFolders(folders: List<FolderEntity>)
 
     @Update
     suspend fun updateFolder(folder: FolderEntity)
 
     @Query("DELETE FROM workout_folders WHERE id = :folderId")
     suspend fun deleteFolder(folderId: String)
+
+    @Query("DELETE FROM workout_folders")
+    suspend fun deleteAllFolders()
 }

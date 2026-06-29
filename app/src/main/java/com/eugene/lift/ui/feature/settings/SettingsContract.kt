@@ -21,5 +21,7 @@ sealed interface SettingsUiEvent {
     data class LanguageChanged(val code: String) : SettingsUiEvent
     data class EffortMetricChanged(val metric: String?) : SettingsUiEvent
     data class AutoTimerToggled(val enabled: Boolean) : SettingsUiEvent
+    data object ExportDataClicked : SettingsUiEvent
+    data object ImportDataClicked : SettingsUiEvent
     data object ContactUsClicked : SettingsUiEvent
 }

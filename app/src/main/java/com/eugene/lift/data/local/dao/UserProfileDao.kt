@@ -25,17 +25,26 @@ interface UserProfileDao {
     @Query("SELECT * FROM user_profiles LIMIT 1")
     suspend fun getCurrentProfileOnce(): UserProfileEntity?
 
+    @Query("SELECT * FROM user_profiles")
+    suspend fun getAllProfileEntities(): List<UserProfileEntity>
+
     @Query("SELECT * FROM user_profiles WHERE username = :username LIMIT 1")
     suspend fun getProfileByUsername(username: String): UserProfileEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProfile(profile: UserProfileEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertProfiles(profiles: List<UserProfileEntity>)
+
     @Update
     suspend fun updateProfile(profile: UserProfileEntity)
 
     @Query("DELETE FROM user_profiles WHERE id = :id")
     suspend fun deleteProfile(id: String)
+
+    @Query("DELETE FROM user_profiles")
+    suspend fun deleteAllProfiles()
 
     @Query("SELECT COUNT(*) FROM user_profiles")
     suspend fun getProfileCount(): Int

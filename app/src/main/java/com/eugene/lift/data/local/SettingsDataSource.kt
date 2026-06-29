@@ -14,6 +14,7 @@ import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -152,5 +153,35 @@ class SettingsDataSource @Inject constructor(
 
     suspend fun setSwipeHintSeen() {
         dataStore.edit { prefs -> prefs[Keys.SWIPE_HINT_SEEN] = true }
+    }
+
+    suspend fun getBackupSnapshot(): com.eugene.lift.data.backup.SettingsBackupSnapshot {
+        val prefs = dataStore.data.first()
+        val rawTrackedIds = prefs[Keys.TRACKED_EXERCISE_IDS] ?: ""
+        return com.eugene.lift.data.backup.SettingsBackupSnapshot(
+            theme = prefs[Keys.THEME],
+            weightUnit = prefs[Keys.WEIGHT_UNIT],
+            distanceUnit = prefs[Keys.DISTANCE_UNIT],
+            languageCode = prefs[Keys.LANGUAGE_CODE],
+            trackedExerciseIds = if (rawTrackedIds.isBlank()) emptyList() else rawTrackedIds.split(",").filter { it.isNotBlank() },
+            onboardingComplete = prefs[Keys.ONBOARDING_COMPLETE] ?: false,
+            swipeHintSeen = prefs[Keys.SWIPE_HINT_SEEN] ?: false,
+            effortMetric = prefs[Keys.EFFORT_METRIC],
+            autoTimerEnabled = prefs[Keys.AUTO_TIMER_ENABLED] ?: true
+        )
+    }
+
+    suspend fun restoreFromBackupSnapshot(snapshot: com.eugene.lift.data.backup.SettingsBackupSnapshot) {
+        dataStore.edit { prefs ->
+            snapshot.theme?.let { prefs[Keys.THEME] = it } ?: prefs.remove(Keys.THEME)
+            snapshot.weightUnit?.let { prefs[Keys.WEIGHT_UNIT] = it } ?: prefs.remove(Keys.WEIGHT_UNIT)
+            snapshot.distanceUnit?.let { prefs[Keys.DISTANCE_UNIT] = it } ?: prefs.remove(Keys.DISTANCE_UNIT)
+            snapshot.languageCode?.let { prefs[Keys.LANGUAGE_CODE] = it } ?: prefs.remove(Keys.LANGUAGE_CODE)
+            prefs[Keys.TRACKED_EXERCISE_IDS] = snapshot.trackedExerciseIds.joinToString(",")
+            prefs[Keys.ONBOARDING_COMPLETE] = snapshot.onboardingComplete
+            prefs[Keys.SWIPE_HINT_SEEN] = snapshot.swipeHintSeen
+            snapshot.effortMetric?.let { prefs[Keys.EFFORT_METRIC] = it } ?: prefs.remove(Keys.EFFORT_METRIC)
+            prefs[Keys.AUTO_TIMER_ENABLED] = snapshot.autoTimerEnabled
+        }
     }
 }

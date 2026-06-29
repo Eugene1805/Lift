@@ -41,8 +41,20 @@ interface WorkoutDao {
     @Query("SELECT * FROM workout_sessions WHERE id = :id")
     fun getSessionById(id: String): Flow<SessionComplete?>
 
+    @Query("SELECT * FROM workout_sessions")
+    suspend fun getAllSessionEntities(): List<WorkoutSessionEntity>
+
+    @Query("SELECT * FROM session_exercises")
+    suspend fun getAllSessionExerciseEntities(): List<SessionExerciseEntity>
+
+    @Query("SELECT * FROM workout_sets")
+    suspend fun getAllSetEntities(): List<WorkoutSetEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: WorkoutSessionEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSessions(sessions: List<WorkoutSessionEntity>)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSessionExercises(exercises: List<SessionExerciseEntity>)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -125,6 +137,15 @@ interface WorkoutDao {
 
     @Query("DELETE FROM workout_sessions WHERE id = :id")
     suspend fun deleteSession(id: String)
+
+    @Query("DELETE FROM workout_sets")
+    suspend fun deleteAllSets()
+
+    @Query("DELETE FROM session_exercises")
+    suspend fun deleteAllSessionExercises()
+
+    @Query("DELETE FROM workout_sessions")
+    suspend fun deleteAllSessions()
 
     @Query("""
         SELECT exerciseId, COUNT(*) as useCount

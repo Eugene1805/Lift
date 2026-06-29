@@ -2,12 +2,15 @@ package com.eugene.lift.ui.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eugene.lift.domain.error.AppResult
 import com.eugene.lift.domain.model.AppTheme
 import com.eugene.lift.domain.model.DistanceUnit
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
+import com.eugene.lift.domain.usecase.settings.ExportAppDataUseCase
 import com.eugene.lift.domain.usecase.settings.GetCurrentLanguageUseCase
 import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
+import com.eugene.lift.domain.usecase.settings.ImportAppDataUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateAutoTimerUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateDistanceUnitUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateEffortMetricUseCase
@@ -32,6 +35,8 @@ class SettingsViewModel @Inject constructor(
     private val updateLanguageUseCase: UpdateLanguageUseCase,
     private val updateEffortMetricUseCase: UpdateEffortMetricUseCase,
     private val updateAutoTimerUseCase: UpdateAutoTimerUseCase,
+    private val exportAppDataUseCase: ExportAppDataUseCase,
+    private val importAppDataUseCase: ImportAppDataUseCase,
     getCurrentLanguageUseCase: GetCurrentLanguageUseCase
 ) : ViewModel() {
 
@@ -67,6 +72,8 @@ class SettingsViewModel @Inject constructor(
             is SettingsUiEvent.LanguageChanged -> updateLanguage(event.code)
             is SettingsUiEvent.EffortMetricChanged -> updateEffortMetric(event.metric)
             is SettingsUiEvent.AutoTimerToggled -> updateAutoTimer(event.enabled)
+            SettingsUiEvent.ExportDataClicked -> Unit
+            SettingsUiEvent.ImportDataClicked -> Unit
             SettingsUiEvent.ContactUsClicked -> Unit
         }
     }
@@ -97,4 +104,8 @@ class SettingsViewModel @Inject constructor(
     private fun updateAutoTimer(enabled: Boolean) {
         viewModelScope.launch { updateAutoTimerUseCase(enabled) }
     }
+
+    suspend fun exportBackupJson(): String = exportAppDataUseCase()
+
+    suspend fun importBackupJson(json: String): AppResult<Unit> = importAppDataUseCase(json)
 }

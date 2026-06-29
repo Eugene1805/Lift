@@ -13,8 +13,10 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.TemporalAdjusters
 
 class UserProfileRepositoryImplTest {
 
@@ -249,9 +251,10 @@ class UserProfileRepositoryImplTest {
     @Test
     fun `recordWorkoutCompleted keeps streak in same week`() = runTest {
         val today = LocalDate.now()
+        val sameWeekDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
         coEvery { userProfileDao.getProfileByIdOnce("test-id") } returns buildEntity(
             id = "test-id"
-        ).copy(currentStreak = 3, longestStreak = 4, lastWorkoutDate = today.minusDays(1))
+        ).copy(currentStreak = 3, longestStreak = 4, lastWorkoutDate = sameWeekDate)
 
         repository.recordWorkoutCompleted("test-id", volume = 0.0, duration = 0L, prCount = 0)
 

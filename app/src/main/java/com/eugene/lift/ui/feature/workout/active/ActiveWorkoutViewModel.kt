@@ -19,9 +19,6 @@ import com.eugene.lift.domain.usecase.exercise.GetExerciseDetailUseCase
 import com.eugene.lift.domain.usecase.settings.GetSettingsUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateAutoTimerUseCase
 import com.eugene.lift.domain.usecase.settings.UpdateEffortMetricUseCase
-import com.eugene.lift.ui.feature.workout.active.service.ActiveWorkoutServiceManager
-import com.eugene.lift.ui.feature.workout.active.service.WorkoutNotificationAction
-import com.eugene.lift.ui.feature.workout.active.service.WorkoutNotificationState
 import com.eugene.lift.ui.navigation.ActiveWorkoutRoute
 import com.eugene.lift.domain.usecase.template.CreateTemplateFromWorkoutUseCase
 import com.eugene.lift.domain.usecase.template.UpdateTemplateFromWorkoutUseCase
@@ -70,8 +67,7 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val updateEffortMetricUseCase: UpdateEffortMetricUseCase,
     private val updateAutoTimerUseCase: UpdateAutoTimerUseCase,
     private val activeWorkoutDraftRepository: ActiveWorkoutDraftRepository,
-    private val activeWorkoutReminderScheduler: ActiveWorkoutReminderScheduler,
-    private val serviceManager: ActiveWorkoutServiceManager
+    private val activeWorkoutReminderScheduler: ActiveWorkoutReminderScheduler
 ) : ViewModel() {
 
     private val routeArgs: ActiveWorkoutRoute? = try {
@@ -139,11 +135,8 @@ class ActiveWorkoutViewModel @Inject constructor(
         combine(sessionSnapshot, userSettings, _isAutoTimerEnabled, _reorderState) { snapshot, settings, autoTimer, reorder ->
             val session = snapshot.session
             if (session == null) {
-                serviceManager.updateState(null)
                 ActiveWorkoutUiState(isLoading = true)
             } else {
-                updateNotificationState(session, settings)
-                
                 ActiveWorkoutUiState(
                     isLoading = false,
                     sessionName = session.name,
@@ -167,12 +160,6 @@ class ActiveWorkoutViewModel @Inject constructor(
             .distinctUntilChanged()
             .onEach { refreshLocalizedActiveSession() }
             .launchIn(viewModelScope)
-
-        serviceManager.actions.onEach { action ->
-            when (action) {
-                is WorkoutNotificationAction.CompleteCurrentSet -> completeNextAvailableSet()
-            }
-        }.launchIn(viewModelScope)
     }
 
     fun onEvent(event: ActiveWorkoutUiEvent) {
@@ -224,54 +211,6 @@ class ActiveWorkoutViewModel @Inject constructor(
         if (fromIndex !in exercises.indices || toIndex !in exercises.indices) return
         exercises.add(toIndex, exercises.removeAt(fromIndex))
         setActiveSession(session.copy(exercises = exercises))
-    }
-
-    private fun completeNextAvailableSet() {
-        val currentSession = _activeSession.value ?: return
-        for ((exerciseIndex, exercise) in currentSession.exercises.withIndex()) {
-            for ((setIndex, set) in exercise.sets.withIndex()) {
-                if (!set.completed) {
-                    toggleSetCompleted(exerciseIndex, setIndex)
-                    return
-                }
-            }
-        }
-    }
-
-    private fun updateNotificationState(session: WorkoutSession, settings: UserSettings) {
-        var currentExercise: SessionExercise? = null
-        var currentSetNum = 1
-        var currentSet: WorkoutSet? = null
-
-        for (exercise in session.exercises) {
-            val uncompletedIndex = exercise.sets.indexOfFirst { !it.completed }
-            if (uncompletedIndex != -1) {
-                currentExercise = exercise
-                currentSetNum = uncompletedIndex + 1
-                currentSet = exercise.sets[uncompletedIndex]
-                break
-            }
-        }
-
-        if (currentExercise != null && currentSet != null) {
-            val isBodyWeight = currentExercise.exercise.category in listOf(
-                ExerciseCategory.BODYWEIGHT,
-                ExerciseCategory.ASSISTED_BODYWEIGHT,
-                ExerciseCategory.WEIGHTED_BODYWEIGHT
-            )
-            serviceManager.updateState(
-                WorkoutNotificationState(
-                    exerciseName = currentExercise.exercise.name,
-                    setNumber = currentSetNum,
-                    weight = currentSet.weight,
-                    reps = currentSet.reps,
-                    isBodyweight = isBodyWeight,
-                    weightUnit = settings.weightUnit
-                )
-            )
-        } else {
-            serviceManager.updateState(null)
-        }
     }
 
     private fun initializeSession() {

@@ -14,7 +14,7 @@ object WorkInitializer {
 
     private const val TAG = "WorkInitializer"
     // Versioned so existing installs rerun the idempotent image backfill after mapper and asset refreshes.
-    private const val SEED_DB_WORK_NAME = "seed_db_work_v10"
+    internal const val SEED_DB_WORK_NAME = "seed_db_work_v10"
 
     /**
      * Enqueues the database seeding work if it hasn't been done yet.
@@ -24,6 +24,11 @@ object WorkInitializer {
      * @param context Application context
      */
     fun enqueueDatabaseSeeding(context: Context) {
+        if (!SeedBootstrapState.shouldEnqueue(context, SEED_DB_WORK_NAME)) {
+            Log.d(TAG, "Skipping bootstrap enqueue because $SEED_DB_WORK_NAME already completed")
+            return
+        }
+
         Log.d(TAG, "Enqueueing database seeding work")
 
         val seedRequest = OneTimeWorkRequest.Builder(SeedDatabaseWorker::class.java)

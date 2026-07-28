@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.eugene.lift.common.work.SeedBootstrapState
+import com.eugene.lift.common.work.WorkInitializer
 import com.eugene.lift.data.local.ExerciseBootstrapDataSource
 import com.eugene.lift.domain.usecase.exercise.AssignMissingImagesUseCase
 import com.eugene.lift.domain.usecase.exercise.AssignMissingSeedKeysUseCase
@@ -24,6 +26,12 @@ class SeedDatabaseWorker @AssistedInject constructor(
             bootstrapDataSource.populateIfEmpty()
             assignMissingSeedKeysUseCase()
             assignMissingImagesUseCase()
+            check(
+                SeedBootstrapState.markCompleted(
+                    applicationContext,
+                    WorkInitializer.SEED_DB_WORK_NAME
+                )
+            ) { "Could not persist seed bootstrap completion" }
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()

@@ -58,6 +58,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -337,7 +338,7 @@ private fun HistogramSection(
     onTimeRangeChange: (TimeRange) -> Unit
 ) {
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val tabs = listOf(
         stringResource(R.string.profile_tab_duration),
         stringResource(R.string.profile_tab_volume),
@@ -394,25 +395,25 @@ private fun HistogramSection(
 
             val valueFormatter: (Double) -> String = when (selectedTabIndex) {
                 0 -> { value ->
-                    context.getString(
+                    resources.getString(
                         R.string.profile_value_duration_format,
                         value.toInt()
                     )
                 }
                 1 -> { value ->
                     val unitLabel = if (weightUnit == WeightUnit.KG) {
-                        context.getString(R.string.unit_kg)
+                        resources.getString(R.string.unit_kg)
                     } else {
-                        context.getString(R.string.unit_lbs)
+                        resources.getString(R.string.unit_lbs)
                     }
-                    context.getString(
+                    resources.getString(
                         R.string.profile_value_volume_format,
                         WeightFormatters.formatWeight(value, weightUnit),
                         unitLabel
                     )
                 }
                 else -> { value ->
-                    context.getString(
+                    resources.getString(
                         R.string.profile_value_reps_format,
                         value.toInt()
                     )

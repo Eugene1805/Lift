@@ -140,8 +140,9 @@ object AppModule {
     @Singleton
     fun provideExerciseSeeder(
         repository: ExerciseRepository,
+        settingsDataSource: SettingsDataSource,
         @ApplicationContext context: Context
-    ): ExerciseSeeder = ExerciseSeeder(repository, context)
+    ): ExerciseSeeder = ExerciseSeeder(repository, settingsDataSource, context)
 
     @Provides
     @Singleton

@@ -6,8 +6,6 @@
    See https://developer.android.com/about/versions/12/backup-restore
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+    <!-- Re-run the idempotent bootstrap after restore instead of restoring its device-local marker. -->
+    <exclude domain="sharedpref" path="seed_bootstrap_state.xml" />
 </full-backup-content>

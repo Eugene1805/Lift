@@ -3,6 +3,7 @@ package com.eugene.lift.data.local
 import android.content.Context
 import androidx.annotation.StringRes
 import com.eugene.lift.R
+import com.eugene.lift.common.localization.createLocalizedContext
 import com.eugene.lift.domain.model.BodyPart
 import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
@@ -27,22 +28,36 @@ private fun imageFor(context: Context, @StringRes nameRes: Int): String? {
 
 class ExerciseSeeder @Inject constructor(
     private val repository: ExerciseRepository,
+    private val settingsDataSource: SettingsDataSource,
     @get:ApplicationContext private val context: Context
 ) : ExerciseBootstrapDataSource {
     override suspend fun populateIfEmpty() {
-        val existingSeedKeys = repository.getExercises()
+        val localizedContext = context.createLocalizedContext(
+            settingsDataSource.userSettings.first().languageCode
+        )
+        val existingExercises = repository.getExercises()
             .first()
+        val existingSeedKeys = existingExercises
             .mapNotNull { it.seedKey }
             .toSet()
+        val existingNames = existingExercises
+            .map { SeedExerciseStrings.normalizeForLookup(it.name) }
+            .toSet()
 
-        buildBootstrapExercises()
-            .filter { it.seedKey !in existingSeedKeys }
+        buildBootstrapExercises(localizedContext)
+            .filter { exercise ->
+                val normalizedName = SeedExerciseStrings.normalizeForLookup(exercise.name)
+                when (val seedKey = exercise.seedKey) {
+                    null -> normalizedName !in existingNames
+                    else -> seedKey !in existingSeedKeys && normalizedName !in existingNames
+                }
+            }
             .forEach { exercise ->
-            repository.saveExercise(exercise)
-        }
+                repository.saveExercise(exercise)
+            }
     }
 
-    private fun buildBootstrapExercises(): List<Exercise> {
+    private fun buildBootstrapExercises(context: Context): List<Exercise> {
         return SeedExerciseStrings.attachSeedKeys(context, listOf(
             // Barbell Exercises
             Exercise(

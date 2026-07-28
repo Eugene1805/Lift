@@ -13,7 +13,6 @@ import com.eugene.lift.domain.model.Exercise
 import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -43,7 +42,7 @@ class ExerciseSeederTest {
             settingsDataSource.setLanguageCode("en")
         }
         repository = ExerciseRepositoryImpl(database.exerciseDao(), settingsDataSource, context)
-        seeder = ExerciseSeeder(repository, context)
+        seeder = ExerciseSeeder(repository, settingsDataSource, context)
     }
 
     @After
@@ -61,12 +60,15 @@ class ExerciseSeederTest {
     fun populateIfEmpty_insertsCatalogOnlyOnce() = runBlocking {
         seeder.populateIfEmpty()
         val firstCount = repository.getCount()
+        val firstCatalog = repository.getExercises().first()
 
         seeder.populateIfEmpty()
         val secondCount = repository.getCount()
 
         assertTrue(firstCount > 0)
         assertEquals(firstCount, secondCount)
+        assertTrue(firstCatalog.none { it.seedKey == null })
+        assertEquals(firstCatalog.size, firstCatalog.mapNotNull { it.seedKey }.distinct().size)
     }
 
     @Test
@@ -132,6 +134,30 @@ class ExerciseSeederTest {
     }
 
     @Test
+    fun populateIfEmpty_doesNotDuplicateSeededNameWhenSeedKeyIsMissing() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val benchName = localizedString(context, "en", R.string.seed_bench_press)
+        val benchDescription = localizedString(context, "en", R.string.seed_bench_desc)
+        repository.saveExercise(
+            Exercise(
+                id = "legacy-bench-id",
+                name = benchName,
+                category = ExerciseCategory.BARBELL,
+                measureType = MeasureType.REPS_AND_WEIGHT,
+                instructions = benchDescription,
+                imagePath = "bench_press",
+                bodyParts = listOf(BodyPart.CHEST, BodyPart.TRICEPS, BodyPart.FRONT_DELTS),
+                seedKey = null
+            )
+        )
+
+        seeder.populateIfEmpty()
+
+        val exercises = repository.getExercises().first()
+        assertEquals(1, exercises.count { it.name == benchName })
+    }
+
+    @Test
     fun seededExercises_relocalizeWhenLanguageChanges() = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         seeder.populateIfEmpty()
@@ -142,7 +168,7 @@ class ExerciseSeederTest {
 
         settingsDataSource.setLanguageCode("es")
 
-        val spanishName = repository.getExercises().drop(1).first()
+        val spanishName = repository.getExercises().first()
             .first { it.seedKey == "seed_bench_press" }
             .name
 

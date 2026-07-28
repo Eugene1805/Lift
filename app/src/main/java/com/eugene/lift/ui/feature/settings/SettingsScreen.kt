@@ -2,6 +2,7 @@ package com.eugene.lift.ui.feature.settings
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -46,6 +47,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -192,6 +194,18 @@ fun SettingsScreen(
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
+    val packageInfo = remember(context) {
+        context.packageManager.getPackageInfo(context.packageName, 0)
+    }
+    val versionName = packageInfo.versionName.orEmpty()
+    val versionCode = remember(packageInfo) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            packageInfo.longVersionCode
+        } else {
+            @Suppress("DEPRECATION")
+            packageInfo.versionCode.toLong()
+        }
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -416,8 +430,12 @@ fun SettingsScreen(
             SettingsSection(title = stringResource(R.string.section_about)) {
                 SettingsActionItem(
                     icon = Icons.Default.Info,
-                    title = stringResource(R.string.setting_version),
-                    subtitle = stringResource(R.string.app_name),
+                    title = stringResource(R.string.setting_version_label),
+                    subtitle = stringResource(
+                        R.string.setting_version_value,
+                        versionName,
+                        versionCode
+                    ),
                     onClick = { /* Easter egg? */ }
                 )
 

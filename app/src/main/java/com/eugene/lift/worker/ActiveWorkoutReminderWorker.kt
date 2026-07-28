@@ -5,9 +5,11 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -36,12 +38,26 @@ class ActiveWorkoutReminderWorker @AssistedInject constructor(
         }
 
         createNotificationChannel()
-        NotificationManagerCompat.from(applicationContext).notify(
-            NOTIFICATION_ID,
-            buildNotification(draft.toSummary().sessionName)
-        )
+        if (canPostNotifications()) {
+            try {
+                NotificationManagerCompat.from(applicationContext).notify(
+                    NOTIFICATION_ID,
+                    buildNotification(draft.toSummary().sessionName)
+                )
+            } catch (_: SecurityException) {
+                // Permission can be revoked between the check and notify call.
+            }
+        }
 
         return Result.success()
+    }
+
+    private fun canPostNotifications(): Boolean {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(
+                applicationContext,
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun buildNotification(sessionName: String): android.app.Notification {

@@ -93,7 +93,9 @@ class WorkoutViewModel @Inject constructor(
         )
     }.stateIn(
         viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
+        // Keep draft state current while this destination remains on the back stack.
+        // Otherwise the five-second replay briefly exposes a draft already cleared by ActiveWorkout.
+        SharingStarted.Eagerly,
         WorkoutUiState()
     )
 

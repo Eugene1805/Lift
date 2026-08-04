@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
@@ -46,6 +47,8 @@ fun WorkoutTopBar(
     onMetricChange: (String?) -> Unit,
     onToggleAutoTimer: () -> Unit,
     onToggleReorderMode: () -> Unit,
+    showSessionNote: Boolean,
+    onToggleSessionNote: () -> Unit,
     onFinish: (Boolean?) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -110,6 +113,27 @@ fun WorkoutTopBar(
                     text = { Text(stringResource(R.string.active_workout_auto_timer)) },
                     onClick = { onToggleAutoTimer() },
                     trailingIcon = { Switch(checked = uiState.isAutoTimerEnabled, onCheckedChange = null) }
+                )
+                HorizontalDivider()
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(
+                                if (showSessionNote) R.string.active_workout_hide_session_note
+                                else R.string.active_workout_add_session_note
+                            )
+                        )
+                    },
+                    onClick = {
+                        onToggleSessionNote()
+                        showMenu = false
+                    },
+                    leadingIcon = { Icon(Icons.AutoMirrored.Filled.Notes, contentDescription = null) },
+                    trailingIcon = {
+                        if (showSessionNote) {
+                            Icon(Icons.Default.Check, stringResource(R.string.cd_check_selected))
+                        }
+                    }
                 )
             }
             Button(onClick = { onFinish(null) }) { Text(stringResource(R.string.active_workout_finish)) }

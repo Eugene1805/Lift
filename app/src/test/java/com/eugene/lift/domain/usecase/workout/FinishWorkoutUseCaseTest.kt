@@ -9,6 +9,7 @@ import com.eugene.lift.domain.model.ExerciseCategory
 import com.eugene.lift.domain.model.MeasureType
 import com.eugene.lift.domain.model.SessionExercise
 import com.eugene.lift.domain.model.UserSettings
+import com.eugene.lift.domain.model.WeightUnit
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.WorkoutSet
 import com.eugene.lift.domain.repository.SettingsRepository
@@ -20,7 +21,6 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -37,6 +37,8 @@ import java.time.LocalDateTime
 class FinishWorkoutUseCaseTest {
 
     private lateinit var repository: WorkoutRepository
+    private lateinit var settingsRepository: SettingsRepository
+    private lateinit var userProfileRepository: UserProfileRepository
     private lateinit var useCase: FinishWorkoutUseCase
 
     private val sampleExercise = Exercise(
@@ -52,10 +54,10 @@ class FinishWorkoutUseCaseTest {
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
-        val userProfileRepository = mockk<UserProfileRepository>(relaxed = true)
-        val settingsRepository = mockk<SettingsRepository>(relaxed = true)
+        userProfileRepository = mockk(relaxed = true)
+        settingsRepository = mockk(relaxed = true)
         coEvery { userProfileRepository.getCurrentProfileOnce() } returns null
-        coEvery { settingsRepository.getSettings() } returns flowOf(UserSettings())
+        every { settingsRepository.getSettings() } returns flowOf(UserSettings())
         every { repository.getExerciseHistory(any()) } returns flowOf(emptyList())
         useCase = FinishWorkoutUseCase(
             repository,
@@ -85,6 +87,25 @@ class FinishWorkoutUseCaseTest {
         // Duration should be approximately 30 minutes (1800 seconds), allow some margin
         assertTrue(savedSession.durationSeconds >= 1795)
         assertTrue(savedSession.durationSeconds <= 1805)
+    }
+
+    @Test
+    fun `invoke returns display volume and converts pounds total to kg once`() = runTest {
+        every { settingsRepository.getSettings() } returns flowOf(
+            UserSettings(weightUnit = WeightUnit.LBS)
+        )
+        val session = createSessionWithSet(weight = 100.0, completed = true, reps = 10)
+
+        val result = useCase(session)
+
+        assertTrue(result is AppResult.Success)
+        val summary = (result as AppResult.Success).data
+        assertEquals(WeightUnit.LBS, summary.weightUnit)
+        assertEquals(1_000.0, summary.totalVolume, 0.001)
+        assertEquals(453.6, summary.totalVolumeKg, 0.001)
+        assertEquals(1, summary.completedExerciseCount)
+        assertEquals(1, summary.completedSetCount)
+        assertEquals(1, summary.personalRecordCount)
     }
 
     @Test

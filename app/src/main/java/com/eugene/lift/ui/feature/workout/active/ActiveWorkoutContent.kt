@@ -47,6 +47,7 @@ fun WorkoutContent(
     uiState: ActiveWorkoutUiState,
     weightUnitLabel: String,
     onEvent: (ActiveWorkoutUiEvent) -> Unit,
+    showSessionNote: Boolean,
     modifier: Modifier = Modifier
 ) {
     val lazyListState = rememberLazyListState()
@@ -57,6 +58,7 @@ fun WorkoutContent(
             uiState = uiState,
             weightUnitLabel = weightUnitLabel,
             onEvent = onEvent,
+            showSessionNote = showSessionNote,
             lazyListState = lazyListState,
             dragDropState = dragDropState
         )
@@ -70,6 +72,7 @@ private fun WorkoutContentList(
     uiState: ActiveWorkoutUiState,
     weightUnitLabel: String,
     onEvent: (ActiveWorkoutUiEvent) -> Unit,
+    showSessionNote: Boolean,
     lazyListState: androidx.compose.foundation.lazy.LazyListState,
     dragDropState: com.eugene.lift.ui.util.DragDropState
 ) {
@@ -79,7 +82,9 @@ private fun WorkoutContentList(
         contentPadding = PaddingValues(vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item { SessionNoteSection(uiState = uiState, onEvent = onEvent) }
+        if (showSessionNote) {
+            item { SessionNoteSection(uiState = uiState, onEvent = onEvent) }
+        }
         workoutExerciseItems(uiState = uiState, weightUnitLabel = weightUnitLabel, onEvent = onEvent, dragDropState = dragDropState)
         item { AddExerciseButton(onEvent = onEvent) }
         item { Spacer(modifier = Modifier.height(80.dp)) }

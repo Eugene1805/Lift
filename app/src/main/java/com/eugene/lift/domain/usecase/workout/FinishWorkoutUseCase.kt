@@ -4,6 +4,7 @@ import com.eugene.lift.core.util.SafeExecutor
 import com.eugene.lift.domain.error.AppError
 import com.eugene.lift.domain.error.AppResult
 import com.eugene.lift.domain.model.SessionExercise
+import com.eugene.lift.domain.model.WorkoutCompletionSummary
 import com.eugene.lift.domain.model.WorkoutSession
 import com.eugene.lift.domain.model.WorkoutSet
 import com.eugene.lift.domain.repository.UserProfileRepository
@@ -24,7 +25,7 @@ class FinishWorkoutUseCase @Inject constructor(
     private val performanceEvaluator: ExercisePerformanceEvaluator,
     private val safeExecutor: SafeExecutor
 ) {
-    suspend operator fun invoke(activeSession: WorkoutSession): AppResult<Unit> {
+    suspend operator fun invoke(activeSession: WorkoutSession): AppResult<WorkoutCompletionSummary> {
         val duration = calculateDuration(activeSession)
         val processedExercises = processExercises(activeSession.exercises)
 
@@ -38,8 +39,11 @@ class FinishWorkoutUseCase @Inject constructor(
         )
 
         return safeExecutor.execute {
+            val unit = settingsRepository.getSettings().first().weightUnit
+            val summary = buildCompletionSummary(finalSession, unit)
             repository.saveSession(finalSession)
-            recordUserStats(finalSession, duration)
+            recordUserStats(summary)
+            summary
         }
     }
 
@@ -108,32 +112,40 @@ class FinishWorkoutUseCase @Inject constructor(
         }
     }
 
-    private suspend fun recordUserStats(
+    private fun buildCompletionSummary(
         session: WorkoutSession,
-        duration: Long
-    ) {
-        val unit = settingsRepository.getSettings().first().weightUnit
-
+        unit: WeightUnit
+    ): WorkoutCompletionSummary {
         val completedSets = session.exercises
             .flatMap { it.sets }
             .filter { it.completed }
-
-        val totalVolumeKg = completedSets.sumOf { set ->
-            val weightKg = when (unit) {
-                WeightUnit.KG -> set.weight
-                WeightUnit.LBS -> WeightConverter.lbsToKg(set.weight)
-            }
-            weightKg * set.reps
+        val totalVolume = completedSets.sumOf { set -> set.weight * set.reps }
+        val totalVolumeKg = when (unit) {
+            WeightUnit.KG -> totalVolume
+            WeightUnit.LBS -> WeightConverter.lbsToKg(totalVolume)
         }
-        val totalPRs = completedSets.count { it.isPr }
+
+        return WorkoutCompletionSummary(
+            workoutName = session.name,
+            durationSeconds = session.durationSeconds,
+            completedExerciseCount = session.exercises.size,
+            completedSetCount = completedSets.size,
+            totalVolume = totalVolume,
+            totalVolumeKg = totalVolumeKg,
+            weightUnit = unit,
+            personalRecordCount = completedSets.count { it.isPr }
+        )
+    }
+
+    private suspend fun recordUserStats(summary: WorkoutCompletionSummary) {
 
         val profile = userProfileRepository.getCurrentProfileOnce() ?: return
 
         userProfileRepository.recordWorkoutCompleted(
             id = profile.id,
-            volume = totalVolumeKg,
-            duration = duration,
-            prCount = totalPRs
+            volume = summary.totalVolumeKg,
+            duration = summary.durationSeconds,
+            prCount = summary.personalRecordCount
         )
     }
 }

@@ -444,7 +444,7 @@
     <string name="text_field_character_counter">%1$d / %2$d</string>
 
     <string name="setting_version_label">Versión</string>
-    <string name="setting_version_value">%1$s (%2$d)</string>
+    <string name="setting_version_value">%1$s</string>
     <string name="setting_contact_email">eugeniosalvadorgonzalez@gmail.com</string>
     <string name="setting_email_subject">Soporte App Lift</string>
     <string name="setting_email_chooser_title">Enviar Correo</string>
@@ -525,6 +525,8 @@
     <string name="active_workout_exercise_notes_label">Notas del ejercicio</string>
     <string name="active_workout_add_note">Agregar nota</string>
     <string name="active_workout_edit_note">Editar nota</string>
+    <string name="active_workout_add_session_note">Agregar nota al entrenamiento</string>
+    <string name="active_workout_hide_session_note">Ocultar nota del entrenamiento</string>
     <string name="active_workout_delete_exercise">Eliminar ejercicio</string>
     <string name="active_workout_replace_exercise">Reemplazar ejercicio</string>
 
@@ -605,6 +607,39 @@
     <string name="workout_finish_incomplete_message">Hay series con datos capturados pero sin marcar como completadas. Complétalas o límpialas antes de terminar, o guarda el entrenamiento como borrador.</string>
     <string name="workout_finish_keep_editing">Seguir editando</string>
     <string name="workout_finish_save_draft">Guardar borrador</string>
+    <string name="workout_summary_title">Entrenamiento completado</string>
+    <string name="workout_summary_pr_title">Entrenamiento de récord</string>
+    <string name="workout_summary_subtitle">Buen trabajo. Esto es lo que lograste.</string>
+    <string name="workout_summary_duration">Duración</string>
+    <string name="workout_summary_sets">Series completadas</string>
+    <string name="workout_summary_exercises">Ejercicios</string>
+    <string name="workout_summary_volume">Volumen total</string>
+    <string name="workout_summary_done">Volver a entrenamientos</string>
+    <string name="workout_summary_bodyweight_motivation">Hoy no hubo volumen con peso, pero cada serie completada te hizo avanzar.</string>
+    <plurals name="workout_summary_pr_message">
+        <item quantity="one">¡Nuevo récord personal! El esfuerzo dio resultado.</item>
+        <item quantity="other">¡%1$d nuevos récords personales! El esfuerzo dio resultado.</item>
+    </plurals>
+    <plurals name="workout_summary_cats">
+        <item quantity="one">Moviste aproximadamente el peso de un gato. El consejo felino lo aprueba.</item>
+        <item quantity="other">Moviste aproximadamente el peso de %1$d gatos. El consejo felino está impresionado.</item>
+    </plurals>
+    <plurals name="workout_summary_cars">
+        <item quantity="one">Moviste el equivalente a un auto compacto. Potencia de motor.</item>
+        <item quantity="other">Moviste el equivalente a %1$d autos compactos. Potencia de motor.</item>
+    </plurals>
+    <plurals name="workout_summary_cows">
+        <item quantity="one">Eso equivale aproximadamente a una vaca. Fuerza de granja desbloqueada.</item>
+        <item quantity="other">Eso equivale aproximadamente a %1$d vacas. Fuerza de granja desbloqueada.</item>
+    </plurals>
+    <plurals name="workout_summary_yachts">
+        <item quantity="one">Moviste aproximadamente un yate pequeño. Fuerza de puerto.</item>
+        <item quantity="other">Moviste aproximadamente %1$d yates pequeños. Fuerza de puerto.</item>
+    </plurals>
+    <plurals name="workout_summary_whales">
+        <item quantity="one">Moviste el peso de una ballena jorobada. Trabajo del tamaño del océano.</item>
+        <item quantity="other">Moviste el peso de %1$d ballenas jorobadas. Trabajo del tamaño del océano.</item>
+    </plurals>
     <string name="workout_finish_needs_completed_set">Completa al menos una serie antes de guardar este entrenamiento.</string>
     <string name="update_template_title">¿Actualizar Plantilla?</string>
     <string name="update_template_message">¿Deseas actualizar la plantilla con los cambios realizados durante este entrenamiento?</string>

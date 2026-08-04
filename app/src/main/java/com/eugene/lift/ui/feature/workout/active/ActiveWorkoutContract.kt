@@ -5,6 +5,7 @@ import com.eugene.lift.domain.model.SessionExercise
 import com.eugene.lift.domain.model.TimerState
 import com.eugene.lift.domain.model.UserSettings
 import com.eugene.lift.domain.model.WeightUnit
+import com.eugene.lift.domain.model.WorkoutCompletionSummary
 import com.eugene.lift.domain.model.WorkoutSet
 
 data class ReorderUiState(
@@ -45,6 +46,7 @@ sealed interface ActiveWorkoutUiEvent {
     data class FinishClicked(val updateTemplate: Boolean?) : ActiveWorkoutUiEvent
     data object SaveDraftAndExitClicked : ActiveWorkoutUiEvent
     data object CancelClicked : ActiveWorkoutUiEvent
+    data object CompletionSummaryDismissed : ActiveWorkoutUiEvent
     data object AddExerciseClicked : ActiveWorkoutUiEvent
     data class ExerciseClicked(val exerciseId: String) : ActiveWorkoutUiEvent
     data class SessionNoteChanged(val value: String) : ActiveWorkoutUiEvent
@@ -57,6 +59,7 @@ sealed interface ActiveWorkoutUiEvent {
 
 sealed interface ActiveWorkoutEffect {
     data object NavigateBack : ActiveWorkoutEffect
+    data class WorkoutCompleted(val summary: WorkoutCompletionSummary) : ActiveWorkoutEffect
     data class ShowSnackbar(val error: AppError) : ActiveWorkoutEffect
     data class ShowSnackbarMessage(val messageResId: Int) : ActiveWorkoutEffect
     data class ShowExerciseSnackbar(

@@ -501,7 +501,7 @@
     <string name="text_field_character_counter">%1$d / %2$d</string>
 
     <string name="setting_version_label">Version</string>
-    <string name="setting_version_value">%1$s (%2$d)</string>
+    <string name="setting_version_value">%1$s</string>
     <string name="setting_contact_email">eugeniosalvadorgonzalez@gmail.com</string>
     <string name="setting_email_subject">Lift App Support</string>
     <string name="setting_email_chooser_title">Send Email</string>
@@ -571,6 +571,8 @@
     <string name="active_workout_exercise_notes_label">Exercise notes</string>
     <string name="active_workout_add_note">Add note</string>
     <string name="active_workout_edit_note">Edit note</string>
+    <string name="active_workout_add_session_note">Add workout note</string>
+    <string name="active_workout_hide_session_note">Hide workout note</string>
     <string name="active_workout_delete_exercise">Delete exercise</string>
     <string name="active_workout_replace_exercise">Replace exercise</string>
     <string name="history_session_note_label">Session notes</string>
@@ -649,6 +651,39 @@
     <string name="workout_finish_incomplete_message">Some sets already have data but are not marked complete yet. Complete them or clear them before finishing, or save the workout as a draft.</string>
     <string name="workout_finish_keep_editing">Keep editing</string>
     <string name="workout_finish_save_draft">Save draft</string>
+    <string name="workout_summary_title">Workout complete</string>
+    <string name="workout_summary_pr_title">Record-breaking workout</string>
+    <string name="workout_summary_subtitle">Strong work. Here is what you accomplished.</string>
+    <string name="workout_summary_duration">Duration</string>
+    <string name="workout_summary_sets">Sets done</string>
+    <string name="workout_summary_exercises">Exercises</string>
+    <string name="workout_summary_volume">Total volume</string>
+    <string name="workout_summary_done">Back to workouts</string>
+    <string name="workout_summary_bodyweight_motivation">No weighted volume today, but every completed set still moved you forward.</string>
+    <plurals name="workout_summary_pr_message">
+        <item quantity="one">A new personal record! That work paid off.</item>
+        <item quantity="other">%1$d new personal records! That work paid off.</item>
+    </plurals>
+    <plurals name="workout_summary_cats">
+        <item quantity="one">You moved about the weight of one cat. The cat council approves.</item>
+        <item quantity="other">You moved about the weight of %1$d cats. The cat council is impressed.</item>
+    </plurals>
+    <plurals name="workout_summary_cars">
+        <item quantity="one">You moved the equivalent of one compact car. Serious horsepower.</item>
+        <item quantity="other">You moved the equivalent of %1$d compact cars. Serious horsepower.</item>
+    </plurals>
+    <plurals name="workout_summary_cows">
+        <item quantity="one">That is about one cow. Farm-strength unlocked.</item>
+        <item quantity="other">That is about %1$d cows. Farm-strength unlocked.</item>
+    </plurals>
+    <plurals name="workout_summary_yachts">
+        <item quantity="one">You moved about one small yacht. Harbor-level strength.</item>
+        <item quantity="other">You moved about %1$d small yachts. Harbor-level strength.</item>
+    </plurals>
+    <plurals name="workout_summary_whales">
+        <item quantity="one">You moved the weight of a humpback whale. Ocean-sized work.</item>
+        <item quantity="other">You moved the weight of %1$d humpback whales. Ocean-sized work.</item>
+    </plurals>
     <string name="workout_finish_needs_completed_set">Complete at least one set before saving this workout.</string>
     <string name="update_template_title">Update Template?</string>
     <string name="update_template_message">Do you want to update the template with the changes made during this workout?</string>

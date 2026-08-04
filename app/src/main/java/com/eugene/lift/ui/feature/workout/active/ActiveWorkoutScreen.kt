@@ -26,6 +26,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import com.eugene.lift.domain.model.WeightUnit
+import com.eugene.lift.domain.model.WorkoutCompletionSummary
 import com.eugene.lift.ui.components.ExerciseSnackbar
 import com.eugene.lift.ui.util.toMessage
 import com.eugene.lift.ui.util.WeightFormatters
@@ -57,7 +58,14 @@ fun ActiveWorkoutScreen(
     )
     AutoDismissExerciseSnackbarEffect(screenState = screenState)
 
-    BackHandler { screenState.requestExit() }
+    BackHandler {
+        if (screenState.completionSummary != null) {
+            screenState.hideCompletionSummary()
+            onEvent(ActiveWorkoutUiEvent.CompletionSummaryDismissed)
+        } else {
+            screenState.requestExit()
+        }
+    }
 
     ActiveWorkoutDialogsHost(screenState = screenState, onEvent = onEvent)
 
@@ -136,6 +144,7 @@ private fun CollectActiveWorkoutEffects(
                 }
                 is ActiveWorkoutEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.error.toMessage(context))
                 is ActiveWorkoutEffect.ShowSnackbarMessage -> snackbarHostState.showSnackbar(context.getString(effect.messageResId))
+                is ActiveWorkoutEffect.WorkoutCompleted -> screenState.showCompletionSummary(effect.summary)
                 ActiveWorkoutEffect.NavigateBack -> Unit
             }
         }
@@ -203,6 +212,16 @@ private fun ActiveWorkoutDialogsHost(
             onEvent(ActiveWorkoutUiEvent.SaveDraftAndExitClicked)
         }
     )
+
+    screenState.completionSummary?.let { summary ->
+        WorkoutCompletionDialog(
+            summary = summary,
+            onDone = {
+                screenState.hideCompletionSummary()
+                onEvent(ActiveWorkoutUiEvent.CompletionSummaryDismissed)
+            }
+        )
+    }
 }
 
 @Composable
@@ -241,6 +260,8 @@ private fun ActiveWorkoutTopBarSection(
             onMetricChange = { onEvent(ActiveWorkoutUiEvent.MetricChanged(it)) },
             onToggleAutoTimer = { onEvent(ActiveWorkoutUiEvent.ToggleAutoTimer) },
             onToggleReorderMode = { onEvent(ActiveWorkoutUiEvent.ToggleReorderMode) },
+            showSessionNote = screenState.showSessionNote,
+            onToggleSessionNote = screenState::toggleSessionNote,
             onFinish = { updateTemplate ->
                 handleFinishAction(
                     uiState = uiState,
@@ -323,6 +344,7 @@ private fun ActiveWorkoutScaffoldContent(
             uiState = uiState,
             weightUnitLabel = weightUnitLabel,
             onEvent = onEvent,
+            showSessionNote = screenState.showSessionNote,
             modifier = Modifier
         )
 
@@ -344,6 +366,10 @@ class WorkoutScreenState {
     var showFinishBlockedDialog by mutableStateOf(false)
     var finishBlockedTitleResId by mutableStateOf(com.eugene.lift.R.string.workout_finish_empty_title)
     var finishBlockedMessageResId by mutableStateOf(com.eugene.lift.R.string.workout_finish_empty_message)
+    var showSessionNote by mutableStateOf(false)
+        private set
+    var completionSummary by mutableStateOf<WorkoutCompletionSummary?>(null)
+        private set
 
     var isSnackbarVisible by mutableStateOf(false)
     var snackbarExerciseName by mutableStateOf("")
@@ -366,6 +392,14 @@ class WorkoutScreenState {
     }
 
     fun hideFinishBlocked() { showFinishBlockedDialog = false }
+
+    fun toggleSessionNote() { showSessionNote = !showSessionNote }
+
+    fun showCompletionSummary(summary: WorkoutCompletionSummary) {
+        completionSummary = summary
+    }
+
+    fun hideCompletionSummary() { completionSummary = null }
 
     fun showSnackbar(exerciseName: String, weight: String, isPr: Boolean = false) {
         snackbarExerciseName = exerciseName

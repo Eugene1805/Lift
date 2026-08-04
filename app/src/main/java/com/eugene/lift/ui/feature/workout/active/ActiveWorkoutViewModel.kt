@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -180,6 +181,7 @@ class ActiveWorkoutViewModel @Inject constructor(
             is ActiveWorkoutUiEvent.FinishClicked -> finishWorkout(event.updateTemplate)
             ActiveWorkoutUiEvent.SaveDraftAndExitClicked -> saveDraftAndExit()
             ActiveWorkoutUiEvent.CancelClicked -> cancelWorkout()
+            ActiveWorkoutUiEvent.CompletionSummaryDismissed -> navigateBackAfterSummary()
             is ActiveWorkoutUiEvent.AddExerciseClicked -> Unit
             is ActiveWorkoutUiEvent.ExerciseClicked -> Unit
             is ActiveWorkoutUiEvent.SessionNoteChanged -> onSessionNoteChange(event.value)
@@ -462,7 +464,7 @@ class ActiveWorkoutViewModel @Inject constructor(
                 is AppResult.Success -> {
                     restTimerManager.stopTimer()
                     clearDraftArtifacts()
-                    _effects.emit(ActiveWorkoutEffect.NavigateBack)
+                    _effects.emit(ActiveWorkoutEffect.WorkoutCompleted(result.data))
                 }
                 is AppResult.Error -> {
                     if (result.error == AppError.Validation) {
@@ -490,6 +492,12 @@ class ActiveWorkoutViewModel @Inject constructor(
             persistDraftJob?.cancel()
             restTimerManager.stopTimer()
             clearDraftArtifacts()
+            _effects.emit(ActiveWorkoutEffect.NavigateBack)
+        }
+    }
+
+    private fun navigateBackAfterSummary() {
+        viewModelScope.launch {
             _effects.emit(ActiveWorkoutEffect.NavigateBack)
         }
     }
@@ -686,6 +694,7 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private suspend fun clearDraftArtifacts() {
         activeWorkoutDraftRepository.clearDraft()
+        activeWorkoutDraftRepository.observeSummary().first { it == null }
         activeWorkoutReminderScheduler.cancel()
     }
 }

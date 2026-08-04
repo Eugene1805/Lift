@@ -13,8 +13,8 @@ import com.eugene.lift.worker.SeedDatabaseWorker
 object WorkInitializer {
 
     private const val TAG = "WorkInitializer"
-    // Versioned so existing installs rerun the idempotent image backfill after mapper and asset refreshes.
-    internal const val SEED_DB_WORK_NAME = "seed_db_work_v10"
+    // Versioned so existing installs rerun the idempotent catalog reconciliation after seed updates.
+    internal const val SEED_DB_WORK_NAME = "seed_db_work_v11"
 
     /**
      * Enqueues the database seeding work if it hasn't been done yet.

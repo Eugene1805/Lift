@@ -1340,6 +1340,15 @@ class ExerciseSeeder @Inject constructor(
             ),
             Exercise(
                 id = UUID.randomUUID().toString(),
+                name = context.getString(R.string.seed_pendulum_squat),
+                category = ExerciseCategory.MACHINE,
+                measureType = MeasureType.REPS_AND_WEIGHT,
+                instructions = context.getString(R.string.seed_pendulum_squat_desc),
+                imagePath = null,
+                bodyParts = listOf(BodyPart.QUADRICEPS, BodyPart.GLUTES, BodyPart.HAMSTRINGS)
+            ),
+            Exercise(
+                id = UUID.randomUUID().toString(),
                 name = context.getString(R.string.seed_smith_machine_squat),
                 category = ExerciseCategory.MACHINE,
                 measureType = MeasureType.REPS_AND_WEIGHT,

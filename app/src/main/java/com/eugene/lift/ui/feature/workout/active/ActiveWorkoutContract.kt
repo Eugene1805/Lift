@@ -33,8 +33,8 @@ sealed interface ActiveWorkoutUiEvent {
     data class RepsChanged(val exerciseIndex: Int, val setIndex: Int, val value: String) : ActiveWorkoutUiEvent
     data class DistanceChanged(val exerciseIndex: Int, val setIndex: Int, val value: String) : ActiveWorkoutUiEvent
     data class TimeChanged(val exerciseIndex: Int, val setIndex: Int, val value: String) : ActiveWorkoutUiEvent
-    data class RpeChanged(val exerciseIndex: Int, val setIndex: Int, val value: String) : ActiveWorkoutUiEvent
-    data class RirChanged(val exerciseIndex: Int, val setIndex: Int, val value: String) : ActiveWorkoutUiEvent
+    data class RpeChanged(val exerciseIndex: Int, val setIndex: Int, val value: Double?) : ActiveWorkoutUiEvent
+    data class RirChanged(val exerciseIndex: Int, val setIndex: Int, val value: Int?) : ActiveWorkoutUiEvent
     data class SetCompleted(val exerciseIndex: Int, val setIndex: Int) : ActiveWorkoutUiEvent
     data class AddSet(val exerciseIndex: Int) : ActiveWorkoutUiEvent
     data class RemoveSet(val exerciseIndex: Int, val setIndex: Int) : ActiveWorkoutUiEvent

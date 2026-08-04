@@ -380,27 +380,15 @@ class ActiveWorkoutViewModel @Inject constructor(
     }
 
 
-    private fun onRpeChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
-        if (newValue.isEmpty()) {
-            updateSetState(exerciseIndex, setIndex) { it.copy(rpe = null) }
-            return
-        }
-        newValue.toDoubleOrNull()?.let {
-            if (it in 1.0..10.0) {
-                updateSetState(exerciseIndex, setIndex) { set -> set.copy(rpe = it) }
-            }
+    private fun onRpeChange(exerciseIndex: Int, setIndex: Int, newValue: Double?) {
+        if (newValue == null || WorkoutSet.isValidRpe(newValue)) {
+            updateSetState(exerciseIndex, setIndex) { set -> set.copy(rpe = newValue) }
         }
     }
 
-    private fun onRirChange(exerciseIndex: Int, setIndex: Int, newValue: String) {
-        if (newValue.isEmpty()) {
-            updateSetState(exerciseIndex, setIndex) { it.copy(rir = null) }
-            return
-        }
-        newValue.toIntOrNull()?.let {
-            if (it in 0..10) {
-                updateSetState(exerciseIndex, setIndex) { set -> set.copy(rir = it) }
-            }
+    private fun onRirChange(exerciseIndex: Int, setIndex: Int, newValue: Int?) {
+        if (newValue == null || WorkoutSet.isValidRir(newValue)) {
+            updateSetState(exerciseIndex, setIndex) { set -> set.copy(rir = newValue) }
         }
     }
 

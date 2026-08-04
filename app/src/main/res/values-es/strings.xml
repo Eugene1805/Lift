@@ -337,6 +337,8 @@
     <string name="seed_front_lat_pulldown_desc">1. Siéntate en jalón, agarra barra ancha.\n2. Lleva barra al frente hacia pecho superior.\n3. Inclínate ligeramente hacia atrás, unos 30 grados.\n4. Variación estándar de jalón de dorsales.\n5. Extiende brazos controladamente.</string>
     <string name="seed_hack_squat">Sentadilla Hack (Máquina)</string>
     <string name="seed_hack_squat_desc">1. Posiciona espalda contra almohadilla, hombros bajo almohadillas.\n2. Coloca pies en plataforma al ancho de hombros.\n3. Suelta seguros, baja doblando rodillas.\n4. Desciende hasta muslos paralelos a plataforma.\n5. Empuja con talones para volver al inicio.</string>
+    <string name="seed_pendulum_squat">Sentadilla Péndulo</string>
+    <string name="seed_pendulum_squat_desc">1. Apoya firmemente la espalda contra la almohadilla y coloca los pies al ancho de hombros sobre la plataforma.\n2. Activa el abdomen y libera los seguros.\n3. Desciende con control, permitiendo que las rodillas avancen mientras mantienes los talones apoyados.\n4. Alcanza una profundidad cómoda sin separar la cadera de la almohadilla.\n5. Empuja con la parte media del pie para volver a la posición inicial.</string>
     <string name="seed_smith_machine_squat">Sentadilla en Máquina Smith</string>
     <string name="seed_smith_machine_squat_desc">1. Posiciona barra en espalda superior, pies ligeramente adelante.\n2. Desancla barra rotando ganchos.\n3. Desciende en sentadilla, barra viaja en ruta fija.\n4. Alternativa más segura a sentadillas con peso libre.\n5. Rota barra para volver a anclar a cualquier altura.</string>
     <string name="seed_seated_leg_curl">Curl Femoral Sentado (Máquina)</string>
@@ -504,6 +506,9 @@
     <string name="active_workout_configuration">Configuración</string>
     <string name="active_workout_use_rpe">Usar RPE</string>
     <string name="active_workout_use_rir">Usar RIR</string>
+    <string name="active_workout_effort_not_set">Sin registrar</string>
+    <string name="active_workout_effort_clear">Limpiar</string>
+    <string name="active_workout_effort_picker_description">Esfuerzo %1$s: %2$s. Toca para ajustar.</string>
     <string name="active_workout_hide_metric">Ocultar métrica</string>
     <string name="active_workout_finish">Terminar</string>
     <string name="active_workout_add_exercise">Agregar Ejercicio</string>

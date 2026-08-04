@@ -131,6 +131,23 @@ class ExerciseSeederTest {
         val exercises = repository.getExercises().first()
         assertEquals(1, exercises.count { it.seedKey == "seed_bench_press" })
         assertTrue(exercises.any { it.seedKey == "seed_step_up" })
+        assertTrue(exercises.any { it.seedKey == "seed_pendulum_squat" })
+    }
+
+    @Test
+    fun populateIfEmpty_addsPendulumSquatWithoutImage() = runBlocking {
+        seeder.populateIfEmpty()
+
+        val pendulumSquat = repository.getExercises().first()
+            .single { it.seedKey == "seed_pendulum_squat" }
+
+        assertEquals(ExerciseCategory.MACHINE, pendulumSquat.category)
+        assertEquals(MeasureType.REPS_AND_WEIGHT, pendulumSquat.measureType)
+        assertEquals(null, pendulumSquat.imagePath)
+        assertEquals(
+            setOf(BodyPart.QUADRICEPS, BodyPart.GLUTES, BodyPart.HAMSTRINGS),
+            pendulumSquat.bodyParts.toSet()
+        )
     }
 
     @Test

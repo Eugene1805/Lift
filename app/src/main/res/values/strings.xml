@@ -395,6 +395,8 @@
     <string name="seed_front_lat_pulldown_desc">1. Sit at lat pulldown, grip bar wide.\n2. Pull bar down in front to upper chest.\n3. Lean back slightly, about 30 degrees.\n4. Standard lat pulldown variation.\n5. Extend arms under control.</string>
     <string name="seed_hack_squat">Hack Squat (Machine)</string>
     <string name="seed_hack_squat_desc">1. Position back against pad, shoulders under pads.\n2. Place feet on platform shoulder-width apart.\n3. Release safety handles, lower by bending knees.\n4. Descend until thighs parallel to platform.\n5. Press through heels to return to start.</string>
+    <string name="seed_pendulum_squat">Pendulum Squat</string>
+    <string name="seed_pendulum_squat_desc">1. Position your back firmly against the pad and place your feet shoulder-width apart on the platform.\n2. Brace your core and release the safety handles.\n3. Lower under control, allowing your knees to travel forward while keeping your heels planted.\n4. Reach a comfortable depth without letting your hips lift from the pad.\n5. Drive through your midfoot to return to the starting position.</string>
     <string name="seed_smith_machine_squat">Smith Machine Squat</string>
     <string name="seed_smith_machine_squat_desc">1. Position bar on upper back, feet slightly forward.\n2. Unrack bar by rotating hooks.\n3. Descend into squat, bar travels in fixed path.\n4. Safer alternative to free weight squats.\n5. Rotate bar to re-rack at any height.</string>
     <string name="seed_seated_leg_curl">Seated Leg Curl (Machine)</string>
@@ -550,6 +552,9 @@
     <string name="active_workout_configuration">Configuration</string>
     <string name="active_workout_use_rpe">Use RPE</string>
     <string name="active_workout_use_rir">Use RIR</string>
+    <string name="active_workout_effort_not_set">Not set</string>
+    <string name="active_workout_effort_clear">Clear</string>
+    <string name="active_workout_effort_picker_description">%1$s effort: %2$s. Tap to adjust.</string>
     <string name="active_workout_hide_metric">Hide metric</string>
     <string name="active_workout_finish">Finish</string>
     <string name="active_workout_add_exercise">Add Exercise</string>

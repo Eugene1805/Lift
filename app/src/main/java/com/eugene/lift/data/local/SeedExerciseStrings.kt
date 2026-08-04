@@ -169,6 +169,7 @@ object SeedExerciseStrings {
         R.string.seed_overhead_press,
         R.string.seed_paused_squat,
         R.string.seed_pec_deck,
+        R.string.seed_pendulum_squat,
         R.string.seed_pistol_squat,
         R.string.seed_plank,
         R.string.seed_power_clean,
